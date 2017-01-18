@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "npm run lint & npm run spec-all",
     "compile": "tsc",
     "lint": "tslint 'src/**.{ts,tsx}'",
     "spec": "tape --require 'ts-node/register' './src/polyfill.ts'",
