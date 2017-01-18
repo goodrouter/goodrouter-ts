@@ -1,6 +1,7 @@
 import * as test from "blue-tape";
 import { GoodRouter, RouteConfig, PathMatcher } from "./router";
 
+
 test("path matcher", async t => {
     let matcher = null as PathMatcher;
 
@@ -13,6 +14,7 @@ test("path matcher", async t => {
     t.deepEqual(matcher.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
 });
 
+
 test("router path", async t => {
     const homeRoute = {
         path: "/",
@@ -24,11 +26,10 @@ test("router path", async t => {
     };
     const r = new GoodRouter(routes);
 
-    const result = await r.resolve("/");
+    const result = await r.route("/");
 
     t.equal(result, "home");
 });
-
 
 
 test("router pattern", async t => {
@@ -42,13 +43,13 @@ test("router pattern", async t => {
     };
     const r = new GoodRouter(routes);
 
-    t.deepEqual(await r.resolve("/home/123/noot"), {
+    t.deepEqual(await r.route("/home/123/noot"), {
         context: null,
         nextParams: { aap: "123" },
         prevParams: {},
     });
 
-    t.deepEqual(await r.resolve("/home/456/noot", { "ok": true }), {
+    t.deepEqual(await r.route("/home/456/noot", { "ok": true }), {
         context: { "ok": true },
         nextParams: { aap: "456" },
         prevParams: { aap: "123" },

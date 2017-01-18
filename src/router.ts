@@ -66,7 +66,7 @@ export class GoodRouter {
             map(([name, route]) => [name, route, new PathMatcher(route.path)] as [string, RouteConfig, PathMatcher]);
     }
 
-    async resolve(path: string, context: any = null) {
+    async route(path: string, context: any = null) {
         for (let [name, route, routeMatcher] of this.routeMatchers) {
             const params = routeMatcher.match(path);
             if (params) {
