@@ -74,7 +74,7 @@ export class GoodRouter {
     async transition(path: string, context: any = null) {
         const prevParams = this.params;
         const prevRoute = this.route;
-        const [nextRoute, nextParams] = this.findRoute(path);
+        const [nextRoute, nextParams] = this.matchRoute(path);
 
         this.route = nextRoute;
         this.params = nextParams;
@@ -161,7 +161,7 @@ export class GoodRouter {
     }
 
 
-    private findRoute(path: string): [RouteConfig, any] {
+    private matchRoute(path: string): [RouteConfig, any] {
         for (let [route, routeMatcher] of this.routeMatchers) {
             const params = routeMatcher.match(path);
             if (params) return [route, params];
