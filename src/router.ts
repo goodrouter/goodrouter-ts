@@ -72,21 +72,24 @@ export class GoodRouter {
     }
 
     async transition(path: string, context: any = null) {
-        const prevParams = this.params;
-        const prevRoute = this.route;
+        const {params: prevParams, route: prevRoute} = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
 
-        this.route = nextRoute;
-        this.params = nextParams;
-
         const nextRouteStack = [] as RouteConfig[];
-        const prevRouteStack = [] as RouteConfig[];
-
-        for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeIndex[currentRoute.parent]) {
+        for (
+            let currentRoute = nextRoute;
+            currentRoute;
+            currentRoute = this.routeIndex[currentRoute.parent]
+        ) {
             nextRouteStack.unshift(currentRoute);
         }
 
-        for (let currentRoute = prevRoute; currentRoute; currentRoute = this.routeIndex[currentRoute.parent]) {
+        const prevRouteStack = [] as RouteConfig[];
+        for (
+            let currentRoute = prevRoute;
+            currentRoute;
+            currentRoute = this.routeIndex[currentRoute.parent]
+        ) {
             prevRouteStack.unshift(currentRoute);
         }
 
@@ -156,6 +159,9 @@ export class GoodRouter {
             }
         }
 
+
+        this.route = nextRoute;
+        this.params = nextParams;
 
         return result;
     }
