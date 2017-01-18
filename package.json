@@ -2,8 +2,8 @@
   "name": "goodrouter",
   "version": "0.0.1",
   "description": "a good router",
-  "main": "obj/router.js",
-  "types": "obj/router.d.ts",
+  "main": "bin/router.js",
+  "types": "bin/router.d.ts",
   "scripts": {
     "test": "npm run lint & npm run spec-all",
     "compile": "tsc",
