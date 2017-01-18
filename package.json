@@ -10,7 +10,8 @@
     "lint": "tslint 'src/**.{ts,tsx}'",
     "spec": "tape --require 'ts-node/register' './src/polyfill.ts'",
     "spec-all": "npm run spec 'src/**/*.spec.{ts,tsx}'",
-    "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.{ts,tsx}' --exclude 'src/**/*.spec.{ts,tsx}' --extension '.ts' --extension '.tsx' npm run spec-all"
+    "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.{ts,tsx}' --exclude 'src/**/*.spec.{ts,tsx}' --extension '.ts' --extension '.tsx' npm run spec-all",
+    "prepublish": "npm run compile"
   },
   "repository": {
     "type": "git",
