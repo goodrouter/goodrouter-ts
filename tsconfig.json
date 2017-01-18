@@ -5,13 +5,14 @@
     "jsx": "react",
     "noImplicitAny": false,
     "sourceMap": true,
+    "declaration": true,
     "outDir": "bin",
     "rootDir": "src",
     "noEmitHelpers": true,
     "importHelpers": true
   },
   "compileOnSave": false,
-  "includeGlob": [
-    "src/**/*.{ts,tsx}"
+  "files": [
+    "src/router.ts"
   ]
 }

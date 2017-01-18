@@ -1,8 +1,9 @@
 {
   "name": "goodrouter",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "a good router",
+  "main": "obj/router.js",
+  "types": "obj/router.d.ts",
   "scripts": {
     "test": "npm run lint & npm run spec-all",
     "compile": "tsc",
@@ -15,8 +16,8 @@
     "type": "git",
     "url": "git+ssh://git@gitlab.com/luvdasun/goodrouter.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Elmer Bulthuis",
+  "license": "WTFPL",
   "bugs": {
     "url": "https://gitlab.com/luvdasun/goodrouter/issues"
   },
