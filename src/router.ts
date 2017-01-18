@@ -61,9 +61,9 @@ export class PathMatcher {
 
 
 export class GoodRouter {
-    private routeStack = [] as RouteConfig[];
     private routeMatchers = [] as [string, RouteConfig, PathMatcher][];
     private readonly routeIndex = {} as { [name: string]: RouteConfig };
+    private route = null as RouteConfig;
     private params = {};
 
     constructor(routeList: RouteConfig[]) {
@@ -72,19 +72,24 @@ export class GoodRouter {
     }
 
     async transition(path: string, context: any = null) {
+        const prevParams = this.params;
+        const prevRoute = this.route;
         const [nextRoute, nextParams] = this.findRoute(path);
 
-        const nextRouteStack = [] as RouteConfig[];
-        const prevRouteStack = this.routeStack;
-
-        const prevParams = this.params;
-
-        this.routeStack = nextRouteStack;
+        this.route = nextRoute;
         this.params = nextParams;
+
+        const nextRouteStack = [] as RouteConfig[];
+        const prevRouteStack = [] as RouteConfig[];
 
         for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeIndex[currentRoute.parent]) {
             nextRouteStack.unshift(currentRoute);
         }
+
+        for (let currentRoute = prevRoute; currentRoute; currentRoute = this.routeIndex[currentRoute.parent]) {
+            prevRouteStack.unshift(currentRoute);
+        }
+
 
 
         for (
