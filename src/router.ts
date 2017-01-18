@@ -7,6 +7,7 @@ export interface RouteState {
 
 
 export interface RouteConfig {
+    name: string;
     path: string;
     parent?: string;
     isEnteringRoute?: (state: RouteState) => Promise<boolean> | boolean;
@@ -62,11 +63,12 @@ export class PathMatcher {
 export class GoodRouter {
     private routeStack = [] as RouteConfig[];
     private routeMatchers = [] as [string, RouteConfig, PathMatcher][];
-    private lastParams = {};
+    private readonly routeIndex = {} as { [name: string]: RouteConfig };
+    private params = {};
 
-    constructor(private readonly routeConfigs: { [name: string]: RouteConfig }) {
-        this.routeMatchers = Object.entries(routeConfigs).
-            map(([name, route]) => [name, route, new PathMatcher(route.path)] as [string, RouteConfig, PathMatcher]);
+    constructor(routeList: RouteConfig[]) {
+        this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
+        this.routeMatchers = routeList.map(route => [route.name, route, new PathMatcher(route.path)] as [string, RouteConfig, PathMatcher]);
     }
 
     async transition(path: string, context: any = null) {
@@ -75,12 +77,12 @@ export class GoodRouter {
         const nextRouteStack = [] as RouteConfig[];
         const prevRouteStack = this.routeStack;
 
-        const prevParams = this.lastParams;
+        const prevParams = this.params;
 
         this.routeStack = nextRouteStack;
-        this.lastParams = nextParams;
+        this.params = nextParams;
 
-        for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeConfigs[currentRoute.parent]) {
+        for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeIndex[currentRoute.parent]) {
             nextRouteStack.unshift(currentRoute);
         }
 

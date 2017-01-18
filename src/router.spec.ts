@@ -17,15 +17,11 @@ test("path matcher", async t => {
 
 
 test("router path", async t => {
-    const homeRoute = {
+    const r = new GoodRouter([{
+        name: "home",
         path: "/",
         render: state => "home"
-    } as RouteConfig;
-
-    const routes = {
-        homeRoute,
-    };
-    const r = new GoodRouter(routes);
+    }]);
 
     const result = await r.transition("/");
 
@@ -34,15 +30,11 @@ test("router path", async t => {
 
 
 test("router pattern", async t => {
-    const homeRoute = {
+    const r = new GoodRouter([{
+        name: "home",
         path: "/home/:aap/noot",
         render: state => state
-    } as RouteConfig;
-
-    const routes = {
-        homeRoute,
-    };
-    const r = new GoodRouter(routes);
+    }]);
 
     t.deepEqual(await r.transition("/home/123/noot"), {
         child: null,
@@ -63,21 +55,19 @@ test("router pattern", async t => {
 
 test("router child", async t => {
     const rootRoute = {
+        name: "root",
         path: "/",
         render: state => ({ name: "root", child: state.child })
     } as RouteConfig;
 
     const homeRoute = {
-        parent: "rootRoute",
+        name: "home",
+        parent: "root",
         path: "/home",
         render: state => ({ name: "home", child: state.child })
     } as RouteConfig;
 
-    const routes = {
-        rootRoute,
-        homeRoute,
-    };
-    const r = new GoodRouter(routes);
+    const r = new GoodRouter([rootRoute, homeRoute]);
 
     t.deepEqual(await r.transition("/home"), {
         name: "root",
@@ -95,21 +85,19 @@ test("router child", async t => {
 
 test("router child", async t => {
     const rootRoute = {
+        name: "root",
         path: "/",
         render: state => ({ name: "root", child: state.child })
     } as RouteConfig;
 
     const homeRoute = {
-        parent: "rootRoute",
+        name: "home",
+        parent: "root",
         path: "/home",
         render: state => ({ name: "home", child: state.child })
     } as RouteConfig;
 
-    const routes = {
-        rootRoute,
-        homeRoute,
-    };
-    const r = new GoodRouter(routes);
+    const r = new GoodRouter([rootRoute, homeRoute]);
 
     t.deepEqual(await r.transition("/home"), {
         name: "root",
@@ -128,6 +116,7 @@ test("router hooks", async t => {
     const hookSpy = spy();
 
     const rootRoute = {
+        name: "root",
         path: "/",
         render: state => ({ name: "root", child: state.child }),
         isEnteringRoute: hookSpy.bind(null, "root-isEnteringRoute"),
@@ -139,7 +128,8 @@ test("router hooks", async t => {
     };
 
     const childRoute1 = {
-        parent: "rootRoute",
+        name: "child1",
+        parent: "root",
         path: "/child1",
         render: state => ({ name: "child1", child: state.child }),
         isEnteringRoute: hookSpy.bind(null, "child1-isEnteringRoute"),
@@ -151,7 +141,8 @@ test("router hooks", async t => {
     };
 
     const childRoute2 = {
-        parent: "rootRoute",
+        name: "child2",
+        parent: "root",
         path: "/child2",
         render: state => ({ name: "child2", child: state.child }),
         isEnteringRoute: hookSpy.bind(null, "child2-isEnteringRoute"),
@@ -162,13 +153,7 @@ test("router hooks", async t => {
         hasLeftRoute: hookSpy.bind(null, "child2-hasLeftRoute"),
     };
 
-    const routes = {
-        rootRoute,
-        childRoute1,
-        childRoute2,
-    };
-
-    const r = new GoodRouter(routes);
+    const r = new GoodRouter([rootRoute, childRoute1, childRoute2]);
 
 
     hookSpy.reset();
