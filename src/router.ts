@@ -8,11 +8,11 @@ export interface RouteState {
 
 export interface RouteConfig {
     name: string;
-    path: string;
+    path?: string;
     parent?: string;
+    render?: (state: RouteState) => Promise<any> | any;
     isEnteringRoute?: (state: RouteState) => Promise<boolean> | boolean;
     hasEnteredRoute?: (state: RouteState) => Promise<boolean> | boolean;
-    render?: (state: RouteState) => Promise<any> | any;
     routeIsChanging?: (state: RouteState) => Promise<boolean> | boolean;
     routeHasChanged?: (state: RouteState) => Promise<boolean> | boolean;
     isLeavingRoute?: (state: RouteState) => Promise<boolean> | boolean;
@@ -68,7 +68,7 @@ export class GoodRouter {
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routeMatchers = routeList.map(route => [route, new PathMatcher(route.path)] as [RouteConfig, PathMatcher]);
+        this.routeMatchers = routeList.filter(router => router.path).map(route => [route, new PathMatcher(route.path)] as [RouteConfig, PathMatcher]);
     }
 
     async transition(path: string, context: any = null) {
