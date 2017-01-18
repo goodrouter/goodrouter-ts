@@ -60,7 +60,7 @@ export class PathMatcher {
 
 
 export class GoodRouter {
-    private routeStack = [];
+    private routeStack = [] as RouteConfig[];
     private routeMatchers = [] as [string, RouteConfig, PathMatcher][];
     private lastParams = {};
 
@@ -73,62 +73,82 @@ export class GoodRouter {
         const [nextRoute, nextParams] = this.findRoute(path);
 
         const nextRouteStack = [] as RouteConfig[];
-        const lastRouteStack = this.routeStack;
+        const prevRouteStack = this.routeStack;
 
         const prevParams = this.lastParams;
+
+        this.routeStack = nextRouteStack;
+        this.lastParams = nextParams;
 
         for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeConfigs[currentRoute.parent]) {
             nextRouteStack.unshift(currentRoute);
         }
 
-        await nextRouteStack.reduce(async (result, currentRoute) => {
-            const { isLeavingRoute: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
 
-        await nextRouteStack.reduce(async (result, currentRoute) => {
-            const { routeIsChanging: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
+        for (
+            let routeIndex = 0, routeCount = Math.max(prevRouteStack.length, nextRouteStack.length);
+            routeIndex < routeCount;
+            routeIndex++
+        ) {
+            const prevRoute = routeIndex < prevRouteStack.length && prevRouteStack[routeIndex];
+            const nextRoute = routeIndex < nextRouteStack.length && nextRouteStack[routeIndex];
 
-        await nextRouteStack.reduce(async (result, currentRoute) => {
-            const { isEnteringRoute: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
+            if (prevRoute && nextRoute && prevRoute === nextRoute) {
+                const { routeIsChanging: handler} = prevRoute;
+                if (handler) await handler({ prevParams, nextParams, context });
+            }
+            else {
+                if (prevRoute) {
+                    const { isLeavingRoute: handler} = prevRoute;
+                    if (handler) await handler({ prevParams, nextParams, context });
+                }
 
-
-        let result = await nextRouteStack.reduceRight(async (result, currentRoute) => {
-            const { render: handler} = currentRoute;
-            const child = await result;
-            if (handler) return await handler({ prevParams, nextParams, context, child });
-            else return child;
-        }, null);
-
-
-        await nextRouteStack.reduceRight(async (result, currentRoute) => {
-            const { hasEnteredRoute: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
-
-        await nextRouteStack.reduceRight(async (result, currentRoute) => {
-            const { routeHasChanged: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
-
-        await nextRouteStack.reduceRight(async (result, currentRoute) => {
-            const { hasLeftRoute: handler} = currentRoute;
-            await result;
-            if (handler) await handler({ prevParams, nextParams, context });
-        }, null);
+                if (nextRoute) {
+                    const { isEnteringRoute: handler} = nextRoute;
+                    if (handler) await handler({ prevParams, nextParams, context });
+                }
+            }
+        }
 
 
-        this.routeStack = nextRouteStack;
-        this.lastParams = nextParams;
+        let result = null;
+        for (
+            let routeIndex = nextRouteStack.length - 1;
+            routeIndex >= 0;
+            routeIndex--
+        ) {
+            const nextRoute = nextRouteStack[routeIndex];
+            const { render: handler} = nextRoute;
+            const child = result;
+            if (handler) result = await handler({ prevParams, nextParams, context, child });
+        }
+
+
+        for (
+            let routeIndex = Math.max(prevRouteStack.length, nextRouteStack.length) - 1;
+            routeIndex >= 0;
+            routeIndex--
+        ) {
+            const prevRoute = routeIndex < prevRouteStack.length && prevRouteStack[routeIndex];
+            const nextRoute = routeIndex < nextRouteStack.length && nextRouteStack[routeIndex];
+
+            if (prevRoute && nextRoute && prevRoute === nextRoute) {
+                const { routeHasChanged: handler} = prevRoute;
+                if (handler) await handler({ prevParams, nextParams, context });
+            }
+            else {
+                if (nextRoute) {
+                    const { hasEnteredRoute: handler} = nextRoute;
+                    if (handler) await handler({ prevParams, nextParams, context });
+                }
+
+                if (prevRoute) {
+                    const { hasLeftRoute: handler} = prevRoute;
+                    if (handler) await handler({ prevParams, nextParams, context });
+                }
+            }
+        }
+
 
         return result;
     }
