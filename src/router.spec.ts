@@ -18,7 +18,7 @@ test("path matcher", async t => {
 test("router path", async t => {
     const homeRoute = {
         path: "/",
-        perform: state => "home"
+        render: state => "home"
     } as RouteConfig;
 
     const routes = {
@@ -26,7 +26,7 @@ test("router path", async t => {
     };
     const r = new GoodRouter(routes);
 
-    const result = await r.route("/");
+    const result = await r.transition("/");
 
     t.equal(result, "home");
 });
@@ -35,7 +35,7 @@ test("router path", async t => {
 test("router pattern", async t => {
     const homeRoute = {
         path: "/home/:aap/noot",
-        perform: state => state
+        render: state => state
     } as RouteConfig;
 
     const routes = {
@@ -43,16 +43,48 @@ test("router pattern", async t => {
     };
     const r = new GoodRouter(routes);
 
-    t.deepEqual(await r.route("/home/123/noot"), {
+    t.deepEqual(await r.transition("/home/123/noot"), {
+        child: null,
         context: null,
         nextParams: { aap: "123" },
         prevParams: {},
     });
 
-    t.deepEqual(await r.route("/home/456/noot", { "ok": true }), {
+    t.deepEqual(await r.transition("/home/456/noot", { "ok": true }), {
+        child: null,
         context: { "ok": true },
         nextParams: { aap: "456" },
         prevParams: { aap: "123" },
     });
+});
+
+
+
+test("router child", async t => {
+    const rootRoute = {
+        path: "/",
+        render: state => ({ name: "root", child: state.child })
+    } as RouteConfig;
+
+    const homeRoute = {
+        parent: "rootRoute",
+        path: "/home",
+        render: state => ({ name: "home", child: state.child })
+    } as RouteConfig;
+
+    const routes = {
+        rootRoute,
+        homeRoute,
+    };
+    const r = new GoodRouter(routes);
+
+    t.deepEqual(await r.transition("/home"), {
+        name: "root",
+        child: {
+            name: "home",
+            child: null
+        }
+    });
+
 });
 

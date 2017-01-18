@@ -9,10 +9,13 @@ export interface RouteState {
 export interface RouteConfig {
     path: string;
     parent?: string;
-    onEnter?: (state: RouteState) => Promise<boolean> | boolean;
-    onChange?: (state: RouteState) => Promise<boolean> | boolean;
-    onLeave?: (state: RouteState) => Promise<boolean> | boolean;
-    perform: (state: RouteState) => any;
+    isEnteringRoute?: (state: RouteState) => Promise<boolean> | boolean;
+    hasEnteredRoute?: (state: RouteState) => Promise<boolean> | boolean;
+    render?: (state: RouteState) => Promise<any> | any;
+    routeIsChanging?: (state: RouteState) => Promise<boolean> | boolean;
+    routeHasChanged?: (state: RouteState) => Promise<boolean> | boolean;
+    isLeavingRoute?: (state: RouteState) => Promise<boolean> | boolean;
+    hasLeftRoute?: (state: RouteState) => Promise<boolean> | boolean;
 }
 
 
@@ -66,17 +69,81 @@ export class GoodRouter {
             map(([name, route]) => [name, route, new PathMatcher(route.path)] as [string, RouteConfig, PathMatcher]);
     }
 
-    async route(path: string, context: any = null) {
+    async transition(path: string, context: any = null) {
+        const [nextRoute, nextParams] = this.findRoute(path);
+
+        const nextRouteStack = [] as RouteConfig[];
+        const lastRouteStack = this.routeStack;
+
+        const prevParams = this.lastParams;
+
+        for (let currentRoute = nextRoute; currentRoute; currentRoute = this.routeConfigs[currentRoute.parent]) {
+            nextRouteStack.unshift(currentRoute);
+        }
+
+        await nextRouteStack.reduce(async (result, currentRoute) => {
+            const { isLeavingRoute: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+        await nextRouteStack.reduce(async (result, currentRoute) => {
+            const { routeIsChanging: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+        await nextRouteStack.reduce(async (result, currentRoute) => {
+            const { isEnteringRoute: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+
+        let result = await nextRouteStack.reduceRight(async (result, currentRoute) => {
+            const { render: handler} = currentRoute;
+            const child = await result;
+            if (handler) return await handler({ prevParams, nextParams, context, child });
+            else return child;
+        }, null);
+
+
+        await nextRouteStack.reduceRight(async (result, currentRoute) => {
+            const { hasEnteredRoute: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+        await nextRouteStack.reduceRight(async (result, currentRoute) => {
+            const { routeHasChanged: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+        await nextRouteStack.reduceRight(async (result, currentRoute) => {
+            const { hasLeftRoute: handler} = currentRoute;
+            await result;
+            if (handler) await handler({ prevParams, nextParams, context });
+        }, null);
+
+
+        this.routeStack = nextRouteStack;
+        this.lastParams = nextParams;
+
+        return result;
+    }
+
+
+    private findRoute(path: string): [RouteConfig, any] {
         for (let [name, route, routeMatcher] of this.routeMatchers) {
             const params = routeMatcher.match(path);
-            if (params) {
-                const prevParams = this.lastParams;
-                const nextParams = params;
-                this.lastParams = params;
-                return route.perform({ prevParams, nextParams, context });
-            }
+            if (params) return [route, params];
         }
     }
+
 }
+
+
+
 
 
