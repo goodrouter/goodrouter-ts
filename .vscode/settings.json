@@ -1,0 +1,11 @@
+{
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "search.exclude": {
+        ".*": true,
+        "*.log": true,
+        "node_modules/": true,
+        "coverage/": true,
+        "bin/": true
+    }
+}

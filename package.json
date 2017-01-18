@@ -1,0 +1,35 @@
+{
+  "name": "goodrouter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "lint": "tslint 'src/**.{ts,tsx}'",
+    "spec": "tape --require 'ts-node/register' './src/polyfill.ts'",
+    "spec-all": "npm run spec 'src/**/*.spec.{ts,tsx}'",
+    "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.{ts,tsx}' --exclude 'src/**/*.spec.{ts,tsx}' --extension '.ts' --extension '.tsx' npm run spec-all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/luvdasun/goodrouter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/luvdasun/goodrouter/issues"
+  },
+  "homepage": "https://gitlab.com/luvdasun/goodrouter#README",
+  "devDependencies": {
+    "@types/blue-tape": "^0.1.30",
+    "@types/core-js": "^0.9.35",
+    "blue-tape": "^1.0.0",
+    "core-js": "^2.4.1",
+    "nyc": "^10.0.0",
+    "state": "^0.2.0",
+    "ts-node": "^2.0.0",
+    "tslib": "^1.5.0",
+    "tslint": "^4.3.1",
+    "typescript": "^2.1.5"
+  }
+}

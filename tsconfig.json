@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "jsx": "react",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "outDir": "bin",
+    "rootDir": "src",
+    "noEmitHelpers": true,
+    "importHelpers": true
+  },
+  "compileOnSave": false,
+  "includeGlob": [
+    "src/**/*.{ts,tsx}"
+  ]
+}
