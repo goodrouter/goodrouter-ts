@@ -61,14 +61,14 @@ export class PathMatcher {
 
 
 export class GoodRouter {
-    private routeMatchers = [] as [string, RouteConfig, PathMatcher][];
+    private routeMatchers = [] as [RouteConfig, PathMatcher][];
     private readonly routeIndex = {} as { [name: string]: RouteConfig };
     private route = null as RouteConfig;
     private params = {};
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routeMatchers = routeList.map(route => [route.name, route, new PathMatcher(route.path)] as [string, RouteConfig, PathMatcher]);
+        this.routeMatchers = routeList.map(route => [route, new PathMatcher(route.path)] as [RouteConfig, PathMatcher]);
     }
 
     async transition(path: string, context: any = null) {
@@ -162,7 +162,7 @@ export class GoodRouter {
 
 
     private findRoute(path: string): [RouteConfig, any] {
-        for (let [name, route, routeMatcher] of this.routeMatchers) {
+        for (let [route, routeMatcher] of this.routeMatchers) {
             const params = routeMatcher.match(path);
             if (params) return [route, params];
         }
