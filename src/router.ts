@@ -11,12 +11,12 @@ export interface RouteConfig {
     path?: string;
     parent?: string;
     render?: (state: RouteState) => Promise<any> | any;
-    isEnteringRoute?: (state: RouteState) => Promise<boolean> | boolean;
-    hasEnteredRoute?: (state: RouteState) => Promise<boolean> | boolean;
-    routeIsChanging?: (state: RouteState) => Promise<boolean> | boolean;
-    routeHasChanged?: (state: RouteState) => Promise<boolean> | boolean;
-    isLeavingRoute?: (state: RouteState) => Promise<boolean> | boolean;
-    hasLeftRoute?: (state: RouteState) => Promise<boolean> | boolean;
+    isEnteringRoute?: (state: RouteState) => Promise<any> | any;
+    hasEnteredRoute?: (state: RouteState) => Promise<any> | any;
+    routeIsChanging?: (state: RouteState) => Promise<any> | any;
+    routeHasChanged?: (state: RouteState) => Promise<any> | any;
+    isLeavingRoute?: (state: RouteState) => Promise<any> | any;
+    hasLeftRoute?: (state: RouteState) => Promise<any> | any;
 }
 
 
