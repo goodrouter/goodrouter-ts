@@ -4,26 +4,26 @@ import { Router, RouteConfig, RouterPath } from "./router";
 
 
 test("path matcher", async t => {
-    let matcher = null as RouterPath;
+    let path = null as RouterPath;
 
-    matcher = new RouterPath("/aap/noot");
-    t.deepEqual(matcher.match("/aap/noot"), {});
-    t.deepEqual(matcher.match("/aap/noot/mies"), null);
+    path = new RouterPath("/aap/noot");
+    t.deepEqual(path.match("/aap/noot"), {});
+    t.deepEqual(path.match("/aap/noot/mies"), null);
 
-    matcher = new RouterPath("/:a/:b/:c");
-    t.deepEqual(matcher.match("/aap/noot"), null);
-    t.deepEqual(matcher.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
+    path = new RouterPath("/:a/:b/:c");
+    t.deepEqual(path.match("/aap/noot"), null);
+    t.deepEqual(path.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
 });
 
 
 test("path builder", async t => {
-    let matcher = null as RouterPath;
+    let path = null as RouterPath;
 
-    matcher = new RouterPath("/aap/noot");
-    t.deepEqual(matcher.build({}), "/aap/noot");
+    path = new RouterPath("/aap/noot");
+    t.deepEqual(path.build({}), "/aap/noot");
 
-    matcher = new RouterPath("/:a/:b/:c");
-    t.deepEqual(matcher.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
+    path = new RouterPath("/:a/:b/:c");
+    t.deepEqual(path.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
 });
 
 
