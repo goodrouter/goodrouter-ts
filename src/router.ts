@@ -20,7 +20,7 @@ export interface RouteConfig {
 }
 
 
-export class RouterPath {
+export class RoutePath {
     private parts = [] as string[];
     private params = [] as string[];
     private paramCount = 0;
@@ -74,14 +74,14 @@ export class RouterPath {
 
 
 export class Router {
-    private readonly routePathIndex = {} as { [name: string]: RouterPath };
+    private readonly routePathIndex = {} as { [name: string]: RoutePath };
     private readonly routeIndex = {} as { [name: string]: RouteConfig };
     private route = null as RouteConfig;
     private params = {};
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routePathIndex = routeList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RouterPath(route.path) }), {});
+        this.routePathIndex = routeList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
     }
 
     path(name: string, params: any) {
