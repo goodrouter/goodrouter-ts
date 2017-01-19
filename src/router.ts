@@ -74,14 +74,14 @@ export class RouterPath {
 
 
 export class Router {
-    private routeMatchers = [] as [RouteConfig, RouterPath][];
+    private routePaths = [] as [RouteConfig, RouterPath][];
     private readonly routeIndex = {} as { [name: string]: RouteConfig };
     private route = null as RouteConfig;
     private params = {};
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routeMatchers = routeList.filter(router => router.path).map(route => [route, new RouterPath(route.path)] as [RouteConfig, RouterPath]);
+        this.routePaths = routeList.filter(router => router.path).map(route => [route, new RouterPath(route.path)] as [RouteConfig, RouterPath]);
     }
 
     async transition(path: string, context: any = null) {
@@ -181,8 +181,8 @@ export class Router {
 
 
     private matchRoute(path: string): [RouteConfig, any] {
-        for (let [route, routeMatcher] of this.routeMatchers) {
-            const params = routeMatcher.match(path);
+        for (let [route, routePath] of this.routePaths) {
+            const params = routePath.match(path);
             if (params) return [route, params];
         }
     }
