@@ -1,34 +1,34 @@
 import * as test from "blue-tape";
 import { spy } from "sinon";
-import { GoodRouter, RouteConfig, PathMatcher } from "./router";
+import { Router, RouteConfig, RouterPath } from "./router";
 
 
 test("path matcher", async t => {
-    let matcher = null as PathMatcher;
+    let matcher = null as RouterPath;
 
-    matcher = new PathMatcher("/aap/noot");
+    matcher = new RouterPath("/aap/noot");
     t.deepEqual(matcher.match("/aap/noot"), {});
     t.deepEqual(matcher.match("/aap/noot/mies"), null);
 
-    matcher = new PathMatcher("/:a/:b/:c");
+    matcher = new RouterPath("/:a/:b/:c");
     t.deepEqual(matcher.match("/aap/noot"), null);
     t.deepEqual(matcher.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
 });
 
 
 test("path builder", async t => {
-    let matcher = null as PathMatcher;
+    let matcher = null as RouterPath;
 
-    matcher = new PathMatcher("/aap/noot");
+    matcher = new RouterPath("/aap/noot");
     t.deepEqual(matcher.build({}), "/aap/noot");
 
-    matcher = new PathMatcher("/:a/:b/:c");
+    matcher = new RouterPath("/:a/:b/:c");
     t.deepEqual(matcher.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
 });
 
 
 test("router path", async t => {
-    const r = new GoodRouter([{
+    const r = new Router([{
         name: "home",
         path: "/",
         render: state => "home"
@@ -41,7 +41,7 @@ test("router path", async t => {
 
 
 test("router pattern", async t => {
-    const r = new GoodRouter([{
+    const r = new Router([{
         name: "home",
         path: "/home/:aap/noot",
         render: state => state
@@ -78,7 +78,7 @@ test("router child", async t => {
         render: state => ({ name: "home", child: state.child })
     } as RouteConfig;
 
-    const r = new GoodRouter([rootRoute, homeRoute]);
+    const r = new Router([rootRoute, homeRoute]);
 
     t.deepEqual(await r.transition("/home"), {
         name: "root",
@@ -108,7 +108,7 @@ test("router child", async t => {
         render: state => ({ name: "home", child: state.child })
     } as RouteConfig;
 
-    const r = new GoodRouter([rootRoute, homeRoute]);
+    const r = new Router([rootRoute, homeRoute]);
 
     t.deepEqual(await r.transition("/home"), {
         name: "root",
@@ -164,7 +164,7 @@ test("router hooks", async t => {
         hasLeftRoute: hookSpy.bind(null, "child2-hasLeftRoute"),
     };
 
-    const r = new GoodRouter([rootRoute, childRoute1, childRoute2]);
+    const r = new Router([rootRoute, childRoute1, childRoute2]);
 
 
     hookSpy.reset();

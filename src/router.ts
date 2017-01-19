@@ -20,7 +20,7 @@ export interface RouteConfig {
 }
 
 
-export class PathMatcher {
+export class RouterPath {
     private parts = [] as string[];
     private params = [] as string[];
     private paramCount = 0;
@@ -73,15 +73,15 @@ export class PathMatcher {
 }
 
 
-export class GoodRouter {
-    private routeMatchers = [] as [RouteConfig, PathMatcher][];
+export class Router {
+    private routeMatchers = [] as [RouteConfig, RouterPath][];
     private readonly routeIndex = {} as { [name: string]: RouteConfig };
     private route = null as RouteConfig;
     private params = {};
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routeMatchers = routeList.filter(router => router.path).map(route => [route, new PathMatcher(route.path)] as [RouteConfig, PathMatcher]);
+        this.routeMatchers = routeList.filter(router => router.path).map(route => [route, new RouterPath(route.path)] as [RouteConfig, RouterPath]);
     }
 
     async transition(path: string, context: any = null) {
