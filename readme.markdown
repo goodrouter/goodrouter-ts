@@ -1,12 +1,13 @@
 # Good Router
+![status](https://travis-ci.org/LuvDaSun/goodrouter.svg?branch=master)
 
 A good router should:
- - work in a server or a client (or any other) environment
- - support named routes, and also construct routes from names and parameters
- - have async enter, leave and change hooks
- - have support for parent / child routes
- - not do the actual navigation!
- - be framework agnostic
+ - [x] work in a server or a client (or any other) environment
+ - [ ] support named routes, and also construct routes from names and parameters
+ - [x] have async enter, leave and change hooks
+ - [x] have support for parent / child routes
+ - [x] not do the actual navigation!
+ - [x] be framework agnostic
 
 
 ## Route lifecycle
