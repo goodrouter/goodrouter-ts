@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/luvdasun/goodrouter.git"
+    "url": "git@github.com:LuvDaSun/goodrouter.git"
   },
   "author": "Elmer Bulthuis",
   "license": "WTFPL",
   "bugs": {
-    "url": "https://gitlab.com/luvdasun/goodrouter/issues"
+    "url": "https://github.com/LuvDaSun/goodrouter/issues"
   },
-  "homepage": "https://gitlab.com/luvdasun/goodrouter#README",
+  "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
     "@types/blue-tape": "^0.1.30",
     "@types/core-js": "^0.9.35",
