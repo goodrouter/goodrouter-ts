@@ -37,6 +37,19 @@ export class PathMatcher {
         this.parts.push(path.substring(index));
     }
 
+
+    build(params: any) {
+        let str = this.parts[0];
+        for (let paramIndex = 0; paramIndex < this.paramCount; paramIndex++) {
+            const part = this.parts[paramIndex + 1];
+            const param = this.params[paramIndex];
+            if (!(param in params)) throw new Error(`missing param ${param}`);
+            str += params[param];
+            str += this.parts[paramIndex + 1];
+        }
+        return str;
+    }
+
     match(path: string) {
         if (!path.startsWith(this.parts[0])) return null;
         const pathRest = path.substring(this.parts[0].length);

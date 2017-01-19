@@ -16,6 +16,17 @@ test("path matcher", async t => {
 });
 
 
+test("path builder", async t => {
+    let matcher = null as PathMatcher;
+
+    matcher = new PathMatcher("/aap/noot");
+    t.deepEqual(matcher.build({}), "/aap/noot");
+
+    matcher = new PathMatcher("/:a/:b/:c");
+    t.deepEqual(matcher.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
+});
+
+
 test("router path", async t => {
     const r = new GoodRouter([{
         name: "home",
