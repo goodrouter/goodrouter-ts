@@ -3,7 +3,7 @@
 
 A good router should:
  - [x] work in a server or a client (or any other) environment
- - [ ] support named routes, and also construct routes from names and parameters
+ - [x] be able to contruct routes based on their name
  - [x] have async enter, leave and change hooks
  - [x] have support for parent / child routes
  - [x] not do the actual navigation!

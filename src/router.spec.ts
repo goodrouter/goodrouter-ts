@@ -20,10 +20,10 @@ test("path builder", async t => {
     let path = null as RouterPath;
 
     path = new RouterPath("/aap/noot");
-    t.deepEqual(path.build({}), "/aap/noot");
+    t.equal(path.build({}), "/aap/noot");
 
     path = new RouterPath("/:a/:b/:c");
-    t.deepEqual(path.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
+    t.equal(path.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
 });
 
 
@@ -62,6 +62,16 @@ test("router pattern", async t => {
     });
 });
 
+
+test("router match", async t => {
+    const r = new Router([{
+        name: "home",
+        path: "/home/:aap/noot",
+        render: state => state
+    }]);
+
+    t.equal(r.path("home", { aap: "123" }), "/home/123/noot");
+});
 
 
 test("router child", async t => {
