@@ -1,5 +1,5 @@
 # Good Router
-![status](https://travis-ci.org/LuvDaSun/goodrouter.svg?branch=master)
+[![Build Status](https://travis-ci.org/LuvDaSun/goodrouter.svg?branch=master)](https://travis-ci.org/LuvDaSun/goodrouter)
 
 A good router should:
  - [x] work in a server or a client (or any other) environment
