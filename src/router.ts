@@ -74,10 +74,10 @@ export class RoutePath {
 
 
 export class Router {
-    private readonly routePathIndex = {} as { [name: string]: RoutePath };
-    private readonly routeIndex = {} as { [name: string]: RouteConfig };
-    private route = null as RouteConfig;
-    private params = {};
+    private readonly routePathIndex: { [name: string]: RoutePath };
+    private readonly routeIndex: { [name: string]: RouteConfig };
+    private lastRoute = null as RouteConfig;
+    private lastParams = {};
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
@@ -92,7 +92,7 @@ export class Router {
     }
 
     async transition(path: string, context: any = null) {
-        const {params: prevParams, route: prevRoute} = this;
+        const {lastParams: prevParams, lastRoute: prevRoute} = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
 
         const nextRouteStack = [] as RouteConfig[];
@@ -180,8 +180,8 @@ export class Router {
         }
 
 
-        this.route = nextRoute;
-        this.params = nextParams;
+        this.lastRoute = nextRoute;
+        this.lastParams = nextParams;
 
         return result;
     }
