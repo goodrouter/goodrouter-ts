@@ -4,7 +4,7 @@
 A good router should:
  - [x] work in a server or a client (or any other) environment
  - [x] be able to contruct routes based on their name
- - [ ] should have a simple API!
+ - [x] should have a simple API!
  - [x] have support for parent / child routes
  - [x] not do the actual navigation!
  - [x] be framework agnostic
@@ -15,17 +15,7 @@ A good router should:
 Route lifecycle
 
 
-### isLeavingRoute
-
-parent → child
-
-
-### routeIsChanging
-
-parent → child
-
-
-### isEnteringRoute
+### setup
 
 parent → child
 
@@ -35,19 +25,6 @@ parent → child
 child → parent
 
 
-### hasEnteredRoute
+### teardown
 
 child → parent
-
-
-### routeHasChanged
-
-child → parent
-
-
-### hasLeftRoute
-
-child → parent
-
-
-
