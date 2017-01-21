@@ -15,6 +15,7 @@ export interface RouteConfig {
     name: string;
     path?: string;
     parent?: string;
+    children?: RouteConfig[];
     equal?: RouterHook<boolean>;
     render?: RouterHook<any>;
     setup?: RouterHook<RouteLocalState>;
@@ -29,8 +30,9 @@ export class Router {
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
 
     public constructor(routeList: RouteConfig[]) {
-        this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routePathIndex = routeList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
+        const flatRouteList = this.flattenRouteList(routeList);
+        this.routeIndex = flatRouteList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
+        this.routePathIndex = flatRouteList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
     }
 
     public path(name: string, params: any) {
@@ -157,6 +159,14 @@ export class Router {
         return [null, {}];
     }
 
+    private flattenRouteList(routeList: RouteConfig[]) {
+        return routeList.reduce((list, item) =>
+            item.children ? list.concat(this.flattenRouteList(item.children.map(child =>
+                ({ ...child, ...{ parent: item.name } })
+            ))) : list,
+            routeList,
+        );
+    }
 }
 
 
