@@ -4,9 +4,7 @@ export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
 
 export interface RouteState {
-    prevStack: string[];
     prevParams: RouteParams;
-    nextStack: string[];
     nextParams: RouteParams;
     context: any;
     child?: any;
@@ -49,9 +47,7 @@ export class Router {
         const prevRouteStack = this.buildRouteStack(prevRoute);
 
         const state = {
-            prevStack: prevRouteStack.map(r => r.name),
             prevParams,
-            nextStack: nextRouteStack.map(r => r.name),
             nextParams,
             context,
         } as RouteState;
