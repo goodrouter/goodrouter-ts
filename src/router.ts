@@ -55,8 +55,7 @@ export class Router {
         this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
         const result = this.applyRenderHandler(state, nextRouteStack);
 
-        this.lastRoute = nextRoute;
-        this.lastParams = nextParams;
+        Object.assign(this, { lastParams: prevParams, lastRoute: prevRoute });
 
         return result;
     }
