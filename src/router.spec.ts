@@ -50,14 +50,18 @@ test("router pattern", async t => {
     t.deepEqual(await r.transition("/home/123/noot"), {
         child: null,
         context: null,
+        nextStack: ["home"],
         nextParams: { aap: "123" },
+        prevStack: [],
         prevParams: {},
     });
 
     t.deepEqual(await r.transition("/home/456/noot", { "ok": true }), {
         child: null,
         context: { "ok": true },
+        nextStack: ["home"],
         nextParams: { aap: "456" },
+        prevStack: ["home"],
         prevParams: { aap: "123" },
     });
 });

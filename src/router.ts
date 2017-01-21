@@ -1,22 +1,29 @@
+
+
 export interface RouteState {
+    prevStack: string[];
     prevParams: any;
+    nextStack: string[];
     nextParams: any;
     context: any;
     child?: any;
 }
 
 
+export type RouterHook = (this: Router, state: RouteState) => Promise<any> | any;
+
+
 export interface RouteConfig {
     name: string;
     path?: string;
     parent?: string;
-    render?: (state: RouteState) => Promise<any> | any;
-    isEnteringRoute?: (state: RouteState) => Promise<any> | any;
-    hasEnteredRoute?: (state: RouteState) => Promise<any> | any;
-    routeIsChanging?: (state: RouteState) => Promise<any> | any;
-    routeHasChanged?: (state: RouteState) => Promise<any> | any;
-    isLeavingRoute?: (state: RouteState) => Promise<any> | any;
-    hasLeftRoute?: (state: RouteState) => Promise<any> | any;
+    render?: RouterHook;
+    isEnteringRoute?: RouterHook;
+    hasEnteredRoute?: RouterHook;
+    routeIsChanging?: RouterHook;
+    routeHasChanged?: RouterHook;
+    isLeavingRoute?: RouterHook;
+    hasLeftRoute?: RouterHook;
 }
 
 
@@ -78,10 +85,15 @@ export class Router {
     private readonly routeIndex: { [name: string]: RouteConfig };
     private lastRoute = null as RouteConfig;
     private lastParams = {};
+    private readonly transitionHookStack = [] as RouterHook[];
 
     constructor(routeList: RouteConfig[]) {
         this.routeIndex = routeList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
         this.routePathIndex = routeList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
+    }
+
+    registerTransitionHook(hook: RouterHook) {
+        this.transitionHookStack.push(hook);
     }
 
     path(name: string, params: any) {
@@ -113,6 +125,14 @@ export class Router {
             prevRouteStack.unshift(currentRoute);
         }
 
+        const state = { prevStack: prevRouteStack.map(r => r.name), prevParams, nextStack: nextRouteStack.map(r => r.name), nextParams, context } as RouteState;
+
+        const registerTransitionHook = (hook: RouterHook) => this.registerTransitionHook(hook);
+
+
+        for (let handler of this.transitionHookStack.splice(0)) {
+            if (handler) await handler.call(this, state);
+        }
 
 
         for (
@@ -125,17 +145,17 @@ export class Router {
 
             if (prevRoute && nextRoute && prevRoute === nextRoute) {
                 const { routeIsChanging: handler} = prevRoute;
-                if (handler) await handler({ prevParams, nextParams, context });
+                if (handler) await handler.call(this, state);
             }
             else {
                 if (prevRoute) {
                     const { isLeavingRoute: handler} = prevRoute;
-                    if (handler) await handler({ prevParams, nextParams, context });
+                    if (handler) await handler.call(this, state);
                 }
 
                 if (nextRoute) {
                     const { isEnteringRoute: handler} = nextRoute;
-                    if (handler) await handler({ prevParams, nextParams, context });
+                    if (handler) await handler.call(this, state);
                 }
             }
         }
@@ -150,7 +170,7 @@ export class Router {
             const nextRoute = nextRouteStack[routeIndex];
             const { render: handler} = nextRoute;
             const child = result;
-            if (handler) result = await handler({ prevParams, nextParams, context, child });
+            if (handler) result = await handler.call(this, { ...state, ...{ child } });
         }
 
 
@@ -164,17 +184,17 @@ export class Router {
 
             if (prevRoute && nextRoute && prevRoute === nextRoute) {
                 const { routeHasChanged: handler} = prevRoute;
-                if (handler) await handler({ prevParams, nextParams, context });
+                if (handler) await handler.call(this, state);
             }
             else {
                 if (nextRoute) {
                     const { hasEnteredRoute: handler} = nextRoute;
-                    if (handler) await handler({ prevParams, nextParams, context });
+                    if (handler) await handler.call(this, state);
                 }
 
                 if (prevRoute) {
                     const { hasLeftRoute: handler} = prevRoute;
-                    if (handler) await handler({ prevParams, nextParams, context });
+                    if (handler) await handler.call(this, state);
                 }
             }
         }
