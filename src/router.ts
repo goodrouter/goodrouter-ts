@@ -61,13 +61,13 @@ export class Router {
         const prevRouteStack = this.buildRouteStack(prevRoute);
 
         const state = { prevParams, nextParams, context } as RouteState;
-        const changedRouteOffset = await this.getChangedRouteOffset(prevRouteStack, nextRouteStack, state);
+        const changedRouteOffset = await this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
 
         this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
         this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
         const result = this.applyRenderHandler(state, nextRouteStack);
 
-        Object.assign(this, { lastParams: prevParams, lastRoute: prevRoute });
+        Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute });
 
         return result;
     }
@@ -125,7 +125,7 @@ export class Router {
         return result;
     }
 
-    private async getChangedRouteOffset(prevRouteStack: RouteConfig[], nextRouteStack: RouteConfig[], state: RouteState) {
+    private async getChangedRouteOffset(state: RouteState, prevRouteStack: RouteConfig[], nextRouteStack: RouteConfig[]) {
         for (
             let routeIndex = 0, routeCount = Math.min(prevRouteStack.length, nextRouteStack.length);
             routeIndex < routeCount;
