@@ -4,7 +4,7 @@ export class RoutePath {
     private readonly parts = [] as string[];
     private readonly params = [] as string[];
 
-    constructor(private readonly path: string) {
+    public constructor(private readonly path: string) {
         const re = /\:(\w+)/g;
         let index = 0;
         for (let match = re.exec(path); match; match = re.exec(path)) {
@@ -16,7 +16,7 @@ export class RoutePath {
     }
 
 
-    build(values: any) {
+    public build(values: any) {
         let str = this.parts[0];
         for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
             const part = this.parts[paramIndex + 1];
@@ -28,7 +28,7 @@ export class RoutePath {
         return str;
     }
 
-    match(path: string) {
+    public match(path: string) {
         if (!path.startsWith(this.parts[0])) return null;
         const pathRest = path.substring(this.parts[0].length);
 
@@ -49,7 +49,7 @@ export class RoutePath {
         return values;
     }
 
-    paramsEqual(params1: RouteParams, params2: RouteParams) {
+    public paramsEqual(params1: RouteParams, params2: RouteParams) {
         for (let param of this.params) {
             if (params1[param] === params2[param]) continue;
             return false;

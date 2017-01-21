@@ -82,169 +82,59 @@ test("router child", async t => {
 
 
 
-
-
-test("router child", async t => {
-    const rootRoute = {
-        name: "root",
-        path: "/",
-        render: state => ({ name: "root", child: state.child })
-    } as RouteConfig;
-
-    const homeRoute = {
-        name: "home",
-        parent: "root",
-        path: "/home",
-        render: state => ({ name: "home", child: state.child })
-    } as RouteConfig;
-
-    const r = new Router([rootRoute, homeRoute]);
-
-    t.deepEqual(await r.transition("/home"), {
-        name: "root",
-        child: {
-            name: "home",
-            child: null
-        }
-    });
-
-});
-
-
-
-
 test("router hooks", async t => {
     const hookSpy = spy();
 
     const rootRoute = {
         name: "root",
         path: "/",
-        render: state => ({ name: "root", child: state.child }),
-        isEnteringRoute: hookSpy.bind(null, "root-isEnteringRoute"),
-        hasEnteredRoute: hookSpy.bind(null, "root-hasEnteredRoute"),
-        routeIsChanging: hookSpy.bind(null, "root-routeIsChanging"),
-        routeHasChanged: hookSpy.bind(null, "root-routeHasChanged"),
-        isLeavingRoute: hookSpy.bind(null, "root-isLeavingRoute"),
-        hasLeftRoute: hookSpy.bind(null, "root-hasLeftRoute"),
+        setup: hookSpy.bind(null, "root-setup"),
+        teardown: hookSpy.bind(null, "root-teardown"),
+
     };
 
     const childRoute1 = {
         name: "child1",
         parent: "root",
         path: "/child1",
-        render: state => ({ name: "child1", child: state.child }),
-        isEnteringRoute: hookSpy.bind(null, "child1-isEnteringRoute"),
-        hasEnteredRoute: hookSpy.bind(null, "child1-hasEnteredRoute"),
-        routeIsChanging: hookSpy.bind(null, "child1-routeIsChanging"),
-        routeHasChanged: hookSpy.bind(null, "child1-routeHasChanged"),
-        isLeavingRoute: hookSpy.bind(null, "child1-isLeavingRoute"),
-        hasLeftRoute: hookSpy.bind(null, "child1-hasLeftRoute"),
+        setup: hookSpy.bind(null, "child1-setup"),
+        teardown: hookSpy.bind(null, "child1-teardown"),
     };
 
     const childRoute2 = {
         name: "child2",
         parent: "root",
         path: "/child2",
-        render: state => ({ name: "child2", child: state.child }),
-        isEnteringRoute: hookSpy.bind(null, "child2-isEnteringRoute"),
-        hasEnteredRoute: hookSpy.bind(null, "child2-hasEnteredRoute"),
-        routeIsChanging: hookSpy.bind(null, "child2-routeIsChanging"),
-        routeHasChanged: hookSpy.bind(null, "child2-routeHasChanged"),
-        isLeavingRoute: hookSpy.bind(null, "child2-isLeavingRoute"),
-        hasLeftRoute: hookSpy.bind(null, "child2-hasLeftRoute"),
+        setup: hookSpy.bind(null, "child2-setup"),
+        teardown: hookSpy.bind(null, "child2-teardown"),
     };
 
     const r = new Router([rootRoute, childRoute1, childRoute2]);
 
 
     hookSpy.reset();
-    t.deepEqual(await r.transition("/child1"), {
-        name: "root",
-        child: {
-            name: "child1",
-            child: null
-        }
-    });
+    await r.transition("/child1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
-        "root-isEnteringRoute",
-        "child1-isEnteringRoute",
-        "child1-hasEnteredRoute",
-        "root-hasEnteredRoute",
+        "root-setup",
+        "child1-setup",
     ]);
-
 
     hookSpy.reset();
-    t.deepEqual(await r.transition("/child2"), {
-        name: "root",
-        child: {
-            name: "child2",
-            child: null
-        }
-    });
+    await r.transition("/child2");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
-        "root-routeIsChanging",
-        "child1-isLeavingRoute",
-        "child2-isEnteringRoute",
-        "child2-hasEnteredRoute",
-        "child1-hasLeftRoute",
-        "root-routeHasChanged",
+        "child1-teardown",
+        "child2-setup",
     ]);
 
-});
-
-
-
-
-test("router transition hook", async t => {
-    const hookSpy = spy();
-
-    const r = new Router([{
-        name: "a",
-        path: "/a",
-        render(state) {
-            this.registerTransitionHook(hookSpy.bind(null, "a"));
-            return "a";
-        }
-    }, {
-        name: "b",
-        path: "/b",
-        render(state) {
-            this.registerTransitionHook(hookSpy.bind(null, "b"));
-            return "b";
-        }
-    }, {
-        name: "c",
-        path: "/c",
-        render(state) {
-            this.registerTransitionHook(hookSpy.bind(null, "c"));
-            return "c";
-        }
-    }]);
-
-    await r.transition("/a");
-    await r.transition("/b");
-    await r.transition("/c");
-    await r.transition("/a");
-    await r.transition("/c");
-    await r.transition("/b");
-
-    t.deepEqual(hookSpy.args.map(([arg]) => arg), [
-        "a",
-        "b",
-        "c",
-        "a",
-        "c",
-    ]);
-
-
+    hookSpy.reset();
     await r.transition(null);
-
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
-        "a",
-        "b",
-        "c",
-        "a",
-        "c",
-        "b",
+        "child2-teardown",
+        "root-teardown",
     ]);
+
 });
+
+
+
+
