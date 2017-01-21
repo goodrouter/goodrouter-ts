@@ -87,12 +87,10 @@ test("router hooks", async t => {
         setup: hookSpy.bind(null, "root-setup"),
         teardown: hookSpy.bind(null, "root-teardown"),
         children: [{
-            name: "child1",
             path: "/child1",
             setup: hookSpy.bind(null, "child1-setup"),
             teardown: hookSpy.bind(null, "child1-teardown"),
         }, {
-            name: "child2",
             path: "/child2",
             setup: hookSpy.bind(null, "child2-setup"),
             teardown: hookSpy.bind(null, "child2-teardown"),

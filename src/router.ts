@@ -12,7 +12,7 @@ export interface RouteState {
 }
 
 export interface RouteConfig {
-    name: string;
+    name?: string;
     path?: string;
     parent?: string;
     children?: RouteConfig[];
@@ -30,9 +30,9 @@ export class Router {
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
 
     public constructor(routeList: RouteConfig[]) {
-        const flatRouteList = this.flattenRouteList(routeList);
-        this.routeIndex = flatRouteList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routePathIndex = flatRouteList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
+        const normalizedRouteList = this.normalizeRouteList(routeList);
+        this.routeIndex = normalizedRouteList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
+        this.routePathIndex = normalizedRouteList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
     }
 
     public path(name: string, params: any) {
@@ -159,13 +159,18 @@ export class Router {
         return [null, {}];
     }
 
-    private flattenRouteList(routeList: RouteConfig[]) {
-        return routeList.reduce((list, item) =>
-            item.children ? list.concat(this.flattenRouteList(item.children.map(child =>
-                ({ ...child, ...{ parent: item.name } })
-            ))) : list,
-            routeList,
-        );
+    private normalizeRouteList(routeList: RouteConfig[]) {
+        return routeList.
+            map((item, index) => (item.name ? item : {
+                ...item,
+                ...{ name: item.parent ? `${item.parent}-r${index + 1}` : `r${index + 1}` },
+            })).
+            reduce((list, item) => list.concat(item).concat(
+                item.children ? this.normalizeRouteList(item.children.map(child =>
+                    ({ ...child, ...{ parent: item.name } })
+                )) : []),
+            []
+            );
     }
 }
 
