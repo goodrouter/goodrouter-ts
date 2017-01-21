@@ -22,6 +22,9 @@ export interface RouteConfig {
     teardown?: RouterHook<void>;
 }
 
+/**
+ * GoodRouter Router class
+ */
 export class Router {
     private readonly routePathIndex: { [name: string]: RoutePath };
     private readonly routeIndex: { [name: string]: RouteConfig };
@@ -29,12 +32,18 @@ export class Router {
     private lastParams = {};
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
 
+    /**
+     * Include a list of RouteConfig's when constructing this Router
+     */
     public constructor(routeList: RouteConfig[]) {
         const normalizedRouteList = this.normalizeRouteList(routeList);
         this.routeIndex = normalizedRouteList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
         this.routePathIndex = normalizedRouteList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
     }
 
+    /**
+     * Construct a path that points to a route based on it's name
+     */
     public path(name: string, params: any) {
         const routePath = this.routePathIndex[name];
         if (!routePath) throw new Error(`route ${name} not found`);
@@ -42,6 +51,9 @@ export class Router {
         return path;
     }
 
+    /**
+     * Transition into a new state! (AKA perform the routing)
+     */
     public async transition(path: string, context: any = null) {
         const {lastParams: prevParams, lastRoute: prevRoute} = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
