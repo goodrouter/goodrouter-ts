@@ -48,12 +48,7 @@ export class Router {
         const nextRouteStack = this.buildRouteStack(nextRoute);
         const prevRouteStack = this.buildRouteStack(prevRoute);
 
-        const state = {
-            prevParams,
-            nextParams,
-            context,
-        } as RouteState;
-
+        const state = { prevParams, nextParams, context } as RouteState;
         const changedRouteOffset = await this.getChangedRouteOffset(prevRouteStack, nextRouteStack, state);
 
         this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
