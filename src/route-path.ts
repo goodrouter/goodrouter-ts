@@ -1,7 +1,6 @@
 export class RoutePath {
     private parts = [] as string[];
-    private params = [] as string[];
-    private paramCount = 0;
+    public readonly params = [] as string[];
 
     constructor(private readonly path: string) {
         const re = /\:(\w+)/g;
@@ -10,19 +9,18 @@ export class RoutePath {
             this.parts.push(path.substring(index, match.index));
             this.params.push(match[1]);
             index = match.index + match[0].length;
-            this.paramCount++;
         }
         this.parts.push(path.substring(index));
     }
 
 
-    build(params: any) {
+    build(values: any) {
         let str = this.parts[0];
-        for (let paramIndex = 0; paramIndex < this.paramCount; paramIndex++) {
+        for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
             const part = this.parts[paramIndex + 1];
             const param = this.params[paramIndex];
-            if (!(param in params)) throw new Error(`missing param ${param}`);
-            str += params[param];
+            if (!(param in values)) throw new Error(`missing param ${param}`);
+            str += values[param];
             str += this.parts[paramIndex + 1];
         }
         return str;
@@ -35,7 +33,7 @@ export class RoutePath {
         let values = {};
         let index = 0;
         let lastIndex = 0;
-        for (let paramIndex = 0; paramIndex < this.paramCount; paramIndex++) {
+        for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
             const part = this.parts[paramIndex + 1];
             index = part === "" ? pathRest.length : pathRest.indexOf(part, index);
             if (index < 0) return null;
@@ -48,6 +46,7 @@ export class RoutePath {
         if (index < pathRest.length) return null;
         return values;
     }
+
 }
 
 
