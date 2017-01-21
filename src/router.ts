@@ -56,14 +56,23 @@ export class Router {
 
         const changedRouteOffset = await this.getChangedRouteOffset(prevRouteStack, nextRouteStack, state);
 
-        let result = null;
+        this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
+        this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
+        const result = this.applyRenderHandler(state, nextRouteStack);
 
+        this.lastRoute = nextRoute;
+        this.lastParams = nextParams;
+
+        return result;
+    }
+
+    private async applyTeardownHandler(state: RouteState, routeStack: RouteConfig[], changedRouteOffset: number) {
         for (
-            let routeIndex = prevRouteStack.length - 1;
+            let routeIndex = routeStack.length - 1;
             routeIndex >= changedRouteOffset;
             routeIndex--
         ) {
-            const route = prevRouteStack[routeIndex];
+            const route = routeStack[routeIndex];
             const {teardown} = route;
             if (teardown) {
                 const local = this.routeStateIndex[route.name];
@@ -71,13 +80,15 @@ export class Router {
             }
             delete this.routeStateIndex[route.name];
         }
+    }
 
+    private async applySetupHandler(state: RouteState, routeStack: RouteConfig[], changedRouteOffset: number) {
         for (
-            let routeIndex = changedRouteOffset, routeCount = nextRouteStack.length;
+            let routeIndex = changedRouteOffset, routeCount = routeStack.length;
             routeIndex < routeCount;
             routeIndex++
         ) {
-            const route = nextRouteStack[routeIndex];
+            const route = routeStack[routeIndex];
             const {setup} = route;
             let local = route.parent ? this.routeStateIndex[route.parent] : {};
             if (setup) {
@@ -88,21 +99,22 @@ export class Router {
             }
             this.routeStateIndex[route.name] = local;
         }
+    }
+
+    private async applyRenderHandler(state: RouteState, routeStack: RouteConfig[]) {
+        let result = null;
 
         for (
-            let routeIndex = nextRouteStack.length - 1;
+            let routeIndex = routeStack.length - 1;
             routeIndex >= 0;
             routeIndex--
         ) {
-            const route = nextRouteStack[routeIndex];
+            const route = routeStack[routeIndex];
             const { render} = route;
             const child = result;
             const local = this.routeStateIndex[route.name];
             if (render) result = await render.call(this, { ...state, ...{ child, local } });
         }
-
-        this.lastRoute = nextRoute;
-        this.lastParams = nextParams;
 
         return result;
     }
