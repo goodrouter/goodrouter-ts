@@ -1,6 +1,8 @@
+export type RouteParams = { [name: string]: string };
+
 export class RoutePath {
-    private parts = [] as string[];
-    public readonly params = [] as string[];
+    private readonly parts = [] as string[];
+    private readonly params = [] as string[];
 
     constructor(private readonly path: string) {
         const re = /\:(\w+)/g;
@@ -47,6 +49,13 @@ export class RoutePath {
         return values;
     }
 
+    paramsEqual(params1: RouteParams, params2: RouteParams) {
+        for (let param of this.params) {
+            if (params1[param] === params2[param]) continue;
+            return false;
+        }
+        return true;
+    }
 }
 
 
