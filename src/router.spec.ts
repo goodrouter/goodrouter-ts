@@ -1,31 +1,6 @@
 import * as test from "blue-tape";
 import { spy } from "sinon";
-import { Router, RouteConfig, RoutePath } from "./router";
-
-
-test("path matcher", async t => {
-    let path = null as RoutePath;
-
-    path = new RoutePath("/aap/noot");
-    t.deepEqual(path.match("/aap/noot"), {});
-    t.deepEqual(path.match("/aap/noot/mies"), null);
-
-    path = new RoutePath("/:a/:b/:c");
-    t.deepEqual(path.match("/aap/noot"), null);
-    t.deepEqual(path.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
-});
-
-
-test("path builder", async t => {
-    let path = null as RoutePath;
-
-    path = new RoutePath("/aap/noot");
-    t.equal(path.build({}), "/aap/noot");
-
-    path = new RoutePath("/:a/:b/:c");
-    t.equal(path.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
-});
-
+import { Router, RouteConfig } from "./router";
 
 test("router path", async t => {
     const r = new Router([{
@@ -218,3 +193,57 @@ test("router hooks", async t => {
 
 
 
+
+test("router transition hook", async t => {
+    const hookSpy = spy();
+
+    const r = new Router([{
+        name: "a",
+        path: "/a",
+        render(state) {
+            this.registerTransitionHook(hookSpy.bind(null, "a"));
+            return "a";
+        }
+    }, {
+        name: "b",
+        path: "/b",
+        render(state) {
+            this.registerTransitionHook(hookSpy.bind(null, "b"));
+            return "b";
+        }
+    }, {
+        name: "c",
+        path: "/c",
+        render(state) {
+            this.registerTransitionHook(hookSpy.bind(null, "c"));
+            return "c";
+        }
+    }]);
+
+    await r.transition("/a");
+    await r.transition("/b");
+    await r.transition("/c");
+    await r.transition("/a");
+    await r.transition("/c");
+    await r.transition("/b");
+
+    t.deepEqual(hookSpy.args.map(([arg]) => arg), [
+        "a",
+        "b",
+        "c",
+        "a",
+        "c",
+    ]);
+
+
+    await r.transition(null);
+
+    t.deepEqual(hookSpy.args.map(([arg]) => arg), [
+        "a",
+        "b",
+        "c",
+        "a",
+        "c",
+        "b",
+    ]);
+});
