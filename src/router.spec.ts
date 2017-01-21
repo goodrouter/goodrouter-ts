@@ -26,9 +26,7 @@ test("router pattern", async t => {
         child: null,
         context: null,
         local: {},
-        nextStack: ["home"],
         nextParams: { aap: "123" },
-        prevStack: [],
         prevParams: {},
     });
 
@@ -36,9 +34,7 @@ test("router pattern", async t => {
         child: null,
         context: { "ok": true },
         local: {},
-        nextStack: ["home"],
         nextParams: { aap: "456" },
-        prevStack: ["home"],
         prevParams: { aap: "123" },
     });
 });
