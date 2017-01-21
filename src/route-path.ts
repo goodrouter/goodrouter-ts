@@ -1,10 +1,16 @@
 export type RouteParams = { [name: string]: string };
 
+/**
+ * Helper class for constructing and destructing paths
+ */
 export class RoutePath {
     private readonly parts = [] as string[];
     private readonly params = [] as string[];
 
-    public constructor(private readonly path: string) {
+    /**
+     * Create a new RoutePath based on the path supplied
+     */
+    public constructor(path: string) {
         const re = /\:(\w+)/g;
         let index = 0;
         for (let match = re.exec(path); match; match = re.exec(path)) {
@@ -15,7 +21,9 @@ export class RoutePath {
         this.parts.push(path.substring(index));
     }
 
-
+    /**
+     * Build a path with the supplied values
+     */
     public build(values: any) {
         let str = this.parts[0];
         for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
@@ -28,6 +36,9 @@ export class RoutePath {
         return str;
     }
 
+    /**
+     * Match the given path to this path and return the parsed parameters, or null if there is no match.
+     */
     public match(path: string) {
         if (!path.startsWith(this.parts[0])) return null;
         const pathRest = path.substring(this.parts[0].length);
@@ -49,6 +60,9 @@ export class RoutePath {
         return values;
     }
 
+    /**
+     * see if the parameters, defined in this path, of two states are equal
+     */
     public paramsEqual(params1: RouteParams, params2: RouteParams) {
         for (let param of this.params) {
             if (params1[param] === params2[param]) continue;
