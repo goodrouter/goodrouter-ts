@@ -25,6 +25,7 @@ test("router pattern", async t => {
     t.deepEqual(await r.transition("/home/123/noot"), {
         child: null,
         context: null,
+        local: {},
         nextStack: ["home"],
         nextParams: { aap: "123" },
         prevStack: [],
@@ -34,13 +35,13 @@ test("router pattern", async t => {
     t.deepEqual(await r.transition("/home/456/noot", { "ok": true }), {
         child: null,
         context: { "ok": true },
+        local: {},
         nextStack: ["home"],
         nextParams: { aap: "456" },
         prevStack: ["home"],
         prevParams: { aap: "123" },
     });
 });
-
 
 test("router match", async t => {
     const r = new Router([{

@@ -117,7 +117,7 @@ export class Router {
 
         const callStateHook = async (route: RouteConfig, hookName: string) => {
             const handler = route[hookName] as RouterHook<RouteLocalState>;
-            let local = this.routeStateIndex[route.name];
+            let local = this.routeStateIndex[route.name] || {};
             if (handler) {
                 local = {
                     ...local,
@@ -130,9 +130,9 @@ export class Router {
 
         let result = null;
         const callRender = async (route: RouteConfig) => {
-            const { render} = nextRoute;
+            const { render} = route;
             const child = result;
-            const local = this.routeStateIndex[route.name];
+            const local = this.routeStateIndex[route.name] || {};
             if (render) result = await render.call(this, { ...state, ...{ child, local } });
         };
 
