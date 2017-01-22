@@ -186,10 +186,11 @@ export class Router {
 
     private normalizeRouteList(routeList: RouteConfig[]) {
         return routeList.
-            map((item, index) => (item.name ? item : {
+            map((item, index) => item.name ? item : {
                 ...item,
                 ...{ name: item.parent ? `${item.parent}-r${index + 1}` : `r${index + 1}` },
-            })).
+            }).
+            map(item => item.params ? item : { ...item.params, ...{ params: [] } }).
             reduce((list, item) => [
                 ...list,
                 item,
