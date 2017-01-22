@@ -190,7 +190,7 @@ export class Router {
                 ...item,
                 ...{ name: item.parent ? `${item.parent}-r${index + 1}` : `r${index + 1}` },
             }).
-            map(item => item.params ? item : { ...item.params, ...{ params: [] } }).
+            map(item => item.params ? item : { ...item, ...{ params: [] } }).
             reduce((list, item) => [
                 ...list,
                 item,
