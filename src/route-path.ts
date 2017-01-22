@@ -5,7 +5,7 @@ export type RouteParams = { [name: string]: string };
  */
 export class RoutePath {
     private readonly parts = [] as string[];
-    private readonly params = [] as string[];
+    public readonly params = [] as string[];
 
     /**
      * Create a new RoutePath based on the path supplied
@@ -60,16 +60,6 @@ export class RoutePath {
         return values;
     }
 
-    /**
-     * see if the parameters, defined in this path, of two states are equal
-     */
-    public paramsEqual(params1: RouteParams, params2: RouteParams) {
-        for (let param of this.params) {
-            if (params1[param] === params2[param]) continue;
-            return false;
-        }
-        return true;
-    }
 }
 
 

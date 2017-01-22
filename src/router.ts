@@ -1,4 +1,4 @@
-import { RoutePath, RouteParams } from ".";
+import { RoutePath, RouteParams, uniqueReducer } from ".";
 
 export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
@@ -16,7 +16,7 @@ export interface RouteConfig {
     path?: string;
     parent?: string;
     children?: RouteConfig[];
-    equal?: RouterHook<boolean>;
+    params?: string[];
     render?: RouterHook<any>;
     setup?: RouterHook<RouteLocalState>;
     teardown?: RouterHook<void>;
@@ -28,8 +28,9 @@ export interface RouteConfig {
 export class Router {
     private readonly routePathIndex: { [name: string]: RoutePath };
     private readonly routeIndex: { [name: string]: RouteConfig };
+    private readonly routeNameList: string[];
     private lastRoute = null as RouteConfig;
-    private lastParams = {};
+    private lastParams = {} as RouteParams;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
 
     /**
@@ -37,14 +38,25 @@ export class Router {
      */
     public constructor(routeList: RouteConfig[]) {
         const normalizedRouteList = this.normalizeRouteList(routeList);
-        this.routeIndex = normalizedRouteList.reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
-        this.routePathIndex = normalizedRouteList.filter(router => router.path).reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
+        this.routeNameList = normalizedRouteList.
+            map(route => route.name);
+        this.routePathIndex = normalizedRouteList.
+            filter(router => router.path).
+            reduce((index, route) => Object.assign(index, { [route.name]: new RoutePath(route.path) }), {});
+        this.routeIndex = normalizedRouteList.
+            map(route => {
+                if (!(route.name in this.routePathIndex)) return route;
+                const routePath = this.routePathIndex[route.name];
+                if (!route.params) return { ...route, ...{ params: routePath.params } };
+                return { ...route, ...{ params: [...route.params, ...routePath.params].reduce(uniqueReducer<string>(i => i), []) } };
+            }).
+            reduce((index, route) => Object.assign(index, { [route.name]: route }), {});
     }
 
     /**
      * Construct a path that points to a route based on it's name
      */
-    public path(name: string, params: any) {
+    public path(name: string, params: RouteParams) {
         const routePath = this.routePathIndex[name];
         if (!routePath) throw new Error(`route ${name} not found`);
         const path = routePath.build(params);
@@ -136,16 +148,8 @@ export class Router {
             let areEqual = false;
 
             if (prevRoute && nextRoute && prevRoute === nextRoute) {
-                const {equal} = prevRoute;
-                if (equal) {
-                    areEqual = await !equal.call(this, state);
-                }
-                else {
-                    const routePath = this.routePathIndex[prevRoute.name];
-                    areEqual = routePath.paramsEqual(state.nextParams, state.prevParams);
-                }
+                areEqual = this.paramsEqual(nextRoute.params, state.nextParams, state.prevParams);
             }
-
             if (!areEqual) return routeIndex;
         }
 
@@ -166,12 +170,15 @@ export class Router {
 
     private matchRoute(path: string): [RouteConfig, any] {
         if (path !== null) {
-            for (let [name, routePath] of Object.entries(this.routePathIndex)) {
+            for (let name of this.routeNameList) {
+                if (!(name in this.routePathIndex)) continue;
+
+                const routePath = this.routePathIndex[name];
                 const params = routePath.match(path);
-                if (params) {
-                    const route = this.routeIndex[name];
-                    return [route, params];
-                }
+                if (!params) continue;
+
+                const route = this.routeIndex[name];
+                return [route, params];
             }
         }
         return [null, {}];
@@ -183,13 +190,26 @@ export class Router {
                 ...item,
                 ...{ name: item.parent ? `${item.parent}-r${index + 1}` : `r${index + 1}` },
             })).
-            reduce((list, item) => list.concat(item).concat(
-                item.children ? this.normalizeRouteList(item.children.map(child =>
+            reduce((list, item) => [
+                ...list,
+                item,
+                ...(item.children ? this.normalizeRouteList(item.children.map(child =>
                     ({ ...child, ...{ parent: item.name } })
                 )) : []),
-            []
-            );
+            ], []);
     }
+
+    /**
+     * see if the parameters, defined in this path, of two states are equal
+     */
+    public paramsEqual(params: string[], values1: RouteParams, values2: RouteParams) {
+        for (let param of params) {
+            if (values1[param] === values2[param]) continue;
+            return false;
+        }
+        return true;
+    }
+
 }
 
 

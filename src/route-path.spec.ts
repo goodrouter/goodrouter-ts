@@ -28,16 +28,16 @@ test("path builder", async t => {
 
 
 
-test("params equal", async t => {
-    let path = null as RoutePath;
+// test("params equal", async t => {
+//     let path = null as RoutePath;
 
-    path = new RoutePath("/:a/:b/:c");
+//     path = new RoutePath("/:a/:b/:c");
 
-    t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "1" }), true);
-    t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "1", d: "1" }), true);
+//     t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "1" }), true);
+//     t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "1", d: "1" }), true);
 
-    t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "2" }), false);
-    t.equal(path.paramsEqual({ a: "1", b: "1", }, { a: "1", b: "1", c: "2" }), false);
-});
+//     t.equal(path.paramsEqual({ a: "1", b: "1", c: "1" }, { a: "1", b: "1", c: "2" }), false);
+//     t.equal(path.paramsEqual({ a: "1", b: "1", }, { a: "1", b: "1", c: "2" }), false);
+// });
 
 
