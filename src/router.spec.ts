@@ -84,14 +84,15 @@ test("router hooks", async t => {
     const rootRoute = {
         name: "root",
         path: "/",
+        params: ["id"],
         setup: hookSpy.bind(null, "root-setup"),
         teardown: hookSpy.bind(null, "root-teardown"),
         children: [{
-            path: "/child1",
+            path: "/child1/:id",
             setup: hookSpy.bind(null, "child1-setup"),
             teardown: hookSpy.bind(null, "child1-teardown"),
         }, {
-            path: "/child2",
+            path: "/child2/:id",
             setup: hookSpy.bind(null, "child2-setup"),
             teardown: hookSpy.bind(null, "child2-teardown"),
         }]
@@ -101,16 +102,25 @@ test("router hooks", async t => {
 
 
     hookSpy.reset();
-    await r.transition("/child1");
+    await r.transition("/child1/1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "root-setup",
         "child1-setup",
     ]);
 
     hookSpy.reset();
-    await r.transition("/child2");
+    await r.transition("/child2/1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child1-teardown",
+        "child2-setup",
+    ]);
+
+    hookSpy.reset();
+    await r.transition("/child2/2");
+    t.deepEqual(hookSpy.args.map(([arg]) => arg), [
+        "child2-teardown",
+        "root-teardown",
+        "root-setup",
         "child2-setup",
     ]);
 
@@ -122,7 +132,6 @@ test("router hooks", async t => {
     ]);
 
 });
-
 
 
 

@@ -75,9 +75,9 @@ export class Router {
         const state = { prevParams, nextParams, context } as RouteState;
         const changedRouteOffset = await this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
 
-        this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
-        this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
-        const result = this.applyRenderHandler(state, nextRouteStack);
+        await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
+        await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
+        const result = await this.applyRenderHandler(state, nextRouteStack);
 
         Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute });
 
