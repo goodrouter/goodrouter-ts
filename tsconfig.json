@@ -9,7 +9,11 @@
     "outDir": "bin",
     "rootDir": "src",
     "noEmitHelpers": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "lib": [
+      "dom",
+      "es2015"
+    ]
   },
   "compileOnSave": false,
   "files": [
