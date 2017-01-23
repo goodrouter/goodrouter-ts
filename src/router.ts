@@ -35,6 +35,7 @@ export class Router {
 
     /**
      * Include a list of RouteConfig's when constructing this Router
+     * @param routeList A list of routes!
      */
     public constructor(routeList: RouteConfig[]) {
         const normalizedRouteList = this.normalizeRouteList(routeList);
