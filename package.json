@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm run lint & npm run spec-all",
     "compile": "tsc",
-    "docs": "typedoc --out docs --ignoreCompilerErrors --excludePrivate --excludeExternals",
+    "docs": "typedoc --ignoreCompilerErrors --excludePrivate --excludeExternals --readme none --out docs --name 'Good Router'",
     "lint": "tslint 'src/**.{ts,tsx}'",
     "spec": "tape --require 'ts-node/register' './src/polyfill.ts'",
     "spec-all": "npm run spec 'src/**/*.spec.{ts,tsx}'",
