@@ -135,3 +135,32 @@ test("router hooks", async t => {
 
 
 
+
+test("router queue", async t => {
+    const argStack = [];
+    const route = {
+        path: "/:arg",
+        async render(state) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const {arg} = state.nextParams;
+            argStack.push(arg);
+            return arg;
+        },
+    } as RouteConfig;
+
+    const r = new Router([route]);
+
+    t.deepEqual(argStack, []);
+    t.deepEqual(await r.transition("/aap"), "aap");
+    t.deepEqual(argStack, ["aap"]);
+
+    r.transition("/noot");
+    r.transition("/mies");
+    t.deepEqual(argStack, ["aap"]);
+
+    await r.wait;
+    t.deepEqual(argStack, ["aap", "noot", "mies"]);
+});
+
+
+

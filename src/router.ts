@@ -1,4 +1,4 @@
-import { RoutePath, RouteParams, uniqueReducer } from ".";
+import { RoutePath, RouteParams, uniqueReducer, TaskQueue } from ".";
 
 export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
@@ -32,6 +32,9 @@ export class Router {
     private lastRoute = null as RouteConfig;
     private lastParams = {} as RouteParams;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
+    private queue = new TaskQueue();
+
+    public get wait() { return this.queue.wait; }
 
     /**
      * Include a list of RouteConfig's when constructing this Router
