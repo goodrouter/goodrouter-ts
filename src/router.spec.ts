@@ -155,10 +155,9 @@ test("router queue", async t => {
     t.deepEqual(argStack, ["aap"]);
 
     r.transition("/noot");
-    r.transition("/mies");
     t.deepEqual(argStack, ["aap"]);
 
-    await r.wait;
+    await r.transition("/mies");
     t.deepEqual(argStack, ["aap", "noot", "mies"]);
 });
 

@@ -32,9 +32,7 @@ export class Router {
     private lastRoute = null as RouteConfig;
     private lastParams = {} as RouteParams;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
-    private queue = new TaskQueue();
-
-    public get wait() { return this.queue.result; }
+    private readonly queue = new TaskQueue();
 
     /**
      * Include a list of RouteConfig's when constructing this Router
@@ -71,7 +69,7 @@ export class Router {
      * Transition into a new state! (AKA perform the routing)
      */
     public async transition(path: string, context: any = null) {
-        this.queue.enqueue(async () => {
+        return await this.queue.execute(async () => {
             const {lastParams: prevParams, lastRoute: prevRoute} = this;
             const [nextRoute, nextParams] = this.matchRoute(path);
             const nextRouteStack = this.buildRouteStack(nextRoute);
@@ -88,8 +86,6 @@ export class Router {
 
             return result;
         });
-        this.queue.flush();
-        return await this.queue.result;
     }
 
     private async applyTeardownHandler(state: RouteState, routeStack: RouteConfig[], changedRouteOffset: number) {
