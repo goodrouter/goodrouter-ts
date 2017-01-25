@@ -2,7 +2,7 @@ import * as test from "blue-tape";
 import { TaskQueue } from "./task";
 
 test("task queue", async t => {
-    const q = new TaskQueue();
+    const q = new TaskQueue<any>();
     let v = 0;
 
     q.enqueue(() => { v = 1; });
@@ -18,6 +18,6 @@ test("task queue", async t => {
     await q.flush();
     t.equal(v, 3);
 
-    return q.wait;
+    return q.result;
 });
 
