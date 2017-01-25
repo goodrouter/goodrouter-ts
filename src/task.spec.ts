@@ -3,12 +3,17 @@ import { TaskQueue } from "./task";
 
 test("task queue", async t => {
     const q = new TaskQueue();
-    let v = 0;
+    const s = [];
 
-    q.execute(() => { v = 1; });
-    t.equal(v, 0);
+    q.execute(() => s.push(1));
+    t.deepEqual(s, []);
 
-    await q.execute(() => { v = 2; });
-    t.equal(v, 2);
+    q.execute(() => new Promise(resolve => setTimeout(() => {
+        s.push(2);
+        resolve();
+    }, 100)));
+    t.deepEqual(s, []);
+
+    await q.execute(() => s.push(3));
+    t.deepEqual(s, [1, 2, 3]);
 });
-

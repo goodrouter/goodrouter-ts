@@ -5,14 +5,11 @@ export class TaskQueue {
 
     public async execute<T>(task: Task<T>): Promise<T> {
         const {lastResult} = this;
-        await lastResult;
-        const result = Promise.resolve(task());
+        const result = lastResult.then(task);
         this.lastResult = result;
         return await result;
     }
 
 }
-
-
 
 
