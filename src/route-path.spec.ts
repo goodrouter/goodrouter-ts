@@ -1,9 +1,9 @@
-import * as test from "blue-tape";
+import * as test from "tape";
 import { spy } from "sinon";
 import { RoutePath } from "./route-path";
 
 
-test("path matcher", async t => {
+test("path matcher", t => {
     let path = null as RoutePath;
 
     path = new RoutePath("/aap/noot");
@@ -13,10 +13,12 @@ test("path matcher", async t => {
     path = new RoutePath("/:a/:b/:c");
     t.deepEqual(path.match("/aap/noot"), null);
     t.deepEqual(path.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
+
+    t.end();
 });
 
 
-test("path builder", async t => {
+test("path builder", t => {
     let path = null as RoutePath;
 
     path = new RoutePath("/aap/noot");
@@ -24,6 +26,8 @@ test("path builder", async t => {
 
     path = new RoutePath("/:a/:b/:c");
     t.equal(path.build({ a: "aap", b: "noot", c: "mies" }), "/aap/noot/mies");
+
+    t.end();
 });
 
 
