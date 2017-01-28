@@ -2,7 +2,6 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "jsx": "react",
     "noImplicitAny": false,
     "sourceMap": true,
     "declaration": true,
@@ -10,6 +9,7 @@
     "rootDir": "src",
     "noEmitHelpers": true,
     "importHelpers": true,
+    "experimentalDecorators": true,
     "lib": [
       "dom",
       "es2015"

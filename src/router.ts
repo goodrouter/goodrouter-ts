@@ -1,4 +1,5 @@
-import { RoutePath, RouteParams, uniqueReducer, TaskQueue } from ".";
+import { RoutePath, RouteParams, uniqueReducer } from ".";
+import { synchronize } from "synchronize-async";
 
 export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
@@ -32,7 +33,6 @@ export class Router {
     private lastRoute = null as RouteConfig;
     private lastParams = {} as RouteParams;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
-    private readonly queue = new TaskQueue();
 
     /**
      * Include a list of RouteConfig's when constructing this Router
@@ -68,24 +68,23 @@ export class Router {
     /**
      * Transition into a new state! (AKA perform the routing)
      */
+    @synchronize()
     public async transition(path: string, context: any = null) {
-        return await this.queue.execute(async () => {
-            const {lastParams: prevParams, lastRoute: prevRoute} = this;
-            const [nextRoute, nextParams] = this.matchRoute(path);
-            const nextRouteStack = this.buildRouteStack(nextRoute);
-            const prevRouteStack = this.buildRouteStack(prevRoute);
+        const {lastParams: prevParams, lastRoute: prevRoute} = this;
+        const [nextRoute, nextParams] = this.matchRoute(path);
+        const nextRouteStack = this.buildRouteStack(nextRoute);
+        const prevRouteStack = this.buildRouteStack(prevRoute);
 
-            const state = { prevParams, nextParams, context } as RouteState;
-            const changedRouteOffset = await this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
+        const state = { prevParams, nextParams, context } as RouteState;
+        const changedRouteOffset = await this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
 
-            await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
-            await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
-            const result = await this.applyRenderHandler(state, nextRouteStack);
+        await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
+        await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
+        const result = await this.applyRenderHandler(state, nextRouteStack);
 
-            Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute });
+        Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute });
 
-            return result;
-        });
+        return result;
     }
 
     private async applyTeardownHandler(state: RouteState, routeStack: RouteConfig[], changedRouteOffset: number) {

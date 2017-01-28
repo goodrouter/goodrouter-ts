@@ -38,6 +38,7 @@
     "typescript": "^2.1.5"
   },
   "dependencies": {
+    "synchronize-async": "0.0.8",
     "tslib": "^1.5.0"
   }
 }
