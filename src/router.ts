@@ -23,14 +23,14 @@ export interface RouteState {
 
     /**
      * If this route was invoked via a child, this property holds the result of the child's
-     * render hook. You genrally should wrap and return this (usualy don't throw it away!);
+     * [[render]] hook. You genrally should wrap and return this (usualy don't throw it away!);
      * 
-     * only available in the render hook.
+     * only available in the [[render]] hook.
      */
     child?: any;
 
     /**
-     * The result of the (previous) setup hook.
+     * The result of the (previous) [[setup]] hook.
      */
     local?: RouteLocalState;
 }
@@ -62,7 +62,7 @@ export interface RouteConfig {
 
     /**
      * Use this property to configure the parameters that will be compared to figure
-     * out if the route had changed to figure out if the setup and teardown hooks
+     * out if the route had changed to figure out if the [[setup]] and [[teardown]] hooks
      * should be executed. These parameters will normally be automagiacally loaded
      * from the path, but sometimes this is not possible (for instance, if a parent
      * route does not have a path). 
@@ -78,7 +78,7 @@ export interface RouteConfig {
 
     /**
      * This function is called everytime this route is entered with different parameters.
-     * A very usefull place to setup subscriptions or retrieve data. It is possible that
+     * A very usefull place to [[setup]] subscriptions or retrieve data. It is possible that
      * this function is called on a child route, but not on a parent route. Because the
      * parematers of the parent do not change, but the parameters of the child do.
      */
