@@ -5,21 +5,89 @@ export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
 
 export interface RouteState {
+    /**
+     * The previous parameters
+     */
     prevParams: RouteParams;
+
+    /**
+     * The next (or current) parameters
+     */
     nextParams: RouteParams;
+
+    /**
+     * The context passed to the transition method, usefull to distinguish client and server
+     * in an isomorphic scenario, but can be used for anything you want.
+     */
     context: any;
+
+    /**
+     * If this route was invoked via a child, this property holds the result of the child's
+     * render hook. You genrally should wrap and return this (usualy don't throw it away!);
+     * 
+     * only available in the render hook.
+     */
     child?: any;
+
+    /**
+     * The result of the (previous) setup hook.
+     */
     local?: RouteLocalState;
 }
 
 export interface RouteConfig {
+    /**
+     * Name of the route! Usefull for constructie urls by route-name and also
+     * for specifying a parent for a route.
+     */
     name?: string;
+
+    /**
+     * The path fopr a route. You do not have to specify a path, but if you don'to
+     * the route van not be reached directly. It is however not uncommon that a parent
+     * route does not have a path.
+     */
     path?: string;
+
+    /**
+     * The name of the parent route.
+     */
     parent?: string;
+
+    /**
+     * Configure child routes here, you may also do this via the parent property, but
+     * sometimes it makes more sense to do it here.
+     */
     children?: RouteConfig[];
+
+    /**
+     * Use this property to configure the parameters that will be compared to figure
+     * out if the route had changed to figure out if the setup and teardown hooks
+     * should be executed. These parameters will normally be automagiacally loaded
+     * from the path, but sometimes this is not possible (for instance, if a parent
+     * route does not have a path). 
+     */
     params?: string[];
+
+    /**
+     * This function does the actual redering of the route and is called everytime a
+     * transition occurs. The result of this function fill be the result of the
+     * transition function of the router.
+     */
     render?: RouterHook<any>;
+
+    /**
+     * This function is called everytime this route is entered with different parameters.
+     * A very usefull place to setup subscriptions or retrieve data. It is possible that
+     * this function is called on a child route, but not on a parent route. Because the
+     * parematers of the parent do not change, but the parameters of the child do.
+     */
     setup?: RouterHook<RouteLocalState>;
+
+    /**
+     * When a transition causes this route to leave, this function is called. A very good
+     * place to cleanup things, like a subscription.
+     */
     teardown?: RouterHook<void>;
 }
 
