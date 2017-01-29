@@ -73,6 +73,8 @@ export interface RouteConfig {
      * This function does the actual redering of the route and is called everytime a
      * transition occurs. The result of this function fill be the result of the
      * transition function of the router.
+     * 
+     * This hook will run child-first
      */
     render?: RouterHook<any>;
 
@@ -81,12 +83,16 @@ export interface RouteConfig {
      * A very usefull place to [[setup]] subscriptions or retrieve data. It is possible that
      * this function is called on a child route, but not on a parent route. Because the
      * parematers of the parent do not change, but the parameters of the child do.
+     * 
+     * This hook will fire from parent-first
      */
     setup?: RouterHook<RouteLocalState>;
 
     /**
      * When a transition causes this route to leave, this function is called. A very good
      * place to cleanup things, like a subscription.
+     * 
+     * This hook will run child-first
      */
     teardown?: RouterHook<void>;
 }
