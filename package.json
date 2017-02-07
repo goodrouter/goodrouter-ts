@@ -25,8 +25,10 @@
   },
   "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
+    "@types/blue-tape": "^0.1.30",
     "@types/sinon": "^1.16.34",
     "@types/tape": "^4.2.28",
+    "blue-tape": "^1.0.0",
     "nyc": "^10.0.0",
     "sinon": "^1.17.7",
     "state": "^0.2.0",

@@ -1,4 +1,4 @@
-import * as test from "tape";
+import * as test from "blue-tape";
 import { spy } from "sinon";
 import { Router, RouteConfig } from "./router";
 
@@ -12,8 +12,6 @@ test("router path", async t => {
     const result = await r.transition("/");
 
     t.equal(result, "home");
-
-    t.end();
 });
 
 
@@ -39,8 +37,6 @@ test("router pattern", async t => {
         nextParams: { aap: "456" },
         prevParams: { aap: "123" },
     });
-
-    t.end();
 });
 
 test("router match", async t => {
@@ -51,8 +47,6 @@ test("router match", async t => {
     }]);
 
     t.equal(r.path("home", { aap: "123" }), "/home/123/noot");
-
-    t.end();
 });
 
 
@@ -79,8 +73,6 @@ test("router child", async t => {
             child: null
         }
     });
-
-    t.end();
 });
 
 
@@ -146,8 +138,6 @@ test("router hooks", async t => {
         "child2-teardown",
         "root-teardown",
     ]);
-
-    t.end();
 });
 
 
@@ -176,8 +166,6 @@ test("router queue", async t => {
 
     await r.transition("/mies");
     t.deepEqual(argStack, ["aap", "noot", "mies"]);
-
-    t.end();
 });
 
 

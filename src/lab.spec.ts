@@ -1,4 +1,4 @@
-import * as test from "tape";
+import * as test from "blue-tape";
 
 test("splice", async t => {
     const a = [1, 2, 3];
@@ -6,6 +6,4 @@ test("splice", async t => {
 
     t.deepEqual(a, []);
     t.deepEqual(b, [1, 2, 3]);
-
-    t.end();
 });
