@@ -5,14 +5,14 @@
   "main": "bin/router.js",
   "types": "bin/router.d.ts",
   "scripts": {
-    "test": "npm run lint || npm run spec-all",
+    "test": "npm run lint && npm run spec-all",
     "compile": "tsc",
     "docs": "typedoc --ignoreCompilerErrors --excludePrivate --excludeExternals --readme none --out docs --theme minimal --name 'Good Router'",
     "lint": "tslint 'src/**.ts'",
     "spec": "tape --require 'ts-node/register'",
     "spec-all": "npm run spec 'src/**/*.spec.ts'",
     "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.ts' --exclude 'src/**/*.spec.ts' --extension '.ts' npm run spec-all",
-    "prepublish": "npm run compile || npm run docs"
+    "prepublish": "npm run compile && npm run docs"
   },
   "repository": {
     "type": "git",
