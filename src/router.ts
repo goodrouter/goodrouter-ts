@@ -112,6 +112,7 @@ export class Router {
     private readonly routeNameList: string[];
     private lastRoute = null as RouteConfig;
     private lastParams = {} as RouteParams;
+    private lastContext = null as any;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
 
     /**
@@ -163,9 +164,22 @@ export class Router {
         await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
         const result = await this.applyRenderHandler(state, nextRouteStack);
 
-        Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute });
+        Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
 
         return result;
+    }
+
+    /**
+     * Teardown and setup all handlers again without calling the render functions.
+     */
+    @synchronize()
+    public async reload() {
+        const {lastParams, lastRoute, lastContext} = this;
+        const routeStack = this.buildRouteStack(lastRoute);
+        const state = { prevParams: lastParams, nextParams: lastParams, context: lastContext } as RouteState;
+
+        await this.applyTeardownHandler(state, routeStack, 0);
+        await this.applySetupHandler(state, routeStack, 0);
     }
 
     private async applyTeardownHandler(state: RouteState, routeStack: RouteConfig[], changedRouteOffset: number) {
