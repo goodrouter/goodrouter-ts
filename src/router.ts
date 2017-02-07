@@ -150,7 +150,7 @@ export class Router {
      */
     @synchronize()
     public async transition(path: string, context: any = null, config: TransitionOptions = {}) {
-        config = { ...defaultTransitionOptions, ...config }
+        config = { ...defaultTransitionOptions, ...config };
         const {lastParams: prevParams, lastRoute: prevRoute} = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
         const nextRouteStack = this.buildRouteStack(nextRoute);
