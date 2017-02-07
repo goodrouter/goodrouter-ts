@@ -109,16 +109,25 @@ test("router hooks", async t => {
 
 
     hookSpy.reset();
-    await r.transition("/child1/1");
+    await r.transition("/child2/1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "root-setup",
+        "child2-setup",
+    ]);
+
+    hookSpy.reset();
+    await r.transition("/child1/1");
+    t.deepEqual(hookSpy.args.map(([arg]) => arg), [
+        "child2-teardown",
         "child1-setup",
     ]);
 
     hookSpy.reset();
-    await r.transition("/child2/1");
+    await r.transition("/child2/1", {}, { reload: true });
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child1-teardown",
+        "root-teardown",
+        "root-setup",
         "child2-setup",
     ]);
 

@@ -4,6 +4,12 @@ import { synchronize } from "synchronize-async";
 export type RouteLocalState = { [name: string]: any };
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
 
+export interface TransitionOptions {
+    reload?: boolean;
+}
+
+export const defaultTransitionOptions = { reload: false } as TransitionOptions;
+
 export interface RouteState {
     /**
      * The previous parameters
@@ -143,14 +149,15 @@ export class Router {
      * Transition into a new state! (AKA perform the routing)
      */
     @synchronize()
-    public async transition(path: string, context: any = null) {
+    public async transition(path: string, context: any = null, config: TransitionOptions = {}) {
+        config = { ...defaultTransitionOptions, ...config }
         const {lastParams: prevParams, lastRoute: prevRoute} = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
         const nextRouteStack = this.buildRouteStack(nextRoute);
         const prevRouteStack = this.buildRouteStack(prevRoute);
 
         const state = { prevParams, nextParams, context } as RouteState;
-        const changedRouteOffset = await this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
+        const changedRouteOffset = config.reload ? 0 : this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
 
         await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
         await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
@@ -214,7 +221,7 @@ export class Router {
         return result;
     }
 
-    private async getChangedRouteOffset(state: RouteState, prevRouteStack: RouteConfig[], nextRouteStack: RouteConfig[]) {
+    private getChangedRouteOffset(state: RouteState, prevRouteStack: RouteConfig[], nextRouteStack: RouteConfig[]) {
         for (
             let routeIndex = 0, routeCount = Math.min(prevRouteStack.length, nextRouteStack.length);
             routeIndex < routeCount;
