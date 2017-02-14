@@ -110,10 +110,10 @@ export class Router {
     private readonly routePathIndex: { [name: string]: RoutePath };
     private readonly routeIndex: { [name: string]: RouteConfig };
     private readonly routeNameList: string[];
-    private lastRoute = null as RouteConfig;
-    private lastParams = {} as RouteParams;
-    private lastContext = null as any;
     private readonly routeStateIndex = {} as { [name: string]: RouteLocalState };
+    public lastRoute = null as RouteConfig;
+    public lastParams = {} as RouteParams;
+    public lastContext = null as any;
 
     /**
      * Include a list of RouteConfig's when constructing this Router
