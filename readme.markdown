@@ -8,7 +8,7 @@ A good router should:
  - [x] have support for parent / child routes
  - [x] not do the actual navigation!
  - [x] be framework agnostic
- - [x] have setup and teardown hooks for easy subscription management
+ - [x] have setup and teardown hooks that could be used for subscription management
 
 ## Route lifecycle
 
