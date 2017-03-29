@@ -23,6 +23,12 @@
   "bugs": {
     "url": "https://github.com/LuvDaSun/goodrouter/issues"
   },
+  "keywords": [
+    "good",
+    "router",
+    "isomorphic",
+    "universal"
+  ],
   "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
     "@types/blue-tape": "^0.1.30",
