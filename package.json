@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm run lint && npm run spec-all",
     "compile": "tsc",
-    "docs": "typedoc --ignoreCompilerErrors --excludePrivate --excludeExternals --readme none --out docs --theme minimal --name 'Good Router'",
+    "docs": "typedoc --excludePrivate --excludeExternals --readme none --out docs --theme minimal --name 'Good Router'",
     "lint": "tslint 'src/**.ts'",
     "spec": "tape --require 'ts-node/register'",
     "spec-all": "npm run spec 'src/**/*.spec.ts'",
@@ -41,11 +41,11 @@
     "tape": "^4.6.3",
     "ts-node": "^2.0.0",
     "tslint": "^4.3.1",
-    "typedoc": "^0.5.5",
-    "typescript": "^2.1.5"
+    "typedoc": "^0.5.10",
+    "typescript": "^2.2.2"
   },
   "dependencies": {
     "synchronize-async": "1.0.1",
-    "tslib": "^1.5.0"
+    "tslib": "^1.6.1"
   }
 }
