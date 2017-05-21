@@ -1,6 +1,6 @@
 {
   "name": "goodrouter",
-  "version": "0.0.20",
+  "version": "0.0.22",
   "description": "a good router",
   "main": "bin/router.js",
   "types": "bin/router.d.ts",
@@ -23,6 +23,12 @@
   "bugs": {
     "url": "https://github.com/LuvDaSun/goodrouter/issues"
   },
+  "keywords": [
+    "good",
+    "router",
+    "isomorphic",
+    "universal"
+  ],
   "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
     "@types/blue-tape": "^0.1.30",
@@ -35,11 +41,11 @@
     "tape": "^4.6.3",
     "ts-node": "^2.0.0",
     "tslint": "^4.3.1",
-    "typedoc": "^0.5.9",
-    "typescript": "^2.1.5"
+    "typedoc": "^0.5.10",
+    "typescript": "^2.2.2"
   },
   "dependencies": {
-    "synchronize-async": "0.0.8",
-    "tslib": "^1.5.0"
+    "synchronize-async": "1.0.1",
+    "tslib": "^1.7.1"
   }
 }
