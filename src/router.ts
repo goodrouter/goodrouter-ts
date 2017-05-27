@@ -152,7 +152,7 @@ export class Router {
     @synchronize()
     public async transition(path: string, context: any = null, config: TransitionOptions = {}) {
         config = { ...defaultTransitionOptions, ...config };
-        const {lastParams: prevParams, lastRoute: prevRoute} = this;
+        const { lastParams: prevParams, lastRoute: prevRoute } = this;
         const [nextRoute, nextParams] = this.matchRoute(path);
         const nextRouteStack = this.buildRouteStack(nextRoute);
         const prevRouteStack = this.buildRouteStack(prevRoute);
@@ -174,7 +174,7 @@ export class Router {
      */
     @synchronize()
     public async reload() {
-        const {lastParams, lastRoute, lastContext} = this;
+        const { lastParams, lastRoute, lastContext } = this;
         const routeStack = this.buildRouteStack(lastRoute);
         const state = { prevParams: lastParams, nextParams: lastParams, context: lastContext } as RouteState;
 
@@ -189,7 +189,7 @@ export class Router {
             routeIndex--
         ) {
             const route = routeStack[routeIndex];
-            const {teardown} = route;
+            const { teardown } = route;
             if (teardown) {
                 const local = this.routeStateIndex[route.name];
                 await teardown.call(this, { ...state, ...{ local } });
@@ -205,7 +205,7 @@ export class Router {
             routeIndex++
         ) {
             const route = routeStack[routeIndex];
-            const {setup} = route;
+            const { setup } = route;
             let local = route.parent ? this.routeStateIndex[route.parent] : {};
             if (setup) {
                 local = {
@@ -226,7 +226,7 @@ export class Router {
             routeIndex--
         ) {
             const route = routeStack[routeIndex];
-            const { render} = route;
+            const { render } = route;
             const child = result;
             const local = this.routeStateIndex[route.name];
             if (render) result = await render.call(this, { ...state, ...{ child, local } });
@@ -266,7 +266,14 @@ export class Router {
         return routeStack;
     }
 
-    private matchRoute(path: string): [RouteConfig, any] {
+
+    /**
+     * Find a route for the provided path and return the config and parsed
+     * params
+     * 
+     * @param path Path to find a route for
+     */
+    public matchRoute(path: string): [RouteConfig, any] {
         if (path !== null) {
             for (let name of this.routeNameList) {
                 if (!(name in this.routePathIndex)) continue;
