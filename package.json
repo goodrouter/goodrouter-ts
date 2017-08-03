@@ -1,6 +1,6 @@
 {
   "name": "goodrouter",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "a good router",
   "main": "obj/router.js",
   "types": "obj/router.d.ts",
