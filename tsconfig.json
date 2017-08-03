@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
+    "target": "es2017",
     "noImplicitAny": false,
     "sourceMap": true,
     "declaration": true,
-    "outDir": "bin",
+    "outDir": "obj",
     "rootDir": "src",
     "noEmitHelpers": true,
     "importHelpers": true,
@@ -16,7 +16,7 @@
     ]
   },
   "compileOnSave": false,
-  "files": [
-    "src/router.ts"
+  "includeGlob": [
+    "src/**/*.ts"
   ]
 }
