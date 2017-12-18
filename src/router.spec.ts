@@ -176,7 +176,7 @@ test("router queue", async t => {
 
 
 
-test("router queue", async t => {
+test("validate hook", async t => {
     const routes = [
         {
             path: "/valid",
