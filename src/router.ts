@@ -76,6 +76,19 @@ export interface RouteConfig {
     params?: string[];
 
     /**
+     * Use this hook can be used to determine if the route is valid. If a route is not valid, this
+     * hook should return false, if it is valid, return true. This hook may be used to perform
+     * authorization for a route.
+     * 
+     * If this hook is considered invalid (returns false) there will be no render action. And child
+     * validation hooks will not execute and you will probably have to perform a redirect or other
+     * navigation action.
+     * 
+     * This hook will fire from parent-first
+     */
+    validate?: RouterHook<any>;
+
+    /**
      * This function does the actual redering of the route and is called everytime a
      * transition occurs. The result of this function fill be the result of the
      * transition function of the router.
@@ -162,9 +175,17 @@ export class Router {
 
         await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
         await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
-        const result = await this.applyRenderHandler(state, nextRouteStack);
 
-        Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
+        let result = null;
+        try {
+            const valid = await this.applyValidateHandler(state, nextRouteStack);
+            result = valid ?
+                await this.applyRenderHandler(state, nextRouteStack) :
+                null;
+        }
+        finally {
+            Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
+        }
 
         return result;
     }
@@ -215,6 +236,22 @@ export class Router {
             }
             this.routeStateIndex[route.name] = local;
         }
+    }
+
+    private async applyValidateHandler(state: RouteState, routeStack: RouteConfig[]) {
+        let result = true;
+        for (
+            let routeIndex = 0, routeCount = routeStack.length;
+            routeIndex < routeCount;
+            routeIndex++
+        ) {
+            const route = routeStack[routeIndex];
+            const { validate } = route;
+            const local = this.routeStateIndex[route.name];
+            if (validate) result = await validate.call(this, { ...state, ...{ local } });
+            if (result === false) break;
+        }
+        return result;
     }
 
     private async applyRenderHandler(state: RouteState, routeStack: RouteConfig[]) {

@@ -149,16 +149,13 @@ test("router hooks", async t => {
     ]);
 });
 
-
-
-
 test("router queue", async t => {
     const argStack = [];
     const route = {
         path: "/:arg",
         async render(state) {
             await new Promise(resolve => setTimeout(resolve, 100));
-            const {arg} = state.nextParams;
+            const { arg } = state.nextParams;
             argStack.push(arg);
             return arg;
         },
@@ -177,5 +174,41 @@ test("router queue", async t => {
     t.deepEqual(argStack, ["aap", "noot", "mies"]);
 });
 
+
+
+test("router queue", async t => {
+    const routes = [
+        {
+            path: "/valid",
+            async validate() {
+                return true;
+            },
+            async render() {
+                return "valid";
+            },
+        } as RouteConfig,
+        {
+            path: "/valid2",
+            async render() {
+                return "valid2";
+            },
+        } as RouteConfig,
+        {
+            path: "/invalid",
+            async validate() {
+                return false;
+            },
+            async render() {
+                return "invalid";
+            },
+        } as RouteConfig,
+    ];
+
+    const r = new Router(routes);
+
+    t.equal(await r.transition("/valid"), "valid");
+    t.equal(await r.transition("/valid2"), "valid2");
+    t.equal(await r.transition("/invalid"), null);
+});
 
 
