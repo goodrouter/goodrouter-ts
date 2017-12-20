@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 import { synchronize } from "synchronize-async";
 import { RouteParams, RoutePath, uniqueReducer } from ".";
 
@@ -141,7 +142,7 @@ export interface InternalRouteConfig {
 /**
  * GoodRouter Router class
  */
-export class Router {
+export class Router extends EventEmitter {
     public lastRoute: InternalRouteConfig | null = null;
     public lastParams: RouteParams = {};
     public lastContext: any = null;
@@ -158,6 +159,8 @@ export class Router {
     public constructor(
         routeList: RouteConfig[],
     ) {
+        super();
+
         const normalizedRouteList = this.normalizeRouteList(routeList);
         this.routeNameList = normalizedRouteList.
             map(route => route.name);
@@ -226,6 +229,8 @@ export class Router {
             0 :
             this.getChangedRouteOffset(state, prevRouteStack, nextRouteStack);
 
+        this.emit("transitioning");
+
         await this.applyTeardownHandler(state, prevRouteStack, changedRouteOffset);
         await this.applySetupHandler(state, nextRouteStack, changedRouteOffset);
 
@@ -238,6 +243,8 @@ export class Router {
         } finally {
             Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
         }
+
+        this.emit("transitioned");
 
         return result;
     }
