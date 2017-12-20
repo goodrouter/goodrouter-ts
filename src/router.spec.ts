@@ -1,12 +1,12 @@
 import * as test from "blue-tape";
 import { spy } from "sinon";
-import { Router, RouteConfig } from "./router";
+import { RouteConfig, Router } from "./router";
 
 test("router path", async t => {
     const r = new Router([{
         name: "home",
         path: "/",
-        render: state => "home"
+        render: state => "home",
     }]);
 
     const result = await r.transition("/");
@@ -14,12 +14,11 @@ test("router path", async t => {
     t.equal(result, "home");
 });
 
-
 test("router pattern", async t => {
     const r = new Router([{
         name: "home",
         path: "/home/:aap/noot",
-        render: state => state
+        render: state => state,
     }]);
 
     t.deepEqual(await r.transition("/home/123/noot"), {
@@ -30,9 +29,9 @@ test("router pattern", async t => {
         prevParams: {},
     });
 
-    t.deepEqual(await r.transition("/home/456/noot", { "ok": true }), {
+    t.deepEqual(await r.transition("/home/456/noot", { ok: true }), {
         child: null,
-        context: { "ok": true },
+        context: { ok: true },
         local: {},
         nextParams: { aap: "456" },
         prevParams: { aap: "123" },
@@ -43,25 +42,24 @@ test("router match", async t => {
     const r = new Router([{
         name: "home",
         path: "/home/:aap/noot",
-        render: state => state
+        render: state => state,
     }]);
 
     t.equal(r.path("home", { aap: "123" }), "/home/123/noot");
 });
 
-
 test("router child", async t => {
     const rootRoute = {
         name: "root",
         path: "/",
-        render: state => ({ name: "root", child: state.child })
+        render: state => ({ name: "root", child: state.child }),
     } as RouteConfig;
 
     const homeRoute = {
         name: "home",
         parent: "root",
         path: "/home",
-        render: state => ({ name: "home", child: state.child })
+        render: state => ({ name: "home", child: state.child }),
     } as RouteConfig;
 
     const r = new Router([rootRoute, homeRoute]);
@@ -70,12 +68,10 @@ test("router child", async t => {
         name: "root",
         child: {
             name: "home",
-            child: null
-        }
+            child: null,
+        },
     });
 });
-
-
 
 test("router hooks", async t => {
     const hookSpy = spy();
@@ -94,11 +90,10 @@ test("router hooks", async t => {
             path: "/child2/:id",
             setup: hookSpy.bind(null, "child2-setup"),
             teardown: hookSpy.bind(null, "child2-teardown"),
-        }]
+        }],
     };
 
     const r = new Router([rootRoute]);
-
 
     hookSpy.reset();
     await r.transition("/child2/1");
@@ -150,7 +145,7 @@ test("router hooks", async t => {
 });
 
 test("router queue", async t => {
-    const argStack = [];
+    const argStack = new Array<string>();
     const route = {
         path: "/:arg",
         async render(state) {
@@ -173,8 +168,6 @@ test("router queue", async t => {
     await r.transition("/mies");
     t.deepEqual(argStack, ["aap", "noot", "mies"]);
 });
-
-
 
 test("validate hook", async t => {
     const routes = [
@@ -210,5 +203,3 @@ test("validate hook", async t => {
     t.equal(await r.transition("/valid2"), "valid2");
     t.equal(await r.transition("/invalid"), null);
 });
-
-

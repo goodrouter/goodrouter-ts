@@ -1,12 +1,10 @@
+// Place your settings in this file to overwrite default and user settings.
 {
     "typescript.tsdk": "node_modules/typescript/lib",
     "editor.formatOnSave": true,
-    "search.exclude": {
-        ".*": true,
-        "*.log": true,
-        "node_modules/": true,
-        "coverage/": true,
-        "bin/": true,
-        "docs/": true
-    }
+    "tslint.autoFixOnSave": true,
+    "editor.rulers": [
+        80,
+        120
+    ]
 }

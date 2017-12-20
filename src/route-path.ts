@@ -1,11 +1,11 @@
-export type RouteParams = { [name: string]: string };
+export interface RouteParams { [name: string]: string; }
 
 /**
  * Helper class for constructing and destructing paths
  */
 export class RoutePath {
-    private readonly parts = [] as string[];
     public readonly params = [] as string[];
+    private readonly parts = [] as string[];
 
     /**
      * Create a new RoutePath based on the path supplied
@@ -43,7 +43,7 @@ export class RoutePath {
         if (!path.startsWith(this.parts[0])) return null;
         const pathRest = path.substring(this.parts[0].length);
 
-        let values = {};
+        const values: { [param: string]: string } = {};
         let index = 0;
         let lastIndex = 0;
         for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
@@ -61,5 +61,3 @@ export class RoutePath {
     }
 
 }
-
-

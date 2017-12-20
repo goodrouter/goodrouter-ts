@@ -1,11 +1,15 @@
 {
+	"defaultSeverity": "error",
+	"extends": [
+		"tslint:recommended"
+	],
+	"jsRules": {},
 	"rules": {
-		"no-unused-expression": true,
-		"no-duplicate-variable": true,
-		"class-name": true,
-		"semicolon": [
-			"always"
-		],
-		"triple-equals": true
-	}
+		"interface-name": false,
+		"curly": false,
+		"arrow-parens": false,
+		"object-literal-sort-keys": false,
+		"space-before-function-paren": false
+	},
+	"rulesDirectory": []
 }
