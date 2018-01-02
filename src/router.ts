@@ -39,7 +39,7 @@ export interface RouteState {
     /**
      * The result of the (previous) [[setup]] hook.
      */
-    local: RouteLocalState | null;
+    local: RouteLocalState;
 }
 
 export const defaultRouteConfig: InternalRouteConfig = {
