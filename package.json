@@ -2,16 +2,17 @@
   "name": "goodrouter",
   "version": "0.2.2",
   "description": "a good router",
-  "main": "obj/main.js",
-  "types": "obj/main.d.ts",
+  "main": "./obj/main.bundle.js",
+  "module": "./obj/main.js",
+  "types": "./obj/main.d.ts",
   "scripts": {
+    "prepare": "npm run compile",
+    "compile": "tsc --module es2015 --moduleResolution node && rollup -c",
     "test": "npm run lint && npm run spec-all",
-    "compile": "tsc",
     "lint": "tslint 'src/**/*.ts'",
     "spec": "tape --require 'ts-node/register'",
     "spec-all": "npm run spec 'src/**/*.spec.ts'",
-    "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.ts' --exclude 'src/**/*.spec.ts' --extension '.ts' npm run spec-all",
-    "prepare": "npm run compile"
+    "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.ts' --exclude 'src/**/*.spec.ts' --extension '.ts' npm run spec-all"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,8 @@
     "@types/tape": "^4.2.31",
     "blue-tape": "^1.0.0",
     "nyc": "^11.4.1",
+    "rollup": "^0.55.0",
+    "rollup-plugin-commonjs": "^8.2.6",
     "sinon": "^4.1.3",
     "tape": "^4.8.0",
     "ts-node": "^3.0.4",
