@@ -1,6 +1,6 @@
 {
   "name": "goodrouter",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "a good router",
   "main": "./obj/main.bundle.js",
   "module": "./obj/main.js",
