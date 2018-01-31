@@ -1,6 +1,6 @@
 {
   "name": "goodrouter",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "a good router",
   "main": "./node/main.js",
   "module": "./module/main.js",
