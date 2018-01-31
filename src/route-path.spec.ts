@@ -1,5 +1,4 @@
 import * as test from "blue-tape";
-import { spy } from "sinon";
 import { RoutePath } from "./route-path";
 
 test("path matcher", async t => {
