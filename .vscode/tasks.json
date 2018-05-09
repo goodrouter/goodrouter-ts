@@ -4,6 +4,7 @@
         {
             "type": "npm",
             "script": "compile",
+            "label": "build",
             "problemMatcher": [
                 "$tsc"
             ],
@@ -11,6 +12,15 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "type": "typescript",
+            "label": "watch",
+            "tsconfig": "tsconfig.json",
+            "option": "watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         }
     ]
 }
