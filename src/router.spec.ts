@@ -173,27 +173,36 @@ test("validate hook", async t => {
     const routes = [
         {
             path: "/valid",
-            async validate() {
+            validate() {
                 return true;
             },
-            async render() {
+            render() {
                 return "valid";
             },
         } as RouteConfig,
         {
             path: "/valid2",
-            async render() {
+            render() {
                 return "valid2";
             },
         } as RouteConfig,
         {
             path: "/invalid",
-            async validate() {
+            validate() {
                 return false;
             },
-            async render() {
+            render() {
                 return "invalid";
             },
+            children: [{
+                path: "/invalid/child",
+                validate() {
+                    throw new Error("child validate should never happen");
+                },
+                render() {
+                    throw new Error("child render should never happen");
+                },
+            }],
         } as RouteConfig,
     ];
 
@@ -202,4 +211,5 @@ test("validate hook", async t => {
     t.equal(await r.transition("/valid"), "valid");
     t.equal(await r.transition("/valid2"), "valid2");
     t.equal(await r.transition("/invalid"), null);
+    t.equal(await r.transition("/invalid/child"), null);
 });

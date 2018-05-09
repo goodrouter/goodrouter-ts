@@ -22,8 +22,8 @@ parent → child
 
 ### validate
 Return `true` if the route is valid. If `false` is returned, no routing is performed!
-Always executed for the entire route stack. Useful to perform re-routing, for instance
-for authorization redirects.
+Always executed for the entire route stack, but stops when `false` is returned.
+Useful to perform re-routing, for instance for authorization redirects.
 
 parent → child
 
