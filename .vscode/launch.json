@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "run file",
+            "program": "${file}",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/node/**/*.js"
+            ],
+            "preLaunchTask": "watch"
+        }
+    ]
+}
