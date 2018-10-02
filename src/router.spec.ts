@@ -74,8 +74,9 @@ test("router child", async t => {
 });
 
 test("router hooks", async t => {
-    const hookSpy = spy();
+    let hookSpy;
 
+    hookSpy = spy();
     const rootRoute = {
         name: "root",
         path: "/",
@@ -95,14 +96,14 @@ test("router hooks", async t => {
 
     const r = new Router([rootRoute]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.transition("/child2/1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "root-setup",
         "child2-setup",
     ]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.reload();
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child2-teardown",
@@ -111,14 +112,14 @@ test("router hooks", async t => {
         "child2-setup",
     ]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.transition("/child1/1");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child2-teardown",
         "child1-setup",
     ]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.transition("/child2/1", {}, { reload: true });
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child1-teardown",
@@ -127,7 +128,7 @@ test("router hooks", async t => {
         "child2-setup",
     ]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.transition("/child2/2");
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child2-teardown",
@@ -136,7 +137,7 @@ test("router hooks", async t => {
         "child2-setup",
     ]);
 
-    hookSpy.reset();
+    hookSpy = spy();
     await r.transition(null);
     t.deepEqual(hookSpy.args.map(([arg]) => arg), [
         "child2-teardown",
