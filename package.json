@@ -33,15 +33,15 @@
   "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
     "@types/blue-tape": "^0.1.32",
-    "@types/sinon": "^5.0.2",
-    "@types/tape": "^4.2.32",
+    "@types/sinon": "^7.0.11",
+    "@types/tape": "^4.2.33",
     "blue-tape": "^1.0.0",
-    "nyc": "^13.0.1",
-    "sinon": "^6.3.4",
-    "tape": "^4.9.1",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "typescript": "^3.1.1"
+    "nyc": "^14.1.1",
+    "sinon": "^7.3.2",
+    "tape": "^4.10.1",
+    "ts-node": "^8.1.0",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
   },
   "dependencies": {
     "synchronize-async": "^1.0.11",
