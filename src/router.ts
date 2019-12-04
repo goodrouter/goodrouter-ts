@@ -22,7 +22,7 @@ export interface RouteState {
     nextParams: RouteParams;
 
     /**
-     * The context passed to the transition method, usefull to distinguish client and server
+     * The context passed to the transition method, useful to distinguish client and server
      * in an isomorphic scenario, but can be used for anything you want.
      */
     context: any;
@@ -54,14 +54,14 @@ export const defaultRouteConfig: InternalRouteConfig = {
 
 export interface RouteConfig {
     /**
-     * Name of the route! Usefull for constructie urls by route-name and also
+     * Name of the route! Useful for constructing urls by route-name and also
      * for specifying a parent for a route.
      */
     name?: string;
 
     /**
-     * The path fopr a route. You do not have to specify a path, but if you don'to
-     * the route van not be reached directly. It is however not uncommon that a parent
+     * The path for a route. You do not have to specify a path, but if you don't
+     * the route can not be reached directly. It is not uncommon that a parent
      * route does not have a path.
      */
     path?: string;
@@ -80,14 +80,14 @@ export interface RouteConfig {
     /**
      * Use this property to configure the parameters that will be compared to figure
      * out if the route had changed to figure out if the [[setup]] and [[teardown]] hooks
-     * should be executed. These parameters will normally be automagiacally loaded
+     * should be executed. These parameters will normally be automagically loaded
      * from the path, but sometimes this is not possible (for instance, if a parent
      * route does not have a path).
      */
     params?: string[];
 
     /**
-     * Use this hook can be used to determine if the route is valid. If a route is not valid, this
+     * This hook can be used to determine if the route is valid. If a route is not valid, this
      * hook should return false, if it is valid, return true. This hook may be used to perform
      * authorization for a route.
      *
@@ -101,7 +101,7 @@ export interface RouteConfig {
 
     /**
      * This function does the actual redering of the route and is called everytime a
-     * transition occurs. The result of this function fill be the result of the
+     * transition occurs. The result of this function will be the result of the
      * transition function of the router.
      *
      * This hook will run child-first
@@ -112,7 +112,7 @@ export interface RouteConfig {
      * This function is called everytime this route is entered with different parameters.
      * A very usefull place to [[setup]] subscriptions or retrieve data. It is possible that
      * this function is called on a child route, but not on a parent route. Because the
-     * parematers of the parent do not change, but the parameters of the child do.
+     * parameters of the parent do not change, but the parameters of the child do.
      *
      * This hook will fire from parent-first
      */
@@ -166,8 +166,8 @@ export class Router {
             reduce((index, route) => Object.assign(
                 index,
                 { [route.name]: route.path && new RoutePath(route.path) }),
-            {},
-        );
+                {},
+            );
         this.routeIndex = normalizedRouteList.
             map(route => {
                 if (!(route.name in this.routePathIndex)) return route;
