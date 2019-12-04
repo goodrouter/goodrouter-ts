@@ -9,7 +9,7 @@
     "prepare": "npm run compile",
     "compile": "tsc && tsc --project tsconfig.module.json",
     "clean": "rm -rf node types module",
-    "test": "npm run lint; npm run spec-all",
+    "test": "npm run lint && npm run spec-all",
     "lint": "tslint \"src/**/*.ts\"",
     "spec": "tape --require \"ts-node/register\"",
     "spec-all": "npm run spec \"src/**/*.spec.ts\"",
