@@ -1,5 +1,5 @@
-import * as test from "tape-promise/tape";
-import { RoutePath } from "./route-path";
+import test from "tape-promise/tape.js";
+import { RoutePath } from "./route-path.js";
 
 test("path matcher", async t => {
     let path: RoutePath;

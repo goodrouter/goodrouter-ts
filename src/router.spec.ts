@@ -1,6 +1,6 @@
-import { spy } from "sinon";
-import * as test from "tape-promise/tape";
-import { RouteConfig, Router } from "./router";
+import sinon from "sinon";
+import test from "tape-promise/tape.js";
+import { RouteConfig, Router } from "./router.js";
 
 test("router path", async t => {
     const r = new Router([{
@@ -74,7 +74,7 @@ test("router child", async t => {
 });
 
 test("router hooks", async t => {
-    const hookSpy = spy();
+    const hookSpy = sinon.spy();
     const rootRoute = {
         name: "root",
         path: "/",

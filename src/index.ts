@@ -1,3 +1,4 @@
-export * from "./router";
-export * from "./route-path";
-export * from "./collections";
+export * from "./collections.js";
+export * from "./route-path.js";
+export * from "./router.js";
+

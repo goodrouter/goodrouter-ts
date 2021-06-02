@@ -1,4 +1,4 @@
-import * as test from "tape-promise/tape";
+import test from "tape-promise/tape.js";
 
 test("splice", async t => {
     const a = [1, 2, 3];
