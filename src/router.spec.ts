@@ -74,9 +74,7 @@ test("router child", async t => {
 });
 
 test("router hooks", async t => {
-    let hookSpy;
-
-    hookSpy = spy();
+    const hookSpy = spy();
     const rootRoute = {
         name: "root",
         path: "/",

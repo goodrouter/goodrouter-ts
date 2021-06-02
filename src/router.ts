@@ -236,7 +236,10 @@ export class Router {
                 await this.applyRenderHandler(state, nextRouteStack) :
                 null;
         } finally {
-            Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
+            Object.assign(
+                this,
+                { lastParams: nextParams, lastRoute: nextRoute, lastContext: context },
+            );
         }
 
         return result;

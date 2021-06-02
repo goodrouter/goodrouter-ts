@@ -11,7 +11,7 @@ export class RoutePath {
      * Create a new RoutePath based on the path supplied
      */
     public constructor(path: string) {
-        const re = /\:(\w+)/g;
+        const re = /:(\w+)/g;
         let index = 0;
         for (let match = re.exec(path); match; match = re.exec(path)) {
             this.parts.push(path.substring(index, match.index));
@@ -26,7 +26,11 @@ export class RoutePath {
      */
     public build(values: any) {
         let str = this.parts[0];
-        for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
+        for (
+            let paramIndex = 0, paramCount = this.params.length;
+            paramIndex < paramCount;
+            paramIndex++
+        ) {
             const part = this.parts[paramIndex + 1];
             const param = this.params[paramIndex];
             if (!(param in values)) throw new Error(`missing param ${param}`);
@@ -46,7 +50,11 @@ export class RoutePath {
         const values: { [param: string]: string } = {};
         let index = 0;
         let lastIndex = 0;
-        for (let paramIndex = 0, paramCount = this.params.length; paramIndex < paramCount; paramIndex++) {
+        for (
+            let paramIndex = 0, paramCount = this.params.length;
+            paramIndex < paramCount;
+            paramIndex++
+        ) {
             const part = this.parts[paramIndex + 1];
             index = part === "" ? pathRest.length : pathRest.indexOf(part, index);
             if (index < 0) return null;
