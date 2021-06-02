@@ -1,8 +1,9 @@
-name: test
-on: [push]
-
+name: publish
+on:
+  release:
+    types: [created]
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -11,4 +12,6 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm run prepare
-      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
