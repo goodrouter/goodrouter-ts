@@ -1,5 +1,5 @@
-import * as test from "blue-tape";
 import { spy } from "sinon";
+import * as test from "tape-promise/tape";
 import { RouteConfig, Router } from "./router";
 
 test("router path", async t => {

@@ -1,4 +1,4 @@
-import * as test from "blue-tape";
+import * as test from "tape-promise/tape";
 
 test("splice", async t => {
     const a = [1, 2, 3];

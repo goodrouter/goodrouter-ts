@@ -1,4 +1,4 @@
-import * as test from "blue-tape";
+import * as test from "tape-promise/tape";
 import { RoutePath } from "./route-path";
 
 test("path matcher", async t => {
@@ -13,7 +13,7 @@ test("path matcher", async t => {
     t.deepEqual(path.match("/aap/noot/mies"), { a: "aap", b: "noot", c: "mies" });
 });
 
-test("path builder", async  t => {
+test("path builder", async t => {
     let path: RoutePath;
 
     path = new RoutePath("/aap/noot");
