@@ -11,4 +11,8 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm run prepare
-      - run: npm test
+      - run: npm run coverage
+      - uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: coverage/lcov-report

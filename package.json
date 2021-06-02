@@ -12,7 +12,7 @@
     "lint": "eslint \"src/**/*.ts\"",
     "spec": "tape --require \"ts-node/register\"",
     "spec-all": "npm run spec \"src/**/*.spec.ts\"",
-    "coverage": "nyc --report-dir report --reporter text-summary --reporter lcov --include \"src/**/*.ts\" --exclude \"src/**/*.spec.ts\" --extension \".ts\" npm run spec-all"
+    "coverage": "nyc --reporter text-summary --reporter lcov --include \"src/**/*.ts\" --exclude \"src/**/*.spec.ts\" --extension \".ts\" npm run spec-all"
   },
   "repository": {
     "type": "git",
