@@ -1,9 +1,14 @@
 {
   "name": "goodrouter",
   "description": "a good router",
-  "main": "./node/main.js",
-  "module": "./module/main.js",
-  "types": "./types/main.d.ts",
+  "main": "node/main.js",
+  "module": "module/main.js",
+  "types": "types/main.d.ts",
+  "files": [
+    "node/*",
+    "module/*",
+    "types/*"
+  ],
   "scripts": {
     "prepare": "npm run compile",
     "compile": "tsc && tsc --project tsconfig.module.json",
