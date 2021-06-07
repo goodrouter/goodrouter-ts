@@ -67,7 +67,7 @@ export function findRoute(
         if (route !== null) return route;
     }
 
-    // if the node had a route key and there is no path left to match against then we found a route
+    // if the node had a route name and there is no path left to match against then we found a route
     if (node.name !== null && path.length === 0) {
         return {
             name: node.name,
@@ -85,3 +85,155 @@ export function insertRoute(
 ) {
     return node;
 }
+
+export function optimizeRouteNode(node: RouteNode): RouteNode {
+    node = explodeRouteNodes(node);
+    node = mergeRouteNodes(node);
+    node = implodeRouteNodes(node);
+    node = sortRouteNodes(node);
+    return node;
+}
+
+export function sortRouteNodes(node: RouteNode): RouteNode {
+    const children = node.children.map(sortRouteNodes);
+
+    children.sort((a, b) => {
+        if ((a.parameter === null) > (b.parameter === null)) return -1;
+        if ((a.parameter === null) < (b.parameter === null)) return 1;
+
+        if ((a.name === null) > (b.name === null)) return -1;
+        if ((a.name === null) < (b.name === null)) return 1;
+
+        if (a.suffix.length > b.suffix.length) return -1;
+        if (a.suffix.length < b.suffix.length) return 1;
+
+        if (a.suffix > b.suffix) return 1;
+        if (a.suffix < b.suffix) return -1;
+
+        return 0;
+    });
+
+    return { ...node, ...{ children } };
+}
+
+export function explodeRouteNodes(node: RouteNode): RouteNode {
+    const suffix = node.suffix;
+    const suffixLength = suffix.length;
+
+    node = {
+        ...node,
+        children: node.children.map(explodeRouteNodes),
+    };
+
+    if (suffixLength <= 1) {
+        return node;
+    }
+
+    const parameter = node.parameter;
+    const name = node.name;
+
+    for (let index = suffixLength - 1; index >= 0; index--) {
+        if (index === suffixLength - 1) {
+            node = {
+                suffix: suffix[index],
+                name,
+                parameter: null,
+                children: node.children,
+            };
+        }
+        else if (index === 0) {
+            node = {
+                suffix: suffix[index],
+                name: null,
+                parameter,
+                children: [node],
+            };
+        }
+        else {
+            node = {
+                suffix: suffix[index],
+                name: null,
+                parameter: null,
+                children: [node],
+            };
+        }
+    }
+
+    return node;
+}
+
+export function implodeRouteNodes(node: RouteNode): RouteNode {
+    node = {
+        ...node,
+        ...{ children: node.children.map(implodeRouteNodes) },
+    };
+
+    if (node.children.length === 1) {
+        const [child] = node.children;
+
+        if (node.name === null && child.parameter === null) {
+            node = {
+                suffix: node.suffix + child.suffix,
+                parameter: node.parameter,
+                name: child.name,
+                children: child.children,
+            };
+        }
+    }
+
+    return node;
+}
+
+export function mergeRouteNodes(node: RouteNode): RouteNode {
+    let children = [...node.children];
+
+    children.sort((a, b) => {
+        if (a.suffix > b.suffix) return 1;
+        if (a.suffix < b.suffix) return -1;
+        return 0;
+    });
+
+    for (let childIndex = 1; childIndex < children.length; childIndex++) {
+        const child = children[childIndex];
+        const childPrev = children[childIndex - 1];
+
+        // when suffix is not the same we won't merge
+        if (
+            child.suffix !== childPrev.suffix
+        ) continue;
+
+        // merge when parameter is the same or null
+        if (
+            child.parameter !== null &&
+            childPrev.parameter !== null &&
+            child.parameter !== childPrev.parameter
+        ) continue;
+
+        // merge when name is the same or null
+        if (
+            child.name !== null &&
+            childPrev.name !== null &&
+            child.name !== childPrev.name
+        ) continue;
+
+        child.name ??= childPrev.name;
+        child.parameter ??= childPrev.parameter;
+
+        child.children = [
+            ...childPrev.children,
+            ...child.children,
+        ];
+
+        delete children[childIndex - 1];
+    }
+
+    children = children.
+        filter(child => child).
+        map(mergeRouteNodes);
+
+    return {
+        ...node,
+        ...{ children },
+    };
+}
+

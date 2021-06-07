@@ -1,5 +1,5 @@
 import test from "tape-promise/tape.js";
-import { findRoute, RouteNode } from "./route-node.js";
+import { findRoute, implodeRouteNodes, mergeRouteNodes, optimizeRouteNode, RouteNode } from "./route-node.js";
 
 test("find-route", async t => {
     const rootRouteNode: RouteNode = {
@@ -130,4 +130,187 @@ test("find-route", async t => {
         t.deepEqual(actual, expected);
     }
 
+});
+
+test("optmize-route-nodes", async t => {
+    const actual = optimizeRouteNode({
+        suffix: "", name: null, parameter: null,
+        children: [
+            {
+                suffix: "/match", name: "/match", parameter: null,
+                children: [],
+            },
+            {
+                suffix: "/match/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "", name: "/match/{match-id}", parameter: "match-id",
+                        children: [],
+                    },
+                ],
+            },
+            {
+                suffix: "/match/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "/demofile", name: "/match/{match-id}/demofile", parameter: "match-id",
+                        children: [],
+                    },
+                ],
+            },
+        ],
+    });
+
+    const expected = {
+        suffix: "/match", name: "/match", parameter: null,
+        children: [
+            {
+                suffix: "/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "/demofile", name: "/match/{match-id}/demofile", parameter: "match-id",
+                        children: [],
+                    },
+                    {
+                        suffix: "", name: "/match/{match-id}", parameter: "match-id",
+                        children: [
+                        ],
+                    },
+                ],
+            },
+        ],
+    };
+
+    t.deepEqual(actual, expected);
+});
+
+test("merge-route-nodes", async t => {
+    const actual = mergeRouteNodes({
+        suffix: "", name: null, parameter: null,
+        children: [
+            {
+                suffix: "/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "a", name: null, parameter: null,
+                        children: [],
+                    },
+                ],
+            },
+            {
+                suffix: "/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "b", name: null, parameter: null,
+                        children: [],
+                    },
+                ],
+            },
+        ],
+    });
+    const expected = {
+        suffix: "", name: null, parameter: null,
+        children: [
+            {
+                suffix: "/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "a", name: null, parameter: null,
+                        children: [],
+                    },
+                    {
+                        suffix: "b", name: null, parameter: null,
+                        children: [],
+                    },
+                ],
+            },
+        ],
+    };
+
+    t.deepEqual(actual, expected);
+});
+
+test("implode-route-nodes", async t => {
+    const actual = implodeRouteNodes({
+        suffix: "", name: null, parameter: null,
+        children: [
+            {
+                suffix: "/", name: null, parameter: null,
+                children: [
+                    {
+                        suffix: "a", name: null, parameter: null,
+                        children: [],
+                    },
+                    {
+                        suffix: "b", name: null, parameter: null,
+                        children: [
+                            {
+                                suffix: "c", name: "c", parameter: null,
+                                children: [
+                                    {
+                                        suffix: "d", name: "d", parameter: null,
+                                        children: [],
+                                    },
+
+                                ],
+                            },
+
+                        ],
+                    },
+                    {
+                        suffix: "e", name: "e", parameter: null,
+                        children: [
+                            {
+                                suffix: "f", name: null, parameter: "f",
+                                children: [
+                                    {
+                                        suffix: "g", name: "g", parameter: "g",
+                                        children: [],
+                                    },
+
+                                ],
+                            },
+
+                        ],
+                    },
+                ],
+            },
+        ],
+    });
+
+    const expected = {
+        suffix: "/", name: null, parameter: null,
+        children: [
+            {
+                suffix: "a", name: null, parameter: null,
+                children: [],
+            },
+            {
+                suffix: "bc", name: "c", parameter: null,
+                children: [
+                    {
+                        suffix: "d", name: "d", parameter: null,
+                        children: [],
+                    },
+                ],
+            },
+            {
+                suffix: "e", name: "e", parameter: null,
+                children: [
+                    {
+                        suffix: "f", name: null, parameter: "f",
+                        children: [
+                            {
+                                suffix: "g", name: "g", parameter: "g",
+                                children: [],
+                            },
+
+                        ],
+                    },
+                ],
+            },
+        ],
+    };
+
+    t.deepEqual(actual, expected);
 });
