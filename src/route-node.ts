@@ -113,7 +113,10 @@ export function sortRouteNodes(node: RouteNode): RouteNode {
         return 0;
     });
 
-    return { ...node, ...{ children } };
+    return {
+        ...node,
+        children,
+    };
 }
 
 export function explodeRouteNodes(node: RouteNode): RouteNode {
@@ -165,7 +168,7 @@ export function explodeRouteNodes(node: RouteNode): RouteNode {
 export function implodeRouteNodes(node: RouteNode): RouteNode {
     node = {
         ...node,
-        ...{ children: node.children.map(implodeRouteNodes) },
+        children: node.children.map(implodeRouteNodes),
     };
 
     if (node.children.length === 1) {
@@ -233,7 +236,7 @@ export function mergeRouteNodes(node: RouteNode): RouteNode {
 
     return {
         ...node,
-        ...{ children },
+        children,
     };
 }
 
