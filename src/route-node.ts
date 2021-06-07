@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { emitTemplatePathParts } from "./path";
+import { emitTemplatePathParts } from "./path.js";
 
 export interface RouteNode {
     // name that identifies the route
