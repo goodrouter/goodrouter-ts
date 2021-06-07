@@ -1,5 +1,6 @@
-import * as assert from "assert";
+import assert from "assert";
 import { emitTemplatePathParts } from "./path.js";
+import { Route } from "./route.js";
 
 export interface RouteNode {
     // name that identifies the route
@@ -12,16 +13,12 @@ export interface RouteNode {
     children: RouteNode[];
 }
 
-export interface Route {
-    name: string;
-    parameters: Record<string, string>;
-}
-
 export function findRoute(
-    node: RouteNode,
+    node: RouteNode | null,
     path: string,
     parameters: Record<string, string> = {},
 ): Route | null {
+    if (!node) return null;
 
     if (node.parameter === null) {
         // if this node does not represent a parameter we expect the path to start with the suffix
@@ -83,21 +80,23 @@ export function findRoute(
 }
 
 export function insertRoute(
-    node: RouteNode,
+    node: RouteNode | null,
     name: string,
     template: string,
 ) {
     let newNode = makeRouteNode(name, template);
-    newNode = {
-        name: null,
-        children: [
-            node,
-            newNode,
-        ],
-        parameter: null,
-        suffix: "",
-    };
-    newNode = optimizeRouteNode(newNode);
+    if (node) {
+        newNode = {
+            name: null,
+            children: [
+                node,
+                newNode,
+            ],
+            parameter: null,
+            suffix: "",
+        };
+        newNode = optimizeRouteNode(newNode);
+    }
     return newNode;
 }
 

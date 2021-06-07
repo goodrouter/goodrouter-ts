@@ -1,16 +1,16 @@
-import { findRoute, insertRoute, Route, RouteNode } from "./route-node.js";
+import { findRoute, insertRoute, RouteNode } from "./route-node.js";
+import { Route } from "./route.js";
 
 export class Router {
 
     constructor(
-        private rootNode: RouteNode = {
-            name: null,
-            children: [],
-            parameter: null,
-            suffix: "",
-        },
+        private rootNode: RouteNode | null = null,
     ) {
 
+    }
+
+    public getRootNode() {
+        return this.rootNode;
     }
 
     public findRoute(path: string): Route | null {
