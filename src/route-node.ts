@@ -51,9 +51,7 @@ export function findRoute(
         // update parameters, parameters is immutable!
         parameters = {
             ...parameters,
-            ...{
-                [node.parameter]: value,
-            },
+            [node.parameter]: value,
         };
     }
 
@@ -79,4 +77,11 @@ export function findRoute(
 
     // we have not found a route :-(
     return null;
+}
+
+export function insertRoute(
+    node: RouteNode,
+    template: string,
+) {
+    return node;
 }

@@ -1,5 +1,5 @@
 import test from "tape-promise/tape.js";
-import { findRoute, RouteNode } from "./route.js";
+import { findRoute, RouteNode } from "./route-node.js";
 
 test("find-route", async t => {
     const rootRouteNode: RouteNode = {
