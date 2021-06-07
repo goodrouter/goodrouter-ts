@@ -1,5 +1,5 @@
 import test from "tape-promise/tape.js";
-import { findRoute, implodeRouteNodes, mergeRouteNodes, optimizeRouteNode, RouteNode } from "./route-node.js";
+import { findRoute, implodeRouteNodes, insertRoute, mergeRouteNodes, optimizeRouteNode, RouteNode } from "./route-node.js";
 
 test("find-route", async t => {
     const rootRouteNode: RouteNode = {
@@ -130,6 +130,107 @@ test("find-route", async t => {
         t.deepEqual(actual, expected);
     }
 
+});
+
+test("insert-route", async t => {
+    let node: RouteNode | null = null;
+
+    node = insertRoute(node, "1", "/a/");
+    t.deepEqual(
+        node,
+        {
+            name: "1",
+            suffix: "/a/",
+            parameter: null,
+            children: [],
+        },
+    );
+
+    node = insertRoute(node, "2", "/a");
+    t.deepEqual(
+        node,
+        {
+            name: "2",
+            suffix: "/a",
+            parameter: null,
+            children: [
+                {
+                    name: "1",
+                    suffix: "/",
+                    parameter: null,
+                    children: [],
+                },
+            ],
+        },
+    );
+
+    node = insertRoute(node, "3", "/a/{b}/c/{d}");
+    t.deepEqual(
+        node,
+        {
+            name: "2",
+            suffix: "/a",
+            parameter: null,
+            children: [
+                {
+                    name: "1",
+                    suffix: "/",
+                    parameter: null,
+                    children: [
+                        {
+                            name: null,
+                            suffix: "/c/",
+                            parameter: "b",
+                            children: [
+                                {
+                                    name: "3",
+                                    suffix: "",
+                                    parameter: "d",
+                                    children: [],
+                                }],
+                        },
+                    ],
+                },
+            ],
+        },
+    );
+
+    node = insertRoute(node, "4", "/a/{bb}/c");
+    t.deepEqual(
+        node,
+        {
+            name: "2",
+            suffix: "/a",
+            parameter: null,
+            children: [
+                {
+                    name: "1",
+                    suffix: "/",
+                    parameter: null,
+                    children: [
+                        {
+                            name: null,
+                            suffix: "/c/",
+                            parameter: "b",
+                            children: [
+                                {
+                                    name: "3",
+                                    suffix: "",
+                                    parameter: "d",
+                                    children: [],
+                                }],
+                        },
+                        {
+                            name: "4",
+                            suffix: "/c",
+                            parameter: "bb",
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        },
+    );
 });
 
 test("optmize-route-nodes", async t => {

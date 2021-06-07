@@ -1,6 +1,7 @@
 import assert from "assert";
 import { emitTemplatePathParts } from "./path.js";
 import { Route } from "./route.js";
+import { findCommonPrefixLength } from "./string.js";
 
 export interface RouteNode {
     // name that identifies the route
@@ -86,6 +87,22 @@ export function insertRoute(
 ) {
     let newNode = makeRouteNode(name, template);
     if (!node) return newNode;
+
+    if (node.suffix === newNode.suffix) {
+        assert(!(node.name !== null && newNode.name !== null));
+
+        return {
+            name: node.name ?? newNode.name,
+            children: [
+                ...node.children,
+                ...newNode.children,
+            ],
+            parameter: node.parameter ?? newNode.parameter,
+            suffix: node.suffix,
+        };
+    }
+
+    const commonPrefixLength = findCommonPrefixLength(node.suffix, newNode.suffix);
 
     newNode = {
         name: null,
