@@ -1,3 +1,6 @@
+import * as assert from "assert";
+import { emitTemplateParts as emitTemplatePathParts } from "./path";
+
 export interface RouteNode {
     // name that identifies the route
     name: string | null;
@@ -81,9 +84,21 @@ export function findRoute(
 
 export function insertRoute(
     node: RouteNode,
+    name: string,
     template: string,
 ) {
-    return node;
+    let newNode = makeRouteNode(name, template);
+    newNode = {
+        name: null,
+        children: [
+            node,
+            newNode,
+        ],
+        parameter: null,
+        suffix: "",
+    };
+    newNode = optimizeRouteNode(newNode);
+    return newNode;
 }
 
 export function optimizeRouteNode(node: RouteNode): RouteNode {
@@ -238,5 +253,38 @@ export function mergeRouteNodes(node: RouteNode): RouteNode {
         ...node,
         children,
     };
+}
+
+export function makeRouteNode(
+    name: string,
+    template: string,
+) {
+    const parts = Array.from(emitTemplatePathParts(template));
+
+    const suffix = parts.pop();
+    const parameter = parts.pop() ?? null;
+    assert(suffix !== undefined);
+
+    let node: RouteNode = {
+        suffix,
+        name,
+        parameter,
+        children: [],
+    };
+
+    while (parts.length > 0) {
+        const suffix = parts.pop();
+        const parameter = parts.pop() ?? null;
+        assert(suffix !== undefined);
+
+        node = {
+            suffix,
+            name: null,
+            parameter,
+            children: [node],
+        };
+    }
+
+    return node;
 }
 

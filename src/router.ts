@@ -17,7 +17,7 @@ export class Router {
         return findRoute(this.rootNode, path);
     }
 
-    public insertRoute(template: string) {
-        this.rootNode = insertRoute(this.rootNode, template);
+    public insertRoute(name: string, template: string) {
+        this.rootNode = insertRoute(this.rootNode, name, template);
     }
 }
