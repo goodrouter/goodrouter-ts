@@ -85,18 +85,19 @@ export function insertRoute(
     template: string,
 ) {
     let newNode = makeRouteNode(name, template);
-    if (node) {
-        newNode = {
-            name: null,
-            children: [
-                node,
-                newNode,
-            ],
-            parameter: null,
-            suffix: "",
-        };
-        newNode = optimizeRouteNode(newNode);
-    }
+    if (!node) return newNode;
+
+    newNode = {
+        name: null,
+        children: [
+            node,
+            newNode,
+        ],
+        parameter: null,
+        suffix: "",
+    };
+    newNode = optimizeRouteNode(newNode);
+
     return newNode;
 }
 
@@ -110,23 +111,7 @@ export function optimizeRouteNode(node: RouteNode): RouteNode {
 
 export function sortRouteNodes(node: RouteNode): RouteNode {
     const children = node.children.map(sortRouteNodes);
-
-    children.sort((a, b) => {
-        if ((a.parameter === null) > (b.parameter === null)) return -1;
-        if ((a.parameter === null) < (b.parameter === null)) return 1;
-
-        if ((a.name === null) > (b.name === null)) return -1;
-        if ((a.name === null) < (b.name === null)) return 1;
-
-        if (a.suffix.length > b.suffix.length) return -1;
-        if (a.suffix.length < b.suffix.length) return 1;
-
-        if (a.suffix > b.suffix) return 1;
-        if (a.suffix < b.suffix) return -1;
-
-        return 0;
-    });
-
+    children.sort(compareRouteNodes);
     return {
         ...node,
         children,
@@ -287,3 +272,19 @@ export function makeRouteNode(
     return node;
 }
 
+export function compareRouteNodes(a: RouteNode, b: RouteNode) {
+    if ((a.parameter === null) > (b.parameter === null)) return -1;
+    if ((a.parameter === null) < (b.parameter === null)) return 1;
+
+    if ((a.name === null) > (b.name === null)) return -1;
+    if ((a.name === null) < (b.name === null)) return 1;
+
+    if (a.suffix.length > b.suffix.length) return -1;
+    if (a.suffix.length < b.suffix.length) return 1;
+
+    if (a.suffix > b.suffix) return 1;
+    if (a.suffix < b.suffix) return -1;
+
+    return 0;
+
+}

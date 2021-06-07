@@ -7,6 +7,7 @@ test("router", async t => {
     router.insertRoute("one", "/a");
     router.insertRoute("two", "/a/{x}/{y}");
     router.insertRoute("three", "/c/{x}");
+    router.insertRoute("four", "/c/{x}/{y}/");
 
     {
         const route = router.findRoute("/a");
@@ -26,6 +27,20 @@ test("router", async t => {
         assert(route);
         t.equal(route.name, "three");
         t.deepEqual(route.parameters, { x: "3" });
+    }
+
+    {
+        const route = router.findRoute("/c/3/4");
+        assert(route);
+        t.equal(route.name, "three");
+        t.deepEqual(route.parameters, { x: "3/4" });
+    }
+
+    {
+        const route = router.findRoute("/c/3/4/");
+        assert(route);
+        t.equal(route.name, "four");
+        t.deepEqual(route.parameters, { x: "3", y: "4" });
     }
 });
 
