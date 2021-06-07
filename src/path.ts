@@ -1,4 +1,4 @@
-export function* emitTemplateParts(template: string) {
+export function* emitTemplatePathParts(template: string) {
     const re = /(.*?)\{(.*?)\}/g;
     let match;
     let lastIndex = 0;
