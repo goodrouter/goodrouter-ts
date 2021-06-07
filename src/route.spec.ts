@@ -2,19 +2,19 @@ import test from "tape-promise/tape.js";
 import { findRoute, RouteNode } from "./route.js";
 
 test("find-route", async t => {
-    const rootRouteNode: RouteNode<string> = {
+    const rootRouteNode: RouteNode = {
         suffix: "",
-        key: null,
+        name: null,
         parameter: null,
         children: [
             {
                 suffix: "/x/",
-                key: null,
+                name: null,
                 parameter: null,
                 children: [
                     {
                         suffix: "/z",
-                        key: "xyz",
+                        name: "xyz",
                         parameter: "y",
                         children: [],
                     },
@@ -22,17 +22,17 @@ test("find-route", async t => {
             },
             {
                 suffix: "/a/b/c/d/e",
-                key: null,
+                name: null,
                 parameter: null,
                 children: [
                     {
                         suffix: "/",
-                        key: "abcde",
+                        name: "abcde",
                         parameter: null,
                         children: [
                             {
                                 suffix: "",
-                                key: "abcde",
+                                name: "abcde",
                                 parameter: "f",
                                 children: [],
                             },
@@ -43,29 +43,29 @@ test("find-route", async t => {
             },
             {
                 suffix: "/a",
-                key: null,
+                name: null,
                 parameter: null,
                 children: [
                     {
                         suffix: "/b",
-                        key: "ab",
+                        name: "ab",
                         parameter: null,
                         children: [
                             {
                                 suffix: "/c",
-                                key: "abc",
+                                name: "abc",
                                 parameter: null,
                                 children: [],
                             },
                             {
                                 suffix: "/c/d",
-                                key: "abcd",
+                                name: "abcd",
                                 parameter: null,
                                 children: [],
                             },
                             {
                                 suffix: "",
-                                key: "abx",
+                                name: "abx",
                                 parameter: "x",
                                 children: [],
                             },
@@ -79,7 +79,7 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/a/b");
         const expected = {
-            key: "ab",
+            name: "ab",
             parameters: {},
         };
         t.deepEqual(actual, expected);
@@ -88,7 +88,7 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/a/b/c");
         const expected = {
-            key: "abc",
+            name: "abc",
             parameters: {},
         };
         t.deepEqual(actual, expected);
@@ -97,7 +97,7 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/a/b/c/d");
         const expected = {
-            key: "abcd",
+            name: "abcd",
             parameters: {},
         };
         t.deepEqual(actual, expected);
@@ -106,8 +106,8 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/a/b/x");
         const expected = {
-            key: "abx",
-            parameters: { x: ["/x"] },
+            name: "abx",
+            parameters: { x: "/x" },
         };
         t.deepEqual(actual, expected);
     }
@@ -115,8 +115,8 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/a/b/c/d/e/f");
         const expected = {
-            key: "abcde",
-            parameters: { f: ["f"] },
+            name: "abcde",
+            parameters: { f: "f" },
         };
         t.deepEqual(actual, expected);
     }
@@ -124,8 +124,8 @@ test("find-route", async t => {
     {
         const actual = findRoute(rootRouteNode, "/x/y/z");
         const expected = {
-            key: "xyz",
-            parameters: { y: ["y"] },
+            name: "xyz",
+            parameters: { y: "y" },
         };
         t.deepEqual(actual, expected);
     }

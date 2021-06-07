@@ -1,24 +1,24 @@
-export interface RouteNode<K extends PropertyKey> {
-    // key to identify the route
-    key: K | null;
+export interface RouteNode {
+    // name that identifies the route
+    name: string | null;
     // suffix that comes after the parameter value (if any!) of the path
     suffix: string;
     // parameter name or null if this node does not represent a prameter
     parameter: string | null;
     // children that represent the rest of the path that needs to be matched
-    children: RouteNode<K>[];
+    children: RouteNode[];
 }
 
-export interface Route<K extends PropertyKey> {
-    key: K;
-    parameters: Record<string, string[]>;
+export interface Route {
+    name: string;
+    parameters: Record<string, string>;
 }
 
-export function findRoute<K extends PropertyKey>(
-    node: RouteNode<K>,
+export function findRoute(
+    node: RouteNode,
     path: string,
-    parameters: Record<string, string[]> = {},
-): Route<K> | null {
+    parameters: Record<string, string> = {},
+): Route | null {
 
     if (node.parameter === null) {
         // if this node does not represent a parameter we expect the path to start with the suffix
@@ -52,10 +52,7 @@ export function findRoute<K extends PropertyKey>(
         parameters = {
             ...parameters,
             ...{
-                [node.parameter]: [
-                    ...parameters[node.parameter] ?? [],
-                    value,
-                ],
+                [node.parameter]: value,
             },
         };
     }
@@ -73,9 +70,9 @@ export function findRoute<K extends PropertyKey>(
     }
 
     // if the node had a route key and there is no path left to match against then we found a route
-    if (node.key !== null && path.length === 0) {
+    if (node.name !== null && path.length === 0) {
         return {
-            key: node.key,
+            name: node.name,
             parameters,
         };
     }
