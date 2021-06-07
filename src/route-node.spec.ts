@@ -218,7 +218,8 @@ test("insert-route", async t => {
                                     suffix: "",
                                     parameter: "d",
                                     children: [],
-                                }],
+                                },
+                            ],
                         },
                         {
                             name: "4",
