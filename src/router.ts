@@ -1,5 +1,5 @@
 import { synchronize } from "synchronize-async";
-import { RouteParams, RoutePath, uniqueReducer } from ".";
+import { RouteParams, RoutePath, uniqueReducer } from "./index.js";
 
 export interface RouteLocalState { [name: string]: any; }
 export type RouterHook<T> = (this: Router, state: RouteState) => Promise<T> | T;
@@ -236,7 +236,10 @@ export class Router {
                 await this.applyRenderHandler(state, nextRouteStack) :
                 null;
         } finally {
-            Object.assign(this, { lastParams: nextParams, lastRoute: nextRoute, lastContext: context });
+            Object.assign(
+                this,
+                { lastParams: nextParams, lastRoute: nextRoute, lastContext: context },
+            );
         }
 
         return result;

@@ -1,5 +1,5 @@
-import * as test from "blue-tape";
-import { uniqueReducer } from "./collections";
+import test from "tape-promise/tape.js";
+import { uniqueReducer } from "./collections.js";
 
 test("uniqueReducer", async t => {
     t.deepEqual(
