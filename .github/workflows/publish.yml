@@ -12,6 +12,7 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm run prepare
+      - run: npm version ${{ github.event.release.tag_name }}
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
