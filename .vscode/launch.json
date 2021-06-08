@@ -10,7 +10,7 @@
             "cwd": "${workspaceRoot}",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/node/**/*.js"
+                "${workspaceRoot}/out/**/*.js"
             ],
             "preLaunchTask": "watch"
         }
