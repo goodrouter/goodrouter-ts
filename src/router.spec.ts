@@ -23,6 +23,15 @@ test("router", async t => {
     }
 
     {
+        const path = router.stringifyRoute({
+            name: "two",
+            parameters: { x: "1", y: "2" },
+        });
+        assert(path);
+        t.equal(path, "/a/1/2");
+    }
+
+    {
         const route = router.parseRoute("/c/3");
         assert(route);
         t.equal(route.name, "three");
@@ -34,6 +43,15 @@ test("router", async t => {
         assert(route);
         t.equal(route.name, "three");
         t.deepEqual(route.parameters, { x: "3/4" });
+    }
+
+    {
+        const path = router.stringifyRoute({
+            name: "three",
+            parameters: { x: "3/4" },
+        });
+        assert(path);
+        t.equal(path, "/c/3/4");
     }
 
     {
