@@ -19,11 +19,13 @@ export class Router {
 
     public insertRoute(name: string, template: string) {
         const node = makeRouteNode(name, template);
-
-        this.rootNode.children.push(getRootNode(node));
         this.leafNodes.set(name, node);
 
-        optimizeRouteNode(node);
+        const rootNode = getRootNode(node);
+        rootNode.parent = this.rootNode;
+        this.rootNode.children.push(rootNode);
+
+        optimizeRouteNode(rootNode);
     }
 
     public stringifyRoute(route: Route): string | null {
