@@ -18,14 +18,14 @@ export class Router {
     }
 
     public insertRoute(name: string, template: string) {
-        const node = makeRouteNode(name, template);
-        this.leafNodes.set(name, node);
+        const newNode = makeRouteNode(name, template);
+        this.leafNodes.set(name, newNode);
 
-        const rootNode = getRootNode(node);
-        rootNode.parent = this.rootNode;
-        this.rootNode.children.push(rootNode);
+        const rootChildNode = getRootNode(newNode);
+        rootChildNode.parent = this.rootNode;
+        this.rootNode.children.push(rootChildNode);
 
-        optimizeRouteNode(rootNode);
+        optimizeRouteNode(rootChildNode);
     }
 
     public stringifyRoute(route: Route): string | null {

@@ -1,6 +1,7 @@
 import assert from "assert";
 import { emitTemplatePathParts } from "./path.js";
 import { Route } from "./route.js";
+import { findCommonPrefixLength } from "./string.js";
 
 export interface RouteNode {
     // name that identifies the route
@@ -165,6 +166,63 @@ export function sortRouteNodeAndParents(node: RouteNode) {
     }
 }
 
-export function optimizeRouteNode(node: RouteNode) {
-    sortRouteNodeAndParents(node);
+export function optimizeRouteNode(newNode: RouteNode) {
+    const parentNode = newNode.parent;
+    if (!parentNode) throw new Error("cannot optimize root node");
+
+    let similarNode: RouteNode | null = null;
+    let commonPrefix = "";
+
+    // find similar node, so we can merge them
+    for (const childNode of parentNode.children) {
+        if (childNode === newNode) continue;
+
+        const commonPrefixLength = findCommonPrefixLength(newNode.suffix, childNode.suffix);
+        if (commonPrefixLength === 0) continue;
+
+        commonPrefix = newNode.suffix.substring(0, commonPrefixLength);
+        similarNode = childNode;
+
+        break;
+    }
+
+    if (similarNode == null) {
+        // no similar node found! cannot optimize this
+        return;
+    }
+
+    const newNodeIndex = parentNode.children.indexOf(newNode);
+    const similarNodeIndex = parentNode.children.indexOf(similarNode);
+
+    assert(newNodeIndex >= 0);
+    assert(similarNodeIndex >= 0);
+
+    if (newNode.suffix === similarNode.suffix) {
+        if (
+            newNode.parameter != null &&
+            similarNode.parameter != null &&
+            newNode.parameter !== similarNode.parameter
+        ) {
+            // we can only merge if the parameters are the same or one is empty
+            return;
+        }
+
+        if (
+            newNode.name != null &&
+            similarNode.name != null &&
+            newNode.name !== similarNode.name
+        ) {
+            // only merge if the name is the same or one is empty
+            return;
+        }
+
+        similarNode.name ??= similarNode.name;
+        similarNode.parameter ??= similarNode.parameter;
+        similarNode.children.push(...newNode.children);
+
+        parentNode.children.splice(newNodeIndex, 1);
+
+        newNode.children.forEach(optimizeRouteNode);
+    }
+
 }
