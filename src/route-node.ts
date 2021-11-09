@@ -115,8 +115,8 @@ export function makeRouteNode(
     assert(suffix !== undefined);
 
     const node: RouteNode = {
-        suffix,
         name,
+        suffix,
         parameter,
         children: [],
         parent: null,
@@ -156,31 +156,33 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
     if (a.suffix < b.suffix) return -1;
 
     return 0;
-
-}
-
-export function sortRouteNodeAndParents(node: RouteNode) {
-    node.children.sort(compareRouteNodes);
-    if (node.parent) {
-        sortRouteNodeAndParents(node.parent);
-    }
 }
 
 export function optimizeRouteNode(newNode: RouteNode) {
     const parentNode = newNode.parent;
     if (!parentNode) throw new Error("cannot optimize root node");
 
+    const newNodeIndex = parentNode.children.indexOf(newNode);
+    assert(newNodeIndex >= 0);
+
+    let similarNodeIndex = -1;
     let similarNode: RouteNode | null = null;
     let commonPrefix = "";
 
-    // find similar node, so we can merge them
-    for (const childNode of parentNode.children) {
-        if (childNode === newNode) continue;
+    for (
+        let childNodeIndex = 0;
+        childNodeIndex < parentNode.children.length;
+        childNodeIndex++
+    ) {
+        if (childNodeIndex === newNodeIndex) continue;
+
+        const childNode = parentNode.children[childNodeIndex];
 
         const commonPrefixLength = findCommonPrefixLength(newNode.suffix, childNode.suffix);
         if (commonPrefixLength === 0) continue;
 
         commonPrefix = newNode.suffix.substring(0, commonPrefixLength);
+        similarNodeIndex = childNodeIndex;
         similarNode = childNode;
 
         break;
@@ -191,38 +193,98 @@ export function optimizeRouteNode(newNode: RouteNode) {
         return;
     }
 
-    const newNodeIndex = parentNode.children.indexOf(newNode);
-    const similarNodeIndex = parentNode.children.indexOf(similarNode);
-
-    assert(newNodeIndex >= 0);
-    assert(similarNodeIndex >= 0);
-
     if (newNode.suffix === similarNode.suffix) {
-        if (
-            newNode.parameter != null &&
-            similarNode.parameter != null &&
-            newNode.parameter !== similarNode.parameter
-        ) {
-            // we can only merge if the parameters are the same or one is empty
-            return;
-        }
-
         if (
             newNode.name != null &&
             similarNode.name != null &&
             newNode.name !== similarNode.name
         ) {
-            // only merge if the name is the same or one is empty
-            return;
+            throw new Error("ambiguous route");
         }
 
-        similarNode.name ??= similarNode.name;
-        similarNode.parameter ??= similarNode.parameter;
-        similarNode.children.push(...newNode.children);
+        if (
+            newNode.parameter != null &&
+            similarNode.parameter != null &&
+            newNode.parameter !== similarNode.parameter
+        ) {
+            const intermediateNode: RouteNode = {
+                name: null,
+                suffix: commonPrefix,
+                parameter: null,
+                children: [
+                    similarNode,
+                    newNode,
+                ],
+                parent: parentNode,
+            };
+            parentNode.children.splice(similarNodeIndex, 1, intermediateNode);
+            parentNode.children.splice(newNodeIndex, 1);
 
+            similarNode.suffix = "";
+            similarNode.parent = intermediateNode;
+
+            newNode.suffix = "";
+            newNode.parent = intermediateNode;
+
+            intermediateNode.children.sort(compareRouteNodes);
+        }
+        else {
+            parentNode.children.splice(newNodeIndex, 1);
+
+            similarNode.name ??= newNode.name;
+            similarNode.parameter ??= newNode.parameter;
+            similarNode.children.push(...newNode.children);
+
+            newNode.children.forEach(optimizeRouteNode);
+
+            similarNode.children.sort(compareRouteNodes);
+        }
+    }
+    else if (newNode.suffix === commonPrefix) {
+        parentNode.children.splice(similarNodeIndex, 1);
+
+        similarNode.suffix = similarNode.suffix.substring(commonPrefix.length);
+
+        newNode.children.push(similarNode);
+        similarNode.parent = newNode;
+
+        optimizeRouteNode(similarNode);
+
+        newNode.children.sort(compareRouteNodes);
+    }
+    else if (similarNode.suffix === commonPrefix) {
         parentNode.children.splice(newNodeIndex, 1);
 
-        newNode.children.forEach(optimizeRouteNode);
+        newNode.suffix = newNode.suffix.substring(commonPrefix.length);
+
+        similarNode.children.push(newNode);
+        newNode.parent = similarNode;
+
+        optimizeRouteNode(newNode);
+
+        similarNode.children.sort(compareRouteNodes);
+    }
+    else {
+        const intermediateNode: RouteNode = {
+            name: null,
+            suffix: commonPrefix,
+            parameter: null,
+            children: [
+                similarNode,
+                newNode,
+            ],
+            parent: parentNode,
+        };
+        parentNode.children.splice(similarNodeIndex, 1, intermediateNode);
+        parentNode.children.splice(newNodeIndex, 1);
+
+        similarNode.suffix = similarNode.suffix.substring(commonPrefix.length);
+        similarNode.parent = intermediateNode;
+
+        newNode.suffix = newNode.suffix.substring(commonPrefix.length);
+        newNode.parent = intermediateNode;
+
+        intermediateNode.children.sort(compareRouteNodes);
     }
 
 }
