@@ -158,12 +158,8 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
 
 }
 
-export function sortRouteNodes(nodes: RouteNode[]) {
-    nodes.sort(compareRouteNodes);
-}
-
 export function sortRouteNodeAndParents(node: RouteNode) {
-    sortRouteNodes(node.children);
+    node.children.sort(compareRouteNodes);
     if (node.parent) {
         sortRouteNodeAndParents(node.parent);
     }

@@ -1,28 +1,30 @@
-import { getRootNode, makeRouteNode, parseRoute, RouteNode, sortRouteNodeAndParents, sortRouteNodes, stringifyRoute } from "./route-node.js";
+import { makeRouteNode, parseRoute, RouteNode, sortRouteNodeAndParents, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 export class Router {
 
-    private rootNodes = new Array<RouteNode>();
+    private rootNode: RouteNode = {
+        name: null,
+        suffix: "",
+        parameter: null,
+        children: [],
+        parent: null,
+    }
     private leafNodes = new Map<string, RouteNode>();
 
     public parseRoute(path: string): Route | null {
-        for (const rootNode of this.rootNodes) {
-            const route = parseRoute(rootNode, path);
-            if (route) return route;
-        }
-        return null;
+        const route = parseRoute(this.rootNode, path);
+        return route;
     }
 
     public insertRoute(name: string, template: string) {
         const node = makeRouteNode(name, template);
-        const rootNode = getRootNode(node);
+        this.rootNode.children.push(node);
 
-        this.rootNodes.push(rootNode);
+        this.rootNode.children.push(node);
         this.leafNodes.set(name, node);
 
         sortRouteNodeAndParents(node);
-        sortRouteNodes(this.rootNodes);
     }
 
     public stringifyRoute(route: Route): string | null {
