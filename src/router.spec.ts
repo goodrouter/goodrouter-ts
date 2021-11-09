@@ -57,9 +57,9 @@ test("router", async t => {
     {
         const route = router.parseRoute("/c/3/4/");
         assert(route);
-        // FIXME
-        // t.equal(route.name, "four");
-        // t.deepEqual(route.parameters, { x: "3", y: "4" });
+
+        t.equal(route.name, "four");
+        t.deepEqual(route.parameters, { x: "3", y: "4" });
     }
 });
 
