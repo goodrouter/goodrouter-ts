@@ -24,7 +24,7 @@ export function stringifyRoute(
     while (node) {
         path = node.anchor + path;
         if (node.parameter && node.parameter in parameters) {
-            path = parameters[node.parameter] + path;
+            path = encodeURIComponent(parameters[node.parameter]) + path;
         }
         node = node.parent;
     }
