@@ -1,7 +1,20 @@
 import { getRootNode, makeRouteNode, optimizeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
+export interface RouterOptions {
+    raw?: boolean
+}
+
 export class Router {
+
+    protected options: Required<RouterOptions>
+
+    constructor(options: RouterOptions = {}) {
+        this.options = {
+            raw: false,
+            ...options,
+        };
+    }
 
     private rootNode: RouteNode = {
         name: null,
@@ -13,7 +26,7 @@ export class Router {
     private leafNodes = new Map<string, RouteNode>();
 
     public parseRoute(path: string): Route | null {
-        const route = parseRoute(this.rootNode, path);
+        const route = parseRoute(this.rootNode, path, this.options.raw);
         return route;
     }
 
@@ -31,6 +44,6 @@ export class Router {
     public stringifyRoute(route: Route): string | null {
         const node = this.leafNodes.get(route.name);
         if (!node) return null;
-        return stringifyRoute(node, route.parameters);
+        return stringifyRoute(node, route.parameters, this.options.raw);
     }
 }
