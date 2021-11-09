@@ -2,7 +2,8 @@ import { getRootNode, makeRouteNode, optimizeRouteNode, parseRoute, RouteNode, s
 import { Route } from "./route.js";
 
 export interface RouterOptions {
-    raw?: boolean
+    encode?: (value: string) => string
+    decode?: (value: string) => string
 }
 
 export class Router {
@@ -11,7 +12,8 @@ export class Router {
 
     constructor(options: RouterOptions = {}) {
         this.options = {
-            raw: false,
+            encode: encodeURI,
+            decode: decodeURI,
             ...options,
         };
     }
@@ -26,7 +28,7 @@ export class Router {
     private leafNodes = new Map<string, RouteNode>();
 
     public parseRoute(path: string): Route | null {
-        const route = parseRoute(this.rootNode, path, this.options.raw);
+        const route = parseRoute(this.rootNode, path, this.options.decode);
         return route;
     }
 
@@ -44,6 +46,6 @@ export class Router {
     public stringifyRoute(route: Route): string | null {
         const node = this.leafNodes.get(route.name);
         if (!node) return null;
-        return stringifyRoute(node, route.parameters, this.options.raw);
+        return stringifyRoute(node, route.parameters, this.options.encode);
     }
 }

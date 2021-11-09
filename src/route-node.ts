@@ -19,18 +19,13 @@ export interface RouteNode {
 export function stringifyRoute(
     node: RouteNode | null,
     parameters: Record<string, string> = {},
-    raw: boolean,
+    encode: (value: string) => string,
 ) {
     let path = "";
     while (node) {
         path = node.anchor + path;
         if (node.parameter && node.parameter in parameters) {
-            if (raw) {
-                path = parameters[node.parameter] + path;
-            }
-            else {
-                path = encodeURI(parameters[node.parameter]) + path;
-            }
+            path = encode(parameters[node.parameter]) + path;
         }
         node = node.parent;
     }
@@ -40,7 +35,7 @@ export function stringifyRoute(
 export function parseRoute(
     node: RouteNode | null,
     path: string,
-    raw: boolean,
+    decode: (value: string) => string,
     parameters: Record<string, string> = {},
 ): Route | null {
     if (!node) return null;
@@ -68,13 +63,8 @@ export function parseRoute(
         }
 
         // get the paremeter value
-        let value;
-        if (raw) {
-            value = path.substring(0, index);
-        }
-        else {
-            value = decodeURI(path.substring(0, index));
-        }
+        const value = decode(path.substring(0, index));
+
         // remove the matches part from the path
         path = path.substring(index + node.anchor.length);
 
@@ -90,7 +80,7 @@ export function parseRoute(
         const route = parseRoute(
             childNode,
             path,
-            raw,
+            decode,
             parameters,
         );
 
