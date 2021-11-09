@@ -5,7 +5,7 @@ export class Router {
 
     private rootNode: RouteNode = {
         name: null,
-        suffix: "",
+        anchor: "",
         parameter: null,
         children: [],
         parent: null,

@@ -7,7 +7,7 @@ export interface RouteNode {
     // name that identifies the route
     name: string | null;
     // suffix that comes after the parameter value (if any!) of the path
-    suffix: string;
+    anchor: string;
     // parameter name or null if this node does not represent a prameter
     parameter: string | null;
     // children that represent the rest of the path that needs to be matched
@@ -22,7 +22,7 @@ export function stringifyRoute(
 ) {
     let path = "";
     while (node) {
-        path = node.suffix + path;
+        path = node.anchor + path;
         if (node.parameter && node.parameter in parameters) {
             path = parameters[node.parameter] + path;
         }
@@ -39,23 +39,23 @@ export function parseRoute(
     if (!node) return null;
 
     if (node.parameter == null) {
-        // if this node does not represent a parameter we expect the path to start with the suffix
-        if (!path.startsWith(node.suffix)) {
+        // if this node does not represent a parameter we expect the path to start with the `anchor`
+        if (!path.startsWith(node.anchor)) {
             // this node does not match the path
             return null;
         }
 
         // we successfully matches the node to the path, now remove the matched part from the path
-        path = path.substring(node.suffix.length);
+        path = path.substring(node.anchor.length);
     }
     else {
         // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
         if (path.length === 0) return null;
 
-        // look for the suffix in the path (note: indexOf is probably the most expensive operation!) If the suffix is empty, match the remainder of the path
-        const index = node.suffix.length === 0 ?
+        // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
+        const index = node.anchor.length === 0 ?
             path.length :
-            path.indexOf(node.suffix);
+            path.indexOf(node.anchor);
         if (index < 0) {
             return null;
         }
@@ -64,7 +64,7 @@ export function parseRoute(
         const value = decodeURIComponent(path.substring(0, index));
 
         // remove the matches part from the path
-        path = path.substring(index + node.suffix.length);
+        path = path.substring(index + node.anchor.length);
 
         // update parameters, parameters is immutable!
         parameters = {
@@ -110,13 +110,13 @@ export function makeRouteNode(
 ) {
     const parts = Array.from(emitTemplatePathParts(template));
 
-    const suffix = parts.pop();
+    const anchor = parts.pop();
     const parameter = parts.pop() ?? null;
-    assert(suffix !== undefined);
+    assert(anchor !== undefined);
 
     const node: RouteNode = {
         name,
-        suffix,
+        anchor: anchor,
         parameter,
         children: [],
         parent: null,
@@ -124,12 +124,12 @@ export function makeRouteNode(
     let rootNode = node;
 
     while (parts.length > 0) {
-        const suffix = parts.pop();
+        const anchor = parts.pop();
         const parameter = parts.pop() ?? null;
-        assert(suffix !== undefined);
+        assert(anchor !== undefined);
 
         const parentNode = {
-            suffix,
+            anchor,
             name: null,
             parameter,
             children: [rootNode],
@@ -149,11 +149,11 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
     if ((a.name == null) > (b.name == null)) return -1;
     if ((a.name == null) < (b.name == null)) return 1;
 
-    if (a.suffix.length > b.suffix.length) return -1;
-    if (a.suffix.length < b.suffix.length) return 1;
+    if (a.anchor.length > b.anchor.length) return -1;
+    if (a.anchor.length < b.anchor.length) return 1;
 
-    if (a.suffix > b.suffix) return 1;
-    if (a.suffix < b.suffix) return -1;
+    if (a.anchor > b.anchor) return 1;
+    if (a.anchor < b.anchor) return -1;
 
     return 0;
 }
@@ -164,6 +164,8 @@ export function optimizeRouteNode(newNode: RouteNode) {
 
     const newNodeIndex = parentNode.children.indexOf(newNode);
     assert(newNodeIndex >= 0);
+
+    // First, find a similar node, a route with a common anchor prefix
 
     let similarNodeIndex = -1;
     let similarNode: RouteNode | null = null;
@@ -178,10 +180,10 @@ export function optimizeRouteNode(newNode: RouteNode) {
 
         const childNode = parentNode.children[childNodeIndex];
 
-        const commonPrefixLength = findCommonPrefixLength(newNode.suffix, childNode.suffix);
+        const commonPrefixLength = findCommonPrefixLength(newNode.anchor, childNode.anchor);
         if (commonPrefixLength === 0) continue;
 
-        commonPrefix = newNode.suffix.substring(0, commonPrefixLength);
+        commonPrefix = newNode.anchor.substring(0, commonPrefixLength);
         similarNodeIndex = childNodeIndex;
         similarNode = childNode;
 
@@ -189,11 +191,13 @@ export function optimizeRouteNode(newNode: RouteNode) {
     }
 
     if (similarNode == null) {
-        // no similar node found! cannot optimize this
+        // no similar node found! cannot optimize this node
         return;
     }
 
-    if (newNode.suffix === similarNode.suffix) {
+    // now that we found a similar node, lets figure out what strategy we need to merge
+
+    if (newNode.anchor === similarNode.anchor) {
         if (
             newNode.name != null &&
             similarNode.name != null &&
@@ -207,9 +211,13 @@ export function optimizeRouteNode(newNode: RouteNode) {
             similarNode.parameter != null &&
             newNode.parameter !== similarNode.parameter
         ) {
+            // this is kind of an edge case, the parameter names are different, but for the rest
+            // the node is the same. We place an intermediate node that groups the two with an
+            // empty anchor.
+
             const intermediateNode: RouteNode = {
                 name: null,
-                suffix: commonPrefix,
+                anchor: commonPrefix,
                 parameter: null,
                 children: [
                     similarNode,
@@ -220,15 +228,18 @@ export function optimizeRouteNode(newNode: RouteNode) {
             parentNode.children.splice(similarNodeIndex, 1, intermediateNode);
             parentNode.children.splice(newNodeIndex, 1);
 
-            similarNode.suffix = "";
+            similarNode.anchor = "";
             similarNode.parent = intermediateNode;
 
-            newNode.suffix = "";
+            newNode.anchor = "";
             newNode.parent = intermediateNode;
 
             intermediateNode.children.sort(compareRouteNodes);
         }
         else {
+            // The two nodes can be merged! This is great! we merge the names, parameter
+            // and the children
+
             parentNode.children.splice(newNodeIndex, 1);
 
             similarNode.name ??= newNode.name;
@@ -240,10 +251,13 @@ export function optimizeRouteNode(newNode: RouteNode) {
             similarNode.children.sort(compareRouteNodes);
         }
     }
-    else if (newNode.suffix === commonPrefix) {
+    else if (newNode.anchor === commonPrefix) {
+        // in this case the similar node should be child of the new node
+        // because the new node anchor is a prefix of the similar node anchor
+
         parentNode.children.splice(similarNodeIndex, 1);
 
-        similarNode.suffix = similarNode.suffix.substring(commonPrefix.length);
+        similarNode.anchor = similarNode.anchor.substring(commonPrefix.length);
 
         newNode.children.push(similarNode);
         similarNode.parent = newNode;
@@ -252,10 +266,12 @@ export function optimizeRouteNode(newNode: RouteNode) {
 
         newNode.children.sort(compareRouteNodes);
     }
-    else if (similarNode.suffix === commonPrefix) {
+    else if (similarNode.anchor === commonPrefix) {
+        // this is the exact inverse of the previous clause
+
         parentNode.children.splice(newNodeIndex, 1);
 
-        newNode.suffix = newNode.suffix.substring(commonPrefix.length);
+        newNode.anchor = newNode.anchor.substring(commonPrefix.length);
 
         similarNode.children.push(newNode);
         newNode.parent = similarNode;
@@ -265,9 +281,15 @@ export function optimizeRouteNode(newNode: RouteNode) {
         similarNode.children.sort(compareRouteNodes);
     }
     else {
+        // we encounteres two nodes that are not the same, and none of the two nodes
+        // has an anchor that is a prefix of the other. Both nodes share a common prefix
+        // in the anchor. We need an intermediate that has the common prefix as the
+        // anchor with the two nodes as children. The common prefix is removed from the
+        // anchor of the two nodes.
+
         const intermediateNode: RouteNode = {
             name: null,
-            suffix: commonPrefix,
+            anchor: commonPrefix,
             parameter: null,
             children: [
                 similarNode,
@@ -278,10 +300,10 @@ export function optimizeRouteNode(newNode: RouteNode) {
         parentNode.children.splice(similarNodeIndex, 1, intermediateNode);
         parentNode.children.splice(newNodeIndex, 1);
 
-        similarNode.suffix = similarNode.suffix.substring(commonPrefix.length);
+        similarNode.anchor = similarNode.anchor.substring(commonPrefix.length);
         similarNode.parent = intermediateNode;
 
-        newNode.suffix = newNode.suffix.substring(commonPrefix.length);
+        newNode.anchor = newNode.anchor.substring(commonPrefix.length);
         newNode.parent = intermediateNode;
 
         intermediateNode.children.sort(compareRouteNodes);
