@@ -80,7 +80,7 @@ export function parseRoute(
             parameters,
         );
 
-        // if a childnoide is matches, return that node instead of the current! So childnodes are matches first!
+        // if a childnode is matches, return that node instead of the current! So childnodes are matches first!
         if (route !== null) return route;
     }
 
