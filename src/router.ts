@@ -1,4 +1,4 @@
-import { makeRouteNode, parseRoute, RouteNode, sortRouteNodeAndParents, stringifyRoute } from "./route-node.js";
+import { makeRouteNode, optimizeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 export class Router {
@@ -19,12 +19,11 @@ export class Router {
 
     public insertRoute(name: string, template: string) {
         const node = makeRouteNode(name, template);
-        this.rootNode.children.push(node);
 
         this.rootNode.children.push(node);
         this.leafNodes.set(name, node);
 
-        sortRouteNodeAndParents(node);
+        optimizeRouteNode(node);
     }
 
     public stringifyRoute(route: Route): string | null {

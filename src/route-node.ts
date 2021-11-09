@@ -37,7 +37,7 @@ export function parseRoute(
 ): Route | null {
     if (!node) return null;
 
-    if (node.parameter === null) {
+    if (node.parameter == null) {
         // if this node does not represent a parameter we expect the path to start with the suffix
         if (!path.startsWith(node.suffix)) {
             // this node does not match the path
@@ -142,11 +142,11 @@ export function makeRouteNode(
 }
 
 export function compareRouteNodes(a: RouteNode, b: RouteNode) {
-    if ((a.parameter === null) > (b.parameter === null)) return -1;
-    if ((a.parameter === null) < (b.parameter === null)) return 1;
+    if ((a.parameter == null) > (b.parameter == null)) return -1;
+    if ((a.parameter == null) < (b.parameter == null)) return 1;
 
-    if ((a.name === null) > (b.name === null)) return -1;
-    if ((a.name === null) < (b.name === null)) return 1;
+    if ((a.name == null) > (b.name == null)) return -1;
+    if ((a.name == null) < (b.name == null)) return 1;
 
     if (a.suffix.length > b.suffix.length) return -1;
     if (a.suffix.length < b.suffix.length) return 1;
@@ -163,4 +163,8 @@ export function sortRouteNodeAndParents(node: RouteNode) {
     if (node.parent) {
         sortRouteNodeAndParents(node.parent);
     }
+}
+
+export function optimizeRouteNode(node: RouteNode) {
+    sortRouteNodeAndParents(node);
 }
