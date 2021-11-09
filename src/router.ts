@@ -1,4 +1,4 @@
-import { getRootNode, makeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { getRootNode, makeRouteNode, parseRoute, RouteNode, sortRouteNodeAndParents, sortRouteNodes, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 export class Router {
@@ -21,7 +21,8 @@ export class Router {
         this.rootNodes.push(rootNode);
         this.leafNodes.set(name, node);
 
-        // this.rootNodes.sort(compareRouteNodes);
+        sortRouteNodeAndParents(node);
+        sortRouteNodes(this.rootNodes);
     }
 
     public stringifyRoute(route: Route): string | null {

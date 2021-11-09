@@ -96,15 +96,6 @@ export function parseRoute(
     return null;
 }
 
-export function sortRouteNodes(node: RouteNode): RouteNode {
-    const children = node.children.map(sortRouteNodes);
-    children.sort(compareRouteNodes);
-    return {
-        ...node,
-        children,
-    };
-}
-
 export function getRootNode(node: RouteNode) {
     while (node.parent) {
         node = node.parent;
@@ -165,4 +156,15 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
 
     return 0;
 
+}
+
+export function sortRouteNodes(nodes: RouteNode[]) {
+    nodes.sort(compareRouteNodes);
+}
+
+export function sortRouteNodeAndParents(node: RouteNode) {
+    sortRouteNodes(node.children);
+    if (node.parent) {
+        sortRouteNodeAndParents(node.parent);
+    }
 }
