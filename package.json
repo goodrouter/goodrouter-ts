@@ -14,8 +14,7 @@
     "clean": "rm -rf out",
     "test": "npm run lint && npm run spec-all",
     "lint": "eslint \"src/**/*.ts\"",
-    "spec-all": "tape-es \"out/**/*.spec.js\"",
-    "coverage": "nyc --reporter text-summary --reporter lcov --include \"src/**/*.ts\" --exclude \"src/**/*.spec.ts\" --extension \".ts\" npm run spec-all"
+    "spec-all": "tape-es \"out/**/*.spec.js\""
   },
   "repository": {
     "type": "git",
@@ -34,19 +33,15 @@
   ],
   "homepage": "https://github.com/LuvDaSun/goodrouter",
   "devDependencies": {
-    "@types/sinon": "^10.0.2",
     "@types/tape": "^4.13.0",
     "@types/tape-promise": "^4.0.1",
     "eslint-config-gameye": "^0.1.8",
-    "nyc": "^15.1.0",
-    "sinon": "^11.1.1",
     "tape": "^5.2.2",
     "tape-es": "^1.2.15",
+    "tape-promise": "^4.0.0",
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "synchronize-async": "^1.0.11",
-    "tape-promise": "^4.0.0",
     "tslib": "^2.2.0"
   }
 }
