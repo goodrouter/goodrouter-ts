@@ -51,7 +51,7 @@ test("router", async t => {
             parameters: { x: "3/4" },
         });
         assert(path);
-        t.equal(path, "/c/3/4");
+        t.equal(path, "/c/3%2F4");
     }
 
     {

@@ -12,8 +12,8 @@ export class Router {
 
     constructor(options: RouterOptions = {}) {
         this.options = {
-            encode: encodeURI,
-            decode: decodeURI,
+            encode: encodeURIComponent,
+            decode: decodeURIComponent,
             ...options,
         };
     }
