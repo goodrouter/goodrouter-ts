@@ -1,4 +1,3 @@
-import assert from "assert";
 import { emitTemplatePathParts } from "./path.js";
 import { Route } from "./route.js";
 import { findCommonPrefixLength } from "./string.js";
@@ -113,13 +112,12 @@ export function makeRouteNode(
 ) {
     const parts = Array.from(emitTemplatePathParts(template));
 
-    const anchor = parts.pop();
+    const anchor = parts.pop()!;
     const parameter = parts.pop() ?? null;
-    assert(anchor !== undefined);
 
     const node: RouteNode = {
         name,
-        anchor: anchor,
+        anchor,
         parameter,
         children: [],
         parent: null,
@@ -127,9 +125,8 @@ export function makeRouteNode(
     let rootNode = node;
 
     while (parts.length > 0) {
-        const anchor = parts.pop();
+        const anchor = parts.pop()!;
         const parameter = parts.pop() ?? null;
-        assert(anchor !== undefined);
 
         const parentNode = {
             anchor,
@@ -166,7 +163,6 @@ export function optimizeRouteNode(newNode: RouteNode) {
     if (!parentNode) throw new Error("cannot optimize root node");
 
     const newNodeIndex = parentNode.children.indexOf(newNode);
-    assert(newNodeIndex >= 0);
 
     // First, find a similar node, a route with a common anchor prefix
 
