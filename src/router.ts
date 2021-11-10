@@ -1,32 +1,51 @@
-import { getRootNode, makeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { getRootNode, makeRouteNode, optimizeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
+
+export interface RouterOptions {
+    encode?: (value: string) => string
+    decode?: (value: string) => string
+}
 
 export class Router {
 
-    private rootNodes = new Array<RouteNode>();
+    protected options: Required<RouterOptions>
+
+    constructor(options: RouterOptions = {}) {
+        this.options = {
+            encode: encodeURIComponent,
+            decode: decodeURIComponent,
+            ...options,
+        };
+    }
+
+    private rootNode: RouteNode = {
+        name: null,
+        anchor: "",
+        parameter: null,
+        children: [],
+        parent: null,
+    }
     private leafNodes = new Map<string, RouteNode>();
 
     public parseRoute(path: string): Route | null {
-        for (const rootNode of this.rootNodes) {
-            const route = parseRoute(rootNode, path);
-            if (route) return route;
-        }
-        return null;
+        const route = parseRoute(this.rootNode, path, this.options.decode);
+        return route;
     }
 
     public insertRoute(name: string, template: string) {
-        const node = makeRouteNode(name, template);
-        const rootNode = getRootNode(node);
+        const newNode = makeRouteNode(name, template);
+        this.leafNodes.set(name, newNode);
 
-        this.rootNodes.push(rootNode);
-        this.leafNodes.set(name, node);
+        const rootChildNode = getRootNode(newNode);
+        rootChildNode.parent = this.rootNode;
+        this.rootNode.children.push(rootChildNode);
 
-        // this.rootNodes.sort(compareRouteNodes);
+        optimizeRouteNode(rootChildNode);
     }
 
     public stringifyRoute(route: Route): string | null {
         const node = this.leafNodes.get(route.name);
         if (!node) return null;
-        return stringifyRoute(node, route.parameters);
+        return stringifyRoute(node, route.parameters, this.options.encode);
     }
 }

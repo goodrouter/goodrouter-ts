@@ -51,15 +51,15 @@ test("router", async t => {
             parameters: { x: "3/4" },
         });
         assert(path);
-        t.equal(path, "/c/3/4");
+        t.equal(path, "/c/3%2F4");
     }
 
     {
         const route = router.parseRoute("/c/3/4/");
         assert(route);
-        // FIXME
-        // t.equal(route.name, "four");
-        // t.deepEqual(route.parameters, { x: "3", y: "4" });
+
+        t.equal(route.name, "four");
+        t.deepEqual(route.parameters, { x: "3", y: "4" });
     }
 });
 
