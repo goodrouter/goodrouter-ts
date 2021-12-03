@@ -27,11 +27,6 @@ export class Router {
     }
     private leafNodes = new Map<string, RouteNode>();
 
-    public parseRoute(path: string): Route | null {
-        const route = parseRoute(this.rootNode, path, this.options.decode);
-        return route;
-    }
-
     public insertRoute(name: string, template: string) {
         const newNode = makeRouteNode(name, template);
         this.leafNodes.set(name, newNode);
@@ -41,6 +36,11 @@ export class Router {
         this.rootNode.children.push(rootChildNode);
 
         optimizeRouteNode(rootChildNode);
+    }
+
+    public parseRoute(path: string): Route | null {
+        const route = parseRoute(this.rootNode, path, this.options.decode);
+        return route;
     }
 
     public stringifyRoute(route: Route): string | null {
