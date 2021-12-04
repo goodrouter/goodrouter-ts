@@ -152,8 +152,8 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
     if (a.anchor.length > b.anchor.length) return -1;
     if (a.anchor.length < b.anchor.length) return 1;
 
-    if (a.anchor > b.anchor) return 1;
-    if (a.anchor < b.anchor) return -1;
+    if (a.anchor > b.anchor) return -1;
+    if (a.anchor < b.anchor) return 1;
 
     return 0;
 }
