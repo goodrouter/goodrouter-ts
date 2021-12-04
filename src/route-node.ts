@@ -245,6 +245,7 @@ export function optimizeRouteNode(newNode: RouteNode) {
             similarNode.parameter ??= newNode.parameter;
             similarNode.children.push(...newNode.children);
 
+            newNode.children.forEach(child => child.parent = similarNode);
             newNode.children.forEach(optimizeRouteNode);
 
             similarNode.children.sort(compareRouteNodes);
