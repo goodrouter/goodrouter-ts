@@ -1,4 +1,4 @@
-# Good Router
+# GoodRouter, TypeScript edition
 A good router should:
 
 - [x] work in a server or a client (or any other) environment
