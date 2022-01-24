@@ -1,5 +1,5 @@
 {
-  "name": "@goodrouter/goodrouter-ts",
+  "name": "goodrouter",
   "description": "a good router",
   "type": "module",
   "main": "out/main.js",
