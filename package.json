@@ -1,5 +1,5 @@
 {
-  "name": "goodrouter",
+  "name": "@goodrouter/goodrouter-ts",
   "description": "a good router",
   "type": "module",
   "main": "out/main.js",
@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:LuvDaSun/goodrouter.git"
+    "url": "git@gitlab.com:goodrouter/goodrouter-ts.git"
   },
   "author": "Elmer Bulthuis",
   "license": "WTFPL",
   "bugs": {
-    "url": "https://github.com/LuvDaSun/goodrouter/issues"
+    "url": "https://gitlab.com/goodrouter/goodrouter-ts/-/issues"
   },
   "keywords": [
     "good",
@@ -31,7 +31,7 @@
     "isomorphic",
     "universal"
   ],
-  "homepage": "https://github.com/LuvDaSun/goodrouter",
+  "homepage": "https://gitlab.com/goodrouter/goodrouter-ts",
   "devDependencies": {
     "@types/tape": "^4.13.0",
     "@types/tape-promise": "^4.0.1",
