@@ -197,17 +197,17 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
 }
 
 function routeNodeOrder(a: RouteNode, b: RouteNode) {
-    if ((a.parameter == null) > (b.parameter == null)) return -1;
     if ((a.parameter == null) < (b.parameter == null)) return 1;
+    if ((a.parameter == null) > (b.parameter == null)) return -1;
 
-    if ((a.name == null) > (b.name == null)) return -1;
     if ((a.name == null) < (b.name == null)) return 1;
+    if ((a.name == null) > (b.name == null)) return -1;
 
-    if (a.anchor.length > b.anchor.length) return -1;
     if (a.anchor.length < b.anchor.length) return 1;
+    if (a.anchor.length > b.anchor.length) return -1;
 
-    if (a.anchor > b.anchor) return -1;
     if (a.anchor < b.anchor) return 1;
+    if (a.anchor > b.anchor) return -1;
 
     return 0;
 }
