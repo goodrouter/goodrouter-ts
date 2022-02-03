@@ -1,4 +1,4 @@
-import { getRootNode, makeRouteNode, optimizeRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { insertRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 export interface RouterOptions {
@@ -28,14 +28,8 @@ export class Router {
     private leafNodes = new Map<string, RouteNode>();
 
     public insertRoute(name: string, template: string) {
-        const newNode = makeRouteNode(name, template);
-        this.leafNodes.set(name, newNode);
-
-        const rootChildNode = getRootNode(newNode);
-        rootChildNode.parent = this.rootNode;
-        this.rootNode.children.push(rootChildNode);
-
-        optimizeRouteNode(rootChildNode);
+        const leafNode = insertRouteNode(this.rootNode, name, template);
+        this.leafNodes.set(name, leafNode);
     }
 
     public parseRoute(path: string): Route | null {
