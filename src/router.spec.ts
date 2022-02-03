@@ -63,7 +63,7 @@ test("router", async t => {
     }
 });
 
-test.only("router bug", async t => {
+test("router bug", async t => {
     const router = new Router();
 
     router.insertRoute("/docker/containers/{id}/start", "/docker/containers/{id}/start");
