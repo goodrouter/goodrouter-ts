@@ -63,3 +63,19 @@ test("router", async t => {
     }
 });
 
+test.only("router bug", async t => {
+    const router = new Router();
+
+    router.insertRoute("/docker/containers/{id}/start", "/docker/containers/{id}/start");
+    router.insertRoute("/docker/containers/{id}/stop", "/docker/containers/{id}/stop");
+
+    t.equal(
+        router.stringifyRoute({
+            name: "/docker/containers/{id}/start",
+            parameters: {
+                id: "e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106",
+            },
+        }),
+        "/docker/containers/e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106/start",
+    );
+});
