@@ -132,6 +132,7 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     const childNode = similarNode.children.
                         find(childNode => routeNodeEqual(childNode, chainNode));
                     if (childNode == null) {
+                        similarNode.parent = currentNode;
                         similarNode.children.push(chainNode);
                         similarNode.children.sort(routeNodeOrder);
                         currentNode = chainNode;
@@ -147,8 +148,9 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     similarNode.parent = chainNode;
 
                     const childNode = chainNode.children.
-                        find(childNode => routeNodeOrder(childNode, similarNode) === 0);
+                        find(childNode => routeNodeEqual(childNode, similarNode));
                     if (childNode == null) {
+                        chainNode.parent = currentNode;
                         chainNode.children.push(similarNode);
                         chainNode.children.sort(routeNodeOrder);
                         currentNode = similarNode;
