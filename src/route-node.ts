@@ -142,7 +142,7 @@ export function makeRouteNode(
     return node;
 }
 
-export function compareRouteNodes(a: RouteNode, b: RouteNode) {
+export function routeNodeOrder(a: RouteNode, b: RouteNode) {
     if ((a.parameter == null) > (b.parameter == null)) return -1;
     if ((a.parameter == null) < (b.parameter == null)) return 1;
 
@@ -156,6 +156,14 @@ export function compareRouteNodes(a: RouteNode, b: RouteNode) {
     if (a.anchor < b.anchor) return 1;
 
     return 0;
+}
+
+export function routeNodeEqual(a: RouteNode, b: RouteNode) {
+    return (
+        a.name === b.name &&
+        a.anchor === b.anchor &&
+        a.parameter === b.parameter
+    );
 }
 
 export function optimizeRouteNode(newNode: RouteNode) {
@@ -233,7 +241,7 @@ export function optimizeRouteNode(newNode: RouteNode) {
             newNode.anchor = "";
             newNode.parent = intermediateNode;
 
-            intermediateNode.children.sort(compareRouteNodes);
+            intermediateNode.children.sort(routeNodeOrder);
         }
         else {
             // The two nodes can be merged! This is great! we merge the names, parameter
@@ -248,7 +256,7 @@ export function optimizeRouteNode(newNode: RouteNode) {
             newNode.children.forEach(child => child.parent = similarNode);
             newNode.children.forEach(optimizeRouteNode);
 
-            similarNode.children.sort(compareRouteNodes);
+            similarNode.children.sort(routeNodeOrder);
         }
     }
     else if (newNode.anchor === commonPrefix) {
@@ -264,7 +272,7 @@ export function optimizeRouteNode(newNode: RouteNode) {
 
         optimizeRouteNode(similarNode);
 
-        newNode.children.sort(compareRouteNodes);
+        newNode.children.sort(routeNodeOrder);
     }
     else if (similarNode.anchor === commonPrefix) {
         // this is the exact inverse of the previous clause
@@ -278,7 +286,7 @@ export function optimizeRouteNode(newNode: RouteNode) {
 
         optimizeRouteNode(newNode);
 
-        similarNode.children.sort(compareRouteNodes);
+        similarNode.children.sort(routeNodeOrder);
     }
     else {
         // we encounteres two nodes that are not the same, and none of the two nodes
@@ -306,7 +314,175 @@ export function optimizeRouteNode(newNode: RouteNode) {
         newNode.anchor = newNode.anchor.substring(commonPrefix.length);
         newNode.parent = intermediateNode;
 
-        intermediateNode.children.sort(compareRouteNodes);
+        intermediateNode.children.sort(routeNodeOrder);
     }
 
+}
+
+export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
+    const chainNodes = [...newRouteNodeChain(name, template)];
+    chainNodes.reverse();
+
+    let currentNode = targetNode;
+    for (const chainNode of chainNodes) {
+        const similarChildResult = findSimilarChildNode(currentNode, chainNode);
+        if (similarChildResult == null) {
+            const childNode = { ...chainNode };
+            childNode.parent = currentNode;
+            currentNode.children.push(childNode);
+            currentNode.children.sort(routeNodeOrder);
+            currentNode = childNode;
+        } else {
+            const { commonPrefixLength, similarNode } = similarChildResult;
+            const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
+            switch (strategy) {
+                case "merge": {
+                    similarNode.name ??= chainNode.name;
+                    similarNode.parameter ??= chainNode.parameter;
+                    similarNode.children.push(...chainNode.children);
+                    similarNode.children.sort(routeNodeOrder);
+                    currentNode = similarNode;
+                    break;
+                }
+
+                case "add-to-left": {
+                    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+                    chainNode.parent = similarNode;
+
+                    const childNode = similarNode.children.
+                        find(childNode => routeNodeEqual(childNode, chainNode));
+                    if (childNode == null) {
+                        similarNode.children.push(chainNode);
+                        similarNode.children.sort(routeNodeOrder);
+                        currentNode = chainNode;
+                    }
+                    else {
+                        currentNode = childNode;
+                    }
+                    break;
+                }
+
+                case "add-to-right": {
+                    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
+                    similarNode.parent = chainNode;
+
+                    const childNode = chainNode.children.
+                        find(childNode => routeNodeOrder(childNode, similarNode) === 0);
+                    if (childNode == null) {
+                        chainNode.children.push(similarNode);
+                        chainNode.children.sort(routeNodeOrder);
+                        currentNode = similarNode;
+                    }
+                    else {
+                        currentNode = childNode;
+                    }
+                    break;
+                }
+
+                case "intermediate": {
+                    const intermediateNode = {
+                        anchor: similarNode.anchor.substring(0, commonPrefixLength),
+                        name: null,
+                        parameter: null,
+                        children: [
+                            similarNode,
+                            chainNode,
+                        ],
+                        parent: currentNode,
+                    };
+                    intermediateNode.children.sort(routeNodeOrder);
+
+                    currentNode.children.splice(
+                        currentNode.children.indexOf(similarNode),
+                        1,
+                        intermediateNode,
+                    );
+                    currentNode.children.sort(routeNodeOrder);
+
+                    similarNode.parent = intermediateNode;
+                    chainNode.parent = intermediateNode;
+
+                    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
+                    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+
+                    currentNode = chainNode;
+                    break;
+                }
+            }
+
+        }
+    }
+
+    return currentNode;
+}
+
+export function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
+    const parts = [...emitTemplatePathParts(template)];
+    let currentName: string | null = name;
+
+    while (parts.length > 0) {
+        const anchor = parts.pop();
+        const parameter = parts.pop() ?? null;
+
+        if (anchor == null) {
+            throw new TypeError("expected anchors");
+        }
+
+        yield {
+            anchor,
+            name: currentName,
+            parameter,
+            children: [],
+            parent: null,
+        };
+
+        currentName = null;
+    }
+
+}
+
+function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
+    for (const childNode of targetNode.children) {
+        if (childNode.parameter != null) continue;
+        if (childNode.name != null) continue;
+
+        const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
+
+        if (commonPrefixLength === 0) continue;
+
+        return { commonPrefixLength, similarNode: childNode };
+    }
+}
+
+function getInsertStrategy(leftNode: RouteNode, rightNode: RouteNode, commonPrefixLength: number) {
+    const commonPrefix = leftNode.anchor.substring(0, commonPrefixLength);
+
+    if (leftNode.anchor === rightNode.anchor) {
+        if (
+            leftNode.name != null &&
+            rightNode.name != null &&
+            leftNode.name !== rightNode.name
+        ) {
+            throw new Error("ambiguous route");
+        }
+        else if (
+            leftNode.parameter != null &&
+            rightNode.parameter != null &&
+            leftNode.parameter !== rightNode.parameter
+        ) {
+            return "intermediate" as const;
+        }
+        else {
+            return "merge" as const;
+        }
+    }
+    else if (leftNode.anchor === commonPrefix) {
+        return "add-to-left" as const;
+    }
+    else if (rightNode.anchor === commonPrefix) {
+        return "add-to-right" as const;
+    }
+    else {
+        return "intermediate" as const;
+    }
 }
