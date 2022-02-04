@@ -14,7 +14,8 @@
     "clean": "rm -rf out",
     "test": "npm run lint && npm run spec-all",
     "lint": "eslint \"src/**/*.ts\"",
-    "spec-all": "tape-es \"out/**/*.spec.js\""
+    "spec-all": "run-these \"out/**/*.spec.js\"",
+    "coverage": "c8 --reporter lcov npm run spec-all"
   },
   "repository": {
     "type": "git",
@@ -35,7 +36,9 @@
   "devDependencies": {
     "@types/tape": "^4.13.0",
     "@types/tape-promise": "^4.0.1",
+    "c8": "^7.11.0",
     "eslint-config-gameye": "^0.1.8",
+    "run-these": "^1.0.0",
     "tape": "^5.2.2",
     "tape-es": "^1.2.15",
     "tape-promise": "^4.0.0",

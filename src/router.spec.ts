@@ -4,6 +4,10 @@ import { Router } from "./router.js";
 
 test("router", async t => {
     const router = new Router();
+
+    router.insertRoute("aa", "a/{a}/a");
+    router.insertRoute("a", "a");
+
     router.insertRoute("one", "/a");
     router.insertRoute("two", "/a/{x}/{y}");
     router.insertRoute("three", "/c/{x}");
@@ -79,3 +83,4 @@ test("router bug", async t => {
         "/docker/containers/e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106/start",
     );
 });
+
