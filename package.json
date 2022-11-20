@@ -22,7 +22,7 @@
     "url": "git@gitlab.com:goodrouter/goodrouter-ts.git"
   },
   "author": "Elmer Bulthuis",
-  "license": "WTFPL",
+  "license": "ISC",
   "bugs": {
     "url": "https://gitlab.com/goodrouter/goodrouter-ts/-/issues"
   },
