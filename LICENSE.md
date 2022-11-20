@@ -1,6 +1,6 @@
 ISC License
 
-Copyright 2020 LuvDaSun Software B.V.
+Copyright 2017 LuvDaSun Software B.V.
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
