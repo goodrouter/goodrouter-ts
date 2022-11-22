@@ -1,5 +1,6 @@
 {
   "name": "goodrouter",
+  "version": "0.0.0",
   "description": "a good router",
   "type": "module",
   "main": "out/main.js",

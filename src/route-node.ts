@@ -7,7 +7,7 @@ export interface RouteNode {
     name: string | null;
     // suffix that comes after the parameter value (if any!) of the path
     anchor: string;
-    // parameter name or null if this node does not represent a prameter
+    // parameter name or null if this node does not represent a parameter
     parameter: string | null;
     // children that represent the rest of the path that needs to be matched
     children: RouteNode[];
@@ -61,7 +61,7 @@ export function parseRoute(
             return null;
         }
 
-        // get the paremeter value
+        // get the parameter value
         const value = decode(path.substring(0, index));
 
         // remove the matches part from the path
@@ -95,7 +95,7 @@ export function parseRoute(
         };
     }
 
-    // we have not found a route :-(
+    // we did not found a route :-(
     return null;
 }
 
@@ -199,14 +199,14 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
 }
 
 function routeNodeOrder(a: RouteNode, b: RouteNode) {
+    if (a.anchor.length < b.anchor.length) return 1;
+    if (a.anchor.length > b.anchor.length) return -1;
+
     if ((a.parameter == null) < (b.parameter == null)) return 1;
     if ((a.parameter == null) > (b.parameter == null)) return -1;
 
     if ((a.name == null) < (b.name == null)) return 1;
     if ((a.name == null) > (b.name == null)) return -1;
-
-    if (a.anchor.length < b.anchor.length) return 1;
-    if (a.anchor.length > b.anchor.length) return -1;
 
     if (a.anchor < b.anchor) return 1;
     if (a.anchor > b.anchor) return -1;
