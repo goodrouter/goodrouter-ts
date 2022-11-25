@@ -1,5 +1,11 @@
 .*
-*.log
+!.gitignore
+!.gitlab-ci.yml
+!.eslintrc.yml
+!.npmrc
+!/.vscode/
+
+
 /node_modules/
 /coverage/
 /out/

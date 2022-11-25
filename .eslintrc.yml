@@ -1,0 +1,41 @@
+root: true
+parser: "@typescript-eslint/parser"
+parserOptions:
+  ecmaVersion: 2020
+  sourceType: module
+  project: ./tsconfig.json
+plugins:
+  - "@typescript-eslint"
+  - deprecation
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/eslint-recommended
+  - plugin:@typescript-eslint/recommended
+"rules":
+  "@typescript-eslint/explicit-module-boundary-types": off
+  "@typescript-eslint/explicit-function-return-type": off
+  "@typescript-eslint/no-use-before-define": off
+  "@typescript-eslint/ban-types":
+    - error
+    - types:
+        object: false
+        {}: false
+  deprecation/deprecation: warn
+  semi: error
+  comma-dangle:
+    - error
+    - always-multiline
+  no-multiple-empty-lines:
+    - error
+    - max: 1
+  eol-last: error
+  complexity: error
+  max-len:
+    - error
+    - code: 100
+      ignoreStrings: true
+      ignoreTemplateLiterals: true
+      ignoreRegExpLiterals: true
+      ignoreUrls: true
+      ignoreComments: true
+  quotes: error
