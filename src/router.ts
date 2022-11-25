@@ -8,7 +8,7 @@ export interface RouterOptions {
 
 export class Router {
 
-    protected options: Required<RouterOptions>
+    protected options: Required<RouterOptions>;
 
     constructor(options: RouterOptions = {}) {
         this.options = {
@@ -24,7 +24,7 @@ export class Router {
         parameter: null,
         children: [],
         parent: null,
-    }
+    };
     private leafNodes = new Map<string, RouteNode>();
 
     public insertRoute(name: string, template: string) {
