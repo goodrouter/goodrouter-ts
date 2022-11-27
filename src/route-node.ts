@@ -27,14 +27,13 @@ export function newRootRouteNode(): RouteNode {
 
 export function stringifyRoute(
     node: RouteNode | null,
-    parameters: Record<string, string>,
+    parameters: Record<string, string> = {},
     encode: (value: string) => string,
 ) {
     let path = "";
     while (node) {
         path = node.anchor + path;
         if (node.parameter && node.parameter in parameters) {
-            /* eslint-disable security/detect-object-injection */
             path = encode(parameters[node.parameter]) + path;
         }
         node = node.parent;
@@ -45,8 +44,8 @@ export function stringifyRoute(
 export function parseRoute(
     node: RouteNode | null,
     path: string,
-    parameters: Record<string, string>,
     decode: (value: string) => string,
+    parameters: Record<string, string> = {},
 ): Route | null {
     if (!node) return null;
 
@@ -90,8 +89,8 @@ export function parseRoute(
         const route = parseRoute(
             childNode,
             path,
-            parameters,
             decode,
+            parameters,
         );
 
         // if a childnode is matches, return that node instead of the current! So childnodes are matches first!
