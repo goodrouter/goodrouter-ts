@@ -1,5 +1,5 @@
 include:
-  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
 
 stages:
   - build
@@ -29,6 +29,9 @@ test-lint:
   image: node:18
   script:
     - npm run lint
+
+sast:
+  stage: test
 
 publish-npm:
   stage: publish
