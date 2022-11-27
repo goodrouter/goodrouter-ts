@@ -37,5 +37,6 @@ publish-npm:
   image: node:18
   dependencies: [build]
   script:
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
     - npm version $CI_COMMIT_TAG
     - npm publish
