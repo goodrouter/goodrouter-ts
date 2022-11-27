@@ -30,9 +30,6 @@ test-lint:
   script:
     - npm run lint
 
-sast:
-  stage: test
-
 publish-npm:
   stage: publish
   rules:
