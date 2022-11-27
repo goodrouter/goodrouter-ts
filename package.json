@@ -13,10 +13,10 @@
     "prepare": "npm run compile",
     "compile": "tsc",
     "clean": "rm -rf out",
-    "test": "npm run lint && npm run spec-all",
+    "test": "npm run spec-all",
     "lint": "eslint \"src/**/*.ts\"",
     "spec-all": "tape \"out/**/*.spec.js\"",
-    "coverage": "c8 --reporter lcov npm run spec-all"
+    "coverage": "c8 --reporter lcov --reporter cobertura npm test"
   },
   "repository": {
     "type": "git",
