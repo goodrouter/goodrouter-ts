@@ -33,8 +33,9 @@ export function stringifyRoute(
     let path = "";
     while (node) {
         path = node.anchor + path;
-        if (node.parameter && node.parameter in parameters) {
-            path = encode(parameters[node.parameter]) + path;
+        if (node.parameter != null && node.parameter in parameters) {
+            const value = parameters[node.parameter];
+            path = encode(value) + path;
         }
         node = node.parent;
     }
@@ -94,11 +95,11 @@ export function parseRoute(
         );
 
         // if a childnode is matches, return that node instead of the current! So childnodes are matches first!
-        if (route !== null) return route;
+        if (route != null) return route;
     }
 
     // if the node had a route name and there is no path left to match against then we found a route
-    if (node.name !== null && path.length === 0) {
+    if (node.name != null && path.length === 0) {
         return {
             name: node.name,
             parameters,
