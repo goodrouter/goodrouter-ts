@@ -30,6 +30,12 @@ test-lint:
   script:
     - npm run lint
 
+test-audit:
+  stage: test
+  image: node:18
+  script:
+    - npm audit
+
 publish-npm:
   stage: publish
   rules:
