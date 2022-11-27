@@ -20,9 +20,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.com:goodrouter/goodrouter-ts.git"
+    "url": "git@gitlab.com:luvdasun/goodrouter-ts.git"
   },
-  "author": "Elmer Bulthuis",
+  "author": "LuvDaSun Software B.V.",
   "license": "ISC",
   "bugs": {
     "url": "https://gitlab.com/goodrouter/goodrouter-ts/-/issues"
