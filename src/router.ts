@@ -27,7 +27,7 @@ export class Router {
     }
 
     public parseRoute(path: string): Route | null {
-        const route = parseRoute(this.rootNode, path, this.options.decode);
+        const route = parseRoute(this.rootNode, path, {}, this.options.decode);
         return route;
     }
 
