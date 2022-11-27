@@ -15,6 +15,16 @@ export interface RouteNode {
     parent: RouteNode | null;
 }
 
+export function newRootRouteNode(): RouteNode {
+    return {
+        name: null,
+        anchor: "",
+        parameter: null,
+        children: [],
+        parent: null,
+    };
+}
+
 export function stringifyRoute(
     node: RouteNode | null,
     parameters: Record<string, string> = {},
@@ -110,17 +120,15 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
             const childNode = { ...chainNode };
             childNode.parent = currentNode;
             currentNode.children.push(childNode);
-            currentNode.children.sort(routeNodeOrder);
+            currentNode.children.sort(routeNodeCompare);
             currentNode = childNode;
         } else {
             const { commonPrefixLength, similarNode } = similarChildResult;
             const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
             switch (strategy) {
                 case "merge": {
-                    similarNode.name ??= chainNode.name;
-                    similarNode.parameter ??= chainNode.parameter;
                     similarNode.children.push(...chainNode.children);
-                    similarNode.children.sort(routeNodeOrder);
+                    similarNode.children.sort(routeNodeCompare);
                     currentNode = similarNode;
                     break;
                 }
@@ -129,12 +137,15 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
                     chainNode.parent = similarNode;
 
+                    // similarNode.parameter = chainNode.parameter;
+                    // chainNode.parameter = null;
+
                     const childNode = similarNode.children.
                         find(childNode => routeNodeEqual(childNode, chainNode));
                     if (childNode == null) {
                         similarNode.parent = currentNode;
                         similarNode.children.push(chainNode);
-                        similarNode.children.sort(routeNodeOrder);
+                        similarNode.children.sort(routeNodeCompare);
                         currentNode = chainNode;
                     }
                     else {
@@ -147,12 +158,15 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
                     similarNode.parent = chainNode;
 
+                    // chainNode.parameter = similarNode.parameter;
+                    // similarNode.parameter = null;
+
                     const childNode = chainNode.children.
                         find(childNode => routeNodeEqual(childNode, similarNode));
                     if (childNode == null) {
                         chainNode.parent = currentNode;
                         chainNode.children.push(similarNode);
-                        chainNode.children.sort(routeNodeOrder);
+                        chainNode.children.sort(routeNodeCompare);
                         currentNode = similarNode;
                     }
                     else {
@@ -165,27 +179,30 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     const intermediateNode = {
                         anchor: similarNode.anchor.substring(0, commonPrefixLength),
                         name: null,
-                        parameter: null,
+                        parameter: similarNode.parameter,
                         children: [
                             similarNode,
                             chainNode,
                         ],
                         parent: currentNode,
                     };
-                    intermediateNode.children.sort(routeNodeOrder);
+                    intermediateNode.children.sort(routeNodeCompare);
 
                     currentNode.children.splice(
                         currentNode.children.indexOf(similarNode),
                         1,
                         intermediateNode,
                     );
-                    currentNode.children.sort(routeNodeOrder);
+                    currentNode.children.sort(routeNodeCompare);
 
                     similarNode.parent = intermediateNode;
                     chainNode.parent = intermediateNode;
 
                     similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
                     chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+
+                    similarNode.parameter = null;
+                    chainNode.parameter = null;
 
                     currentNode = chainNode;
                     break;
@@ -198,18 +215,18 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
     return currentNode;
 }
 
-function routeNodeOrder(a: RouteNode, b: RouteNode) {
+export function routeNodeCompare(a: RouteNode, b: RouteNode) {
     if (a.anchor.length < b.anchor.length) return 1;
     if (a.anchor.length > b.anchor.length) return -1;
-
-    if ((a.parameter == null) < (b.parameter == null)) return 1;
-    if ((a.parameter == null) > (b.parameter == null)) return -1;
 
     if ((a.name == null) < (b.name == null)) return 1;
     if ((a.name == null) > (b.name == null)) return -1;
 
-    if (a.anchor < b.anchor) return 1;
-    if (a.anchor > b.anchor) return -1;
+    if ((a.parameter == null) < (b.parameter == null)) return -1;
+    if ((a.parameter == null) > (b.parameter == null)) return 1;
+
+    if (a.anchor < b.anchor) return -1;
+    if (a.anchor > b.anchor) return 1;
 
     return 0;
 }
@@ -249,9 +266,6 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
 
 function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
     for (const childNode of targetNode.children) {
-        if (childNode.parameter != null) continue;
-        if (childNode.name != null) continue;
-
         const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
 
         if (commonPrefixLength === 0) continue;

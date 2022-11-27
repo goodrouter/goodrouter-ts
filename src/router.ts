@@ -1,4 +1,4 @@
-import { insertRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { insertRouteNode, newRootRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 export interface RouterOptions {
@@ -18,13 +18,7 @@ export class Router {
         };
     }
 
-    private rootNode: RouteNode = {
-        name: null,
-        anchor: "",
-        parameter: null,
-        children: [],
-        parent: null,
-    };
+    private rootNode: RouteNode = newRootRouteNode();
     private leafNodes = new Map<string, RouteNode>();
 
     public insertRoute(name: string, template: string) {

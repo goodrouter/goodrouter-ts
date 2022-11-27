@@ -2,7 +2,38 @@ import assert from "assert";
 import test from "tape-promise/tape.js";
 import { Router } from "./router.js";
 
-test("router", async t => {
+test("parse-route 1", async t => {
+    const router = new Router();
+
+    router.insertRoute("a", "/a");
+    router.insertRoute("b", "/b/{x}");
+    router.insertRoute("c", "/b/{x}/c");
+    router.insertRoute("d", "/b/{x}/d");
+
+    {
+        const route = router.parseRoute("/a");
+        assert(route != null);
+        t.equal(route.name, "a");
+    }
+    {
+        const route = router.parseRoute("/b/x");
+        assert(route != null);
+        t.equal(route.name, "b");
+    }
+    {
+        const route = router.parseRoute("/b/y/c");
+        assert(route != null);
+        t.equal(route.name, "c");
+    }
+    {
+        const route = router.parseRoute("/b/z/d");
+        assert(route != null);
+        t.equal(route.name, "d");
+    }
+
+});
+
+test("parse-route 2", async t => {
     const router = new Router();
 
     router.insertRoute("aa", "a/{a}/a");
