@@ -139,7 +139,7 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     chainNode.parent = similarNode;
 
                     // similarNode.parameter = chainNode.parameter;
-                    // chainNode.parameter = null;
+                    chainNode.parameter = null;
 
                     const childNode = similarNode.children.
                         find(childNode => routeNodeEqual(childNode, chainNode));
@@ -160,7 +160,7 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     similarNode.parent = chainNode;
 
                     // chainNode.parameter = similarNode.parameter;
-                    // similarNode.parameter = null;
+                    similarNode.parameter = null;
 
                     const childNode = chainNode.children.
                         find(childNode => routeNodeEqual(childNode, similarNode));
@@ -266,8 +266,12 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
 }
 
 function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
+    if (targetNode.parameter != null) return;
+
     for (const childNode of targetNode.children) {
         const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
+
+        if (childNode.parameter != null) continue;
 
         if (commonPrefixLength === 0) continue;
 

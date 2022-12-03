@@ -3,28 +3,12 @@ import test from "tape-promise/tape.js";
 import { insertRouteNode, newRootRouteNode, RouteNode, routeNodeCompare } from "./route-node.js";
 
 test("route-node-permutations", async t => {
-    interface RouteConfig {
-        name: string,
-        template: string,
-    }
-
-    const routeConfigs: RouteConfig[] = [
-        {
-            name: "a",
-            template: "/a",
-        },
-        {
-            name: "b",
-            template: "/b/{x}",
-        },
-        {
-            name: "c",
-            template: "/b/{x}/c",
-        },
-        {
-            name: "d",
-            template: "/b/{x}/d",
-        },
+    const routeConfigs = [
+        "/a",
+        "/b/{x}",
+        "/b/{x}/",
+        "/b/{x}/c",
+        "/b/{x}/d",
     ];
 
     const permutedRouteConfigs = permutations(routeConfigs, routeConfigs.length);
@@ -34,8 +18,8 @@ test("route-node-permutations", async t => {
     for (const routeConfigs of permutedRouteConfigs) {
         const rootNode = newRootRouteNode();
 
-        for (const { name, template } of routeConfigs) {
-            insertRouteNode(rootNode, name, template);
+        for (const template of routeConfigs) {
+            insertRouteNode(rootNode, template, template);
         }
 
         {
