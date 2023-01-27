@@ -2,6 +2,7 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "ryanluker.vscode-coverage-gutters",
+    "editorconfig.editorconfig"
   ],
   "unwantedRecommendations": []
 }
