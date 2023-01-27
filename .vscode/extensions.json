@@ -1,4 +1,7 @@
 {
-  "recommendations": ["dbaeumer.vscode-eslint"],
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "ryanluker.vscode-coverage-gutters",
+  ],
   "unwantedRecommendations": []
 }
