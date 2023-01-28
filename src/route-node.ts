@@ -2,16 +2,36 @@ import { emitTemplatePathParts } from "./path.js";
 import { Route } from "./route.js";
 import { findCommonPrefixLength } from "./string.js";
 
+/**
+ * @description
+ * This interface represents a node in the tree structure that holds all the node
+ * for the routes
+ */
 export interface RouteNode {
-    // name that identifies the route
+    /**
+     * @description
+     * name that identifies the route
+     */
     name: string | null;
-    // suffix that comes after the parameter value (if any!) of the path
+    /**
+     * @description
+     * suffix that comes after the parameter value (if any!) of the path
+     */
     anchor: string;
-    // parameter name or null if this node does not represent a parameter
+    /**
+     * @description
+     * parameter name or null if this node does not represent a parameter
+     */
     parameter: string | null;
-    // children that represent the rest of the path that needs to be matched
+    /**
+     * @description
+     * children that represent the rest of the path that needs to be matched
+     */
     children: RouteNode[];
-    // parent node, should only be null for the root node
+    /**
+     * @description
+     * parent node, should only be null for the root node
+     */
     parent: RouteNode | null;
 }
 

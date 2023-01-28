@@ -5,8 +5,7 @@
 !.eslintrc.yml
 !.npmrc
 !/.vscode/
-
-
 /node_modules/
 /coverage/
 /out/
+/docs/

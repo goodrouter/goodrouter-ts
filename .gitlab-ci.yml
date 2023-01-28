@@ -2,23 +2,25 @@ include:
   - template: Security/SAST.gitlab-ci.yml
 
 stages:
-  - build
+  - initialize
   - test
   - publish
 
-build:
-  stage: build
+prepare:
+  stage: initialize
   image: node:18
   script:
     - npm ci
+    - npm run docs
   artifacts:
     paths:
       - node_modules
       - out
+      - docs
 
 test-unit:
   stage: test
-  dependencies: [build]
+  dependencies: [prepare]
   image: node:18
   script:
     - npm run coverage
@@ -30,7 +32,7 @@ test-unit:
 
 test-lint:
   stage: test
-  dependencies: [build]
+  dependencies: [prepare]
   image: node:18
   script:
     - npm run lint
@@ -46,8 +48,17 @@ publish-npm:
   rules:
     - if: $CI_COMMIT_REF_PROTECTED && $CI_COMMIT_TAG =~ /^v/
   image: node:18
-  dependencies: [build]
+  dependencies: [prepare]
   script:
     - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
     - npm version $CI_COMMIT_TAG
     - npm publish
+
+publish-cloudflare:
+  stage: publish
+  rules:
+    - if: $CI_COMMIT_REF_PROTECTED && $CI_COMMIT_TAG =~ /^v/
+  image: node:18
+  dependencies: [prepare]
+  script:
+    - npx wrangler pages publish ./docs --commit-dirty=true --project-name $CI_PROJECT_NAME

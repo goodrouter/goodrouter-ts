@@ -1,0 +1,11 @@
+{
+  "entryPoints": ["src/main.ts"],
+  "out": "docs",
+  "excludePrivate": true,
+  "treatWarningsAsErrors": true,
+  "includeVersion": true,
+  "navigationLinks": {
+    "Discord": "https://discord.gg/D4URzsTb",
+    "Git": "https://gitlab.com/luvdasun/goodrouter-ts"
+  }
+}
