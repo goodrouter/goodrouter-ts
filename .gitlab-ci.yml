@@ -61,4 +61,8 @@ publish-cloudflare:
   image: node:18
   dependencies: [prepare]
   script:
-    - npx wrangler pages publish ./docs --commit-dirty=true --project-name $CI_PROJECT_NAME
+    - >
+        npx wrangler pages publish ./docs
+        --commit-dirty=true
+        --project-name $CI_PROJECT_NAME
+        --branch main
