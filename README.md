@@ -8,3 +8,57 @@ A good router should:
 - [x] not do the actual navigation!
 - [x] be framework agnostic
 - [x] be very minimal and simple!
+
+## Example
+
+```typescript
+const router = new Router();
+
+router.insertRoute("all-products", "/product/all");
+router.insertRoute("product-detail", "/product/{id}");
+
+// And now we can parse routes!
+
+{
+  const route = router.parseRoute("/not-found");
+  assert.equal(route, null);
+}
+
+{
+  const route = router.parseRoute("/product/all");
+  assert.deepEqual(route, {
+    name: "all-products",
+    parameters: {},
+  });
+}
+
+{
+  const route = router.parseRoute("/product/1");
+  assert.deepEqual(route, {
+    name: "product-detail",
+    parameters: {
+      id: "1",
+    },
+  });
+}
+
+// And we can stringify routes
+
+{
+  const path = router.stringifyRoute({
+    name: "all-products",
+    parameters: {},
+  });
+  assert.equal(path, "/product/all");
+}
+
+{
+  const path = router.stringifyRoute({
+    name: "product-detail",
+    parameters: {
+      id: "2",
+    },
+  });
+  assert.equal(path, "/product/2");
+}
+```
