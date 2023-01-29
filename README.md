@@ -9,6 +9,8 @@ A good router should:
 - [x] be framework agnostic
 - [x] be very minimal and simple!
 
+Check out our (website)[https://www.goodrouter.org], the (documentation) [https://ts.goodrouter.org]. And feel free to join our (Discord server)[https://discord.gg/BJ8v7xTq8d]!
+
 ## Example
 
 ```typescript
