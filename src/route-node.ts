@@ -159,7 +159,7 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     break;
 
                 case "add-to-left":
-                    currentNode = insertRouteAddToLeft(
+                    currentNode = insertRouteAddTo(
                         currentNode,
                         chainNode,
                         similarNode,
@@ -168,10 +168,10 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
                     break;
 
                 case "add-to-right":
-                    currentNode = insertRouteAddToRight(
+                    currentNode = insertRouteAddTo(
                         currentNode,
-                        chainNode,
                         similarNode,
+                        chainNode,
                         commonPrefixLength,
                     );
                     break;
@@ -228,57 +228,32 @@ function insertRouteNew(
 }
 function insertRouteMerge(
     currentNode: RouteNode,
-    chainNode: RouteNode,
-    similarNode: RouteNode,
+    appendNode: RouteNode,
+    receivingNode: RouteNode,
 ) {
-    similarNode.children.push(...chainNode.children);
-    similarNode.children.sort(routeNodeCompare);
-    return similarNode;
+    receivingNode.children.push(...appendNode.children);
+    receivingNode.children.sort(routeNodeCompare);
+    return receivingNode;
 }
-function insertRouteAddToLeft(
+function insertRouteAddTo(
     currentNode: RouteNode,
-    chainNode: RouteNode,
-    similarNode: RouteNode,
+    addNode: RouteNode,
+    receivingNode: RouteNode,
     commonPrefixLength: number,
 ) {
-    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
-    chainNode.parent = similarNode;
+    addNode.anchor = addNode.anchor.substring(commonPrefixLength);
+    addNode.parent = receivingNode;
 
     // similarNode.parameter = chainNode.parameter;
-    chainNode.parameter = null;
+    addNode.parameter = null;
 
-    const childNode = similarNode.children.
-        find(childNode => routeNodeEqual(childNode, chainNode));
+    const childNode = receivingNode.children.
+        find(childNode => routeNodeEqual(childNode, addNode));
     if (childNode == null) {
-        similarNode.parent = currentNode;
-        similarNode.children.push(chainNode);
-        similarNode.children.sort(routeNodeCompare);
-        return chainNode;
-    }
-    else {
-        return childNode;
-    }
-
-}
-function insertRouteAddToRight(
-    currentNode: RouteNode,
-    chainNode: RouteNode,
-    similarNode: RouteNode,
-    commonPrefixLength: number,
-) {
-    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-    similarNode.parent = chainNode;
-
-    // chainNode.parameter = similarNode.parameter;
-    similarNode.parameter = null;
-
-    const childNode = chainNode.children.
-        find(childNode => routeNodeEqual(childNode, similarNode));
-    if (childNode == null) {
-        chainNode.parent = currentNode;
-        chainNode.children.push(similarNode);
-        chainNode.children.sort(routeNodeCompare);
-        return similarNode;
+        receivingNode.parent = currentNode;
+        receivingNode.children.push(addNode);
+        receivingNode.children.sort(routeNodeCompare);
+        return addNode;
     }
     else {
         return childNode;
