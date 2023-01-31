@@ -83,7 +83,9 @@ export function parseRoute(
     }
     else {
         // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
-        if (path.length === 0) return null;
+        if (path.length === 0) {
+            return null;
+        }
 
         // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
         const index = node.anchor.length === 0 ?
