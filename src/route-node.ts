@@ -130,6 +130,57 @@ export function parseRoute(
     return null;
 }
 
+export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
+    const chainNodes = [...newRouteNodeChain(name, template)];
+    chainNodes.reverse();
+
+    let currentNode = targetNode;
+    for (const chainNode of chainNodes) {
+        const similarChildResult = findSimilarChildNode(currentNode, chainNode);
+        if (similarChildResult == null) {
+            currentNode = insertUniqueRoute(
+                currentNode,
+                chainNode,
+            );
+        }
+        else {
+            const { commonPrefixLength, similarNode } = similarChildResult;
+            currentNode = insertSimilarRoute(
+                currentNode,
+                chainNode,
+                similarNode,
+                commonPrefixLength,
+            );
+        }
+    }
+
+    return currentNode;
+}
+
+export function routeNodeCompare(a: RouteNode, b: RouteNode) {
+    if (a.anchor.length < b.anchor.length) return 1;
+    if (a.anchor.length > b.anchor.length) return -1;
+
+    if ((a.name == null) < (b.name == null)) return 1;
+    if ((a.name == null) > (b.name == null)) return -1;
+
+    if ((a.parameter == null) < (b.parameter == null)) return -1;
+    if ((a.parameter == null) > (b.parameter == null)) return 1;
+
+    if (a.anchor < b.anchor) return -1;
+    if (a.anchor > b.anchor) return 1;
+
+    return 0;
+}
+
+export function routeNodeEqual(a: RouteNode, b: RouteNode) {
+    return (
+        a.name === b.name &&
+        a.anchor === b.anchor &&
+        a.parameter === b.parameter
+    );
+}
+
 function insertUniqueRoute(
     currentNode: RouteNode,
     chainNode: RouteNode,
@@ -228,57 +279,6 @@ function insertSimilarRoute(
         }
     }
 
-}
-
-export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
-    const chainNodes = [...newRouteNodeChain(name, template)];
-    chainNodes.reverse();
-
-    let currentNode = targetNode;
-    for (const chainNode of chainNodes) {
-        const similarChildResult = findSimilarChildNode(currentNode, chainNode);
-        if (similarChildResult == null) {
-            currentNode = insertUniqueRoute(
-                currentNode,
-                chainNode,
-            );
-        }
-        else {
-            const { commonPrefixLength, similarNode } = similarChildResult;
-            currentNode = insertSimilarRoute(
-                currentNode,
-                chainNode,
-                similarNode,
-                commonPrefixLength,
-            );
-        }
-    }
-
-    return currentNode;
-}
-
-export function routeNodeCompare(a: RouteNode, b: RouteNode) {
-    if (a.anchor.length < b.anchor.length) return 1;
-    if (a.anchor.length > b.anchor.length) return -1;
-
-    if ((a.name == null) < (b.name == null)) return 1;
-    if ((a.name == null) > (b.name == null)) return -1;
-
-    if ((a.parameter == null) < (b.parameter == null)) return -1;
-    if ((a.parameter == null) > (b.parameter == null)) return 1;
-
-    if (a.anchor < b.anchor) return -1;
-    if (a.anchor > b.anchor) return 1;
-
-    return 0;
-}
-
-function routeNodeEqual(a: RouteNode, b: RouteNode) {
-    return (
-        a.name === b.name &&
-        a.anchor === b.anchor &&
-        a.parameter === b.parameter
-    );
 }
 
 function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
