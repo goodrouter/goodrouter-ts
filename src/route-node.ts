@@ -51,13 +51,14 @@ export function stringifyRoute(
     encode: (value: string) => string,
 ) {
     let path = "";
-    while (node) {
-        path = node.anchor + path;
-        if (node.parameter != null && node.parameter in parameters) {
-            const value = parameters[node.parameter];
+    let currentNode = node;
+    while (currentNode != null) {
+        path = currentNode.anchor + path;
+        if (currentNode.parameter != null && currentNode.parameter in parameters) {
+            const value = parameters[currentNode.parameter];
             path = encode(value) + path;
         }
-        node = node.parent;
+        currentNode = currentNode.parent;
     }
     return path;
 }
@@ -310,10 +311,9 @@ function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
     if (targetNode.parameter != null) return;
 
     for (const childNode of targetNode.children) {
-        const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
-
         if (childNode.parameter != null) continue;
 
+        const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
         if (commonPrefixLength === 0) continue;
 
         return { commonPrefixLength, similarNode: childNode };
