@@ -141,7 +141,7 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
     for (const chainNode of chainNodes) {
         const similarChildResult = findSimilarChildNode(currentNode, chainNode);
         if (similarChildResult == null) {
-            currentNode = insertUniqueRoute(
+            currentNode = insertRouteNew(
                 currentNode,
                 chainNode,
             );
@@ -184,7 +184,7 @@ export function routeNodeEqual(a: RouteNode, b: RouteNode) {
     );
 }
 
-function insertUniqueRoute(
+function insertRouteNew(
     currentNode: RouteNode,
     chainNode: RouteNode,
 ) {
@@ -195,6 +195,101 @@ function insertUniqueRoute(
     return childNode;
 }
 
+function insertRouteMerge(
+    currentNode: RouteNode,
+    chainNode: RouteNode,
+    similarNode: RouteNode,
+) {
+    similarNode.children.push(...chainNode.children);
+    similarNode.children.sort(routeNodeCompare);
+    return similarNode;
+}
+function insertRouteAddToLeft(
+    currentNode: RouteNode,
+    chainNode: RouteNode,
+    similarNode: RouteNode,
+    commonPrefixLength: number,
+) {
+    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+    chainNode.parent = similarNode;
+
+    // similarNode.parameter = chainNode.parameter;
+    chainNode.parameter = null;
+
+    const childNode = similarNode.children.
+        find(childNode => routeNodeEqual(childNode, chainNode));
+    if (childNode == null) {
+        similarNode.parent = currentNode;
+        similarNode.children.push(chainNode);
+        similarNode.children.sort(routeNodeCompare);
+        return chainNode;
+    }
+    else {
+        return childNode;
+    }
+
+}
+function insertRouteAddToRight(
+    currentNode: RouteNode,
+    chainNode: RouteNode,
+    similarNode: RouteNode,
+    commonPrefixLength: number,
+) {
+    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
+    similarNode.parent = chainNode;
+
+    // chainNode.parameter = similarNode.parameter;
+    similarNode.parameter = null;
+
+    const childNode = chainNode.children.
+        find(childNode => routeNodeEqual(childNode, similarNode));
+    if (childNode == null) {
+        chainNode.parent = currentNode;
+        chainNode.children.push(similarNode);
+        chainNode.children.sort(routeNodeCompare);
+        return similarNode;
+    }
+    else {
+        return childNode;
+    }
+}
+function insertRouteIntermediate(
+    currentNode: RouteNode,
+    chainNode: RouteNode,
+    similarNode: RouteNode,
+    commonPrefixLength: number,
+) {
+    const intermediateNode = {
+        anchor: similarNode.anchor.substring(0, commonPrefixLength),
+        name: null,
+        parameter: similarNode.parameter,
+        children: [
+            similarNode,
+            chainNode,
+        ],
+        parent: currentNode,
+    };
+    intermediateNode.children.sort(routeNodeCompare);
+
+    currentNode.children.splice(
+        currentNode.children.indexOf(similarNode),
+        1,
+        intermediateNode,
+    );
+    currentNode.children.sort(routeNodeCompare);
+
+    similarNode.parent = intermediateNode;
+    chainNode.parent = intermediateNode;
+
+    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
+    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+
+    similarNode.parameter = null;
+    chainNode.parameter = null;
+
+    return chainNode;
+}
+
 function insertSimilarRoute(
     currentNode: RouteNode,
     chainNode: RouteNode,
@@ -203,83 +298,32 @@ function insertSimilarRoute(
 ) {
     const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
     switch (strategy) {
-        case "merge": {
-            similarNode.children.push(...chainNode.children);
-            similarNode.children.sort(routeNodeCompare);
-            return similarNode;
-        }
+        case "merge": return insertRouteMerge(
+            currentNode,
+            chainNode,
+            similarNode,
+        );
 
-        case "add-to-left": {
-            chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
-            chainNode.parent = similarNode;
+        case "add-to-left": return insertRouteAddToLeft(
+            currentNode,
+            chainNode,
+            similarNode,
+            commonPrefixLength,
+        );
 
-            // similarNode.parameter = chainNode.parameter;
-            chainNode.parameter = null;
+        case "add-to-right": return insertRouteAddToRight(
+            currentNode,
+            chainNode,
+            similarNode,
+            commonPrefixLength,
+        );
 
-            const childNode = similarNode.children.
-                find(childNode => routeNodeEqual(childNode, chainNode));
-            if (childNode == null) {
-                similarNode.parent = currentNode;
-                similarNode.children.push(chainNode);
-                similarNode.children.sort(routeNodeCompare);
-                return chainNode;
-            }
-            else {
-                return childNode;
-            }
-        }
-
-        case "add-to-right": {
-            similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-            similarNode.parent = chainNode;
-
-            // chainNode.parameter = similarNode.parameter;
-            similarNode.parameter = null;
-
-            const childNode = chainNode.children.
-                find(childNode => routeNodeEqual(childNode, similarNode));
-            if (childNode == null) {
-                chainNode.parent = currentNode;
-                chainNode.children.push(similarNode);
-                chainNode.children.sort(routeNodeCompare);
-                return similarNode;
-            }
-            else {
-                return childNode;
-            }
-        }
-
-        case "intermediate": {
-            const intermediateNode = {
-                anchor: similarNode.anchor.substring(0, commonPrefixLength),
-                name: null,
-                parameter: similarNode.parameter,
-                children: [
-                    similarNode,
-                    chainNode,
-                ],
-                parent: currentNode,
-            };
-            intermediateNode.children.sort(routeNodeCompare);
-
-            currentNode.children.splice(
-                currentNode.children.indexOf(similarNode),
-                1,
-                intermediateNode,
-            );
-            currentNode.children.sort(routeNodeCompare);
-
-            similarNode.parent = intermediateNode;
-            chainNode.parent = intermediateNode;
-
-            similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-            chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
-
-            similarNode.parameter = null;
-            chainNode.parameter = null;
-
-            return chainNode;
-        }
+        case "intermediate": return insertRouteIntermediate(
+            currentNode,
+            chainNode,
+            similarNode,
+            commonPrefixLength,
+        );
     }
 
 }
