@@ -261,39 +261,39 @@ function insertRouteAddTo(
 }
 function insertRouteIntermediate(
     currentNode: RouteNode,
-    chainNode: RouteNode,
-    similarNode: RouteNode,
+    newNode: RouteNode,
+    childNode: RouteNode,
     commonPrefixLength: number,
 ) {
     const intermediateNode = {
-        anchor: similarNode.anchor.substring(0, commonPrefixLength),
+        anchor: childNode.anchor.substring(0, commonPrefixLength),
         name: null,
-        parameter: similarNode.parameter,
+        parameter: childNode.parameter,
         children: [
-            similarNode,
-            chainNode,
+            childNode,
+            newNode,
         ],
         parent: currentNode,
     };
     intermediateNode.children.sort(routeNodeCompare);
 
     currentNode.children.splice(
-        currentNode.children.indexOf(similarNode),
+        currentNode.children.indexOf(childNode),
         1,
         intermediateNode,
     );
     currentNode.children.sort(routeNodeCompare);
 
-    similarNode.parent = intermediateNode;
-    chainNode.parent = intermediateNode;
+    childNode.parent = intermediateNode;
+    newNode.parent = intermediateNode;
 
-    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
+    childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+    newNode.anchor = newNode.anchor.substring(commonPrefixLength);
 
-    similarNode.parameter = null;
-    chainNode.parameter = null;
+    childNode.parameter = null;
+    newNode.parameter = null;
 
-    return chainNode;
+    return newNode;
 }
 
 function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
