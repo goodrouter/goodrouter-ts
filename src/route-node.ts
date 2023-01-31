@@ -148,12 +148,44 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
         }
         else {
             const { commonPrefixLength, similarNode } = similarChildResult;
-            currentNode = insertSimilarRoute(
-                currentNode,
-                chainNode,
-                similarNode,
-                commonPrefixLength,
-            );
+            const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
+            switch (strategy) {
+                case "merge":
+                    currentNode = insertRouteMerge(
+                        currentNode,
+                        chainNode,
+                        similarNode,
+                    );
+                    break;
+
+                case "add-to-left":
+                    currentNode = insertRouteAddToLeft(
+                        currentNode,
+                        chainNode,
+                        similarNode,
+                        commonPrefixLength,
+                    );
+                    break;
+
+                case "add-to-right":
+                    currentNode = insertRouteAddToRight(
+                        currentNode,
+                        chainNode,
+                        similarNode,
+                        commonPrefixLength,
+                    );
+                    break;
+
+                case "intermediate":
+                    currentNode = insertRouteIntermediate(
+                        currentNode,
+                        chainNode,
+                        similarNode,
+                        commonPrefixLength,
+                    );
+                    break;
+            }
+
         }
     }
 
@@ -194,7 +226,6 @@ function insertRouteNew(
     currentNode.children.sort(routeNodeCompare);
     return childNode;
 }
-
 function insertRouteMerge(
     currentNode: RouteNode,
     chainNode: RouteNode,
@@ -288,44 +319,6 @@ function insertRouteIntermediate(
     chainNode.parameter = null;
 
     return chainNode;
-}
-
-function insertSimilarRoute(
-    currentNode: RouteNode,
-    chainNode: RouteNode,
-    similarNode: RouteNode,
-    commonPrefixLength: number,
-) {
-    const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
-    switch (strategy) {
-        case "merge": return insertRouteMerge(
-            currentNode,
-            chainNode,
-            similarNode,
-        );
-
-        case "add-to-left": return insertRouteAddToLeft(
-            currentNode,
-            chainNode,
-            similarNode,
-            commonPrefixLength,
-        );
-
-        case "add-to-right": return insertRouteAddToRight(
-            currentNode,
-            chainNode,
-            similarNode,
-            commonPrefixLength,
-        );
-
-        case "intermediate": return insertRouteIntermediate(
-            currentNode,
-            chainNode,
-            similarNode,
-            commonPrefixLength,
-        );
-    }
-
 }
 
 function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
