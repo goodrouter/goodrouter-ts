@@ -244,7 +244,7 @@ function insertRouteAddTo(
     addNode.anchor = addNode.anchor.substring(commonPrefixLength);
     addNode.parent = receivingNode;
 
-    // similarNode.parameter = chainNode.parameter;
+    // addNode.parameter = receivingNode.parameter;
     addNode.parameter = null;
 
     const childNode = receivingNode.children.
