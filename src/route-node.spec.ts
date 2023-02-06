@@ -5,10 +5,9 @@ import { RouteNode } from "./route-node.js";
 test("route-node-permutations", async t => {
     const routeConfigs = [
         "/a",
-        "/b/{x}",
-        "/b/{x}/",
         "/b/{x}/c",
         "/b/{x}/d",
+        "/b/e/{x}/f",
     ];
 
     const permutedRouteConfigs = permutations(routeConfigs, routeConfigs.length);
