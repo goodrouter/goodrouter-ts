@@ -162,38 +162,54 @@ export class RouteNode {
             }
             else {
                 const { commonPrefixLength, similarNode } = similarChildResult;
-                const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
-                switch (strategy) {
-                    case "merge":
-                        currentNode = currentNode.insertRouteMerge(
-                            chainNode,
-                            similarNode,
-                        );
-                        break;
+                const commonPrefix = similarNode.anchor.substring(0, commonPrefixLength);
 
-                    case "add-to-left":
-                        currentNode = currentNode.insertRouteAddTo(
-                            chainNode,
-                            similarNode,
-                            commonPrefixLength,
-                        );
-                        break;
-
-                    case "add-to-right":
-                        currentNode = currentNode.insertRouteAddTo(
-                            similarNode,
-                            chainNode,
-                            commonPrefixLength,
-                        );
-                        break;
-
-                    case "intermediate":
+                if (similarNode.anchor === chainNode.anchor) {
+                    if (
+                        similarNode.name != null &&
+                        chainNode.name != null &&
+                        similarNode.name !== chainNode.name
+                    ) {
+                        throw new Error("ambiguous route");
+                    }
+                    else if (
+                        similarNode.parameter != null &&
+                        chainNode.parameter != null &&
+                        similarNode.parameter !== chainNode.parameter
+                    ) {
                         currentNode = currentNode.insertRouteIntermediate(
                             chainNode,
                             similarNode,
                             commonPrefixLength,
                         );
-                        break;
+                    }
+                    else {
+                        currentNode = currentNode.insertRouteMerge(
+                            chainNode,
+                            similarNode,
+                        );
+                    }
+                }
+                else if (similarNode.anchor === commonPrefix) {
+                    currentNode = currentNode.insertRouteAddTo(
+                        chainNode,
+                        similarNode,
+                        commonPrefixLength,
+                    );
+                }
+                else if (chainNode.anchor === commonPrefix) {
+                    currentNode = currentNode.insertRouteAddTo(
+                        similarNode,
+                        chainNode,
+                        commonPrefixLength,
+                    );
+                }
+                else {
+                    currentNode = currentNode.insertRouteIntermediate(
+                        chainNode,
+                        similarNode,
+                        commonPrefixLength,
+                    );
                 }
 
             }
@@ -317,35 +333,3 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
 
 }
 
-function getInsertStrategy(leftNode: RouteNode, rightNode: RouteNode, commonPrefixLength: number) {
-    const commonPrefix = leftNode.anchor.substring(0, commonPrefixLength);
-
-    if (leftNode.anchor === rightNode.anchor) {
-        if (
-            leftNode.name != null &&
-            rightNode.name != null &&
-            leftNode.name !== rightNode.name
-        ) {
-            throw new Error("ambiguous route");
-        }
-        else if (
-            leftNode.parameter != null &&
-            rightNode.parameter != null &&
-            leftNode.parameter !== rightNode.parameter
-        ) {
-            return "intermediate" as const;
-        }
-        else {
-            return "merge" as const;
-        }
-    }
-    else if (leftNode.anchor === commonPrefix) {
-        return "add-to-left" as const;
-    }
-    else if (rightNode.anchor === commonPrefix) {
-        return "add-to-right" as const;
-    }
-    else {
-        return "intermediate" as const;
-    }
-}
