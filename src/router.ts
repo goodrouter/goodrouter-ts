@@ -1,4 +1,4 @@
-import { insertRouteNode, newRootRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { insertRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
 
 /**
@@ -98,7 +98,7 @@ export class Router {
         };
     }
 
-    private rootNode: RouteNode = newRootRouteNode();
+    private rootNode: RouteNode = new RouteNode();
     private leafNodes = new Map<string, RouteNode>();
 
     /**

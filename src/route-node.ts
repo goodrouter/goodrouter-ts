@@ -7,42 +7,37 @@ import { findCommonPrefixLength } from "./string.js";
  * This interface represents a node in the tree structure that holds all the node
  * for the routes
  */
-export interface RouteNode {
-    /**
-     * @description
-     * name that identifies the route
-     */
-    name: string | null;
-    /**
-     * @description
-     * suffix that comes after the parameter value (if any!) of the path
-     */
-    anchor: string;
-    /**
-     * @description
-     * parameter name or null if this node does not represent a parameter
-     */
-    parameter: string | null;
+export class RouteNode {
     /**
      * @description
      * children that represent the rest of the path that needs to be matched
      */
-    children: RouteNode[];
+    children = new Array<RouteNode>;
     /**
      * @description
      * parent node, should only be null for the root node
      */
-    parent: RouteNode | null;
-}
+    parent: RouteNode | null = null;
 
-export function newRootRouteNode(): RouteNode {
-    return {
-        name: null,
-        anchor: "",
-        parameter: null,
-        children: [],
-        parent: null,
-    };
+    constructor(
+        /**
+         * @description
+         * suffix that comes after the parameter value (if any!) of the path
+         */
+        public anchor = "",
+        /**
+         * @description
+         * parameter name or null if this node does not represent a parameter
+         */
+        public parameter: string | null = null,
+        /**
+         * @description
+         * name that identifies the route
+         */
+        public name: string | null = null,
+    ) {
+
+    }
 }
 
 export function stringifyRoute(
@@ -117,7 +112,7 @@ export function parseRoute(
             parameters,
         );
 
-        // if a childnode is matches, return that node instead of the current! So childnodes are matches first!
+        // if a child node is matches, return that node instead of the current! So child nodes are matches first!
         if (route != null) return route;
     }
 

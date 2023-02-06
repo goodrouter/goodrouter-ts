@@ -4,5 +4,6 @@
     "source.fixAll": true,
     "source.organizeImports": true
   },
-  "editor.rulers": [100]
+  "editor.rulers": [100],
+  "cSpell.words": ["cobertura", "goodrouter", "itertools", "lcov", "luvdasun"]
 }
