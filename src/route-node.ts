@@ -38,6 +38,31 @@ export class RouteNode {
     ) {
 
     }
+
+    compare(other: RouteNode) {
+        if (this.anchor.length < other.anchor.length) return 1;
+        if (this.anchor.length > other.anchor.length) return -1;
+
+        if ((this.name == null) < (other.name == null)) return 1;
+        if ((this.name == null) > (other.name == null)) return -1;
+
+        if ((this.parameter == null) < (other.parameter == null)) return -1;
+        if ((this.parameter == null) > (other.parameter == null)) return 1;
+
+        if (this.anchor < other.anchor) return -1;
+        if (this.anchor > other.anchor) return 1;
+
+        return 0;
+    }
+
+    equal(other: RouteNode) {
+        return (
+            this.name === other.name &&
+            this.anchor === other.anchor &&
+            this.parameter === other.parameter
+        );
+    }
+
 }
 
 export function stringifyRoute(
@@ -187,38 +212,18 @@ export function insertRouteNode(targetNode: RouteNode, name: string, template: s
     return currentNode;
 }
 
-export function routeNodeCompare(a: RouteNode, b: RouteNode) {
-    if (a.anchor.length < b.anchor.length) return 1;
-    if (a.anchor.length > b.anchor.length) return -1;
-
-    if ((a.name == null) < (b.name == null)) return 1;
-    if ((a.name == null) > (b.name == null)) return -1;
-
-    if ((a.parameter == null) < (b.parameter == null)) return -1;
-    if ((a.parameter == null) > (b.parameter == null)) return 1;
-
-    if (a.anchor < b.anchor) return -1;
-    if (a.anchor > b.anchor) return 1;
-
-    return 0;
-}
-
-export function routeNodeEqual(a: RouteNode, b: RouteNode) {
-    return (
-        a.name === b.name &&
-        a.anchor === b.anchor &&
-        a.parameter === b.parameter
-    );
-}
-
 function insertRouteNew(
     currentNode: RouteNode,
     chainNode: RouteNode,
 ) {
-    const childNode = { ...chainNode };
+    const childNode = new RouteNode(
+        chainNode.anchor,
+        chainNode.parameter,
+        chainNode.name,
+    );
     childNode.parent = currentNode;
     currentNode.children.push(childNode);
-    currentNode.children.sort(routeNodeCompare);
+    currentNode.children.sort((a, b) => a.compare(b));
     return childNode;
 }
 function insertRouteMerge(
@@ -227,7 +232,7 @@ function insertRouteMerge(
     receivingNode: RouteNode,
 ) {
     receivingNode.children.push(...appendNode.children);
-    receivingNode.children.sort(routeNodeCompare);
+    receivingNode.children.sort((a, b) => a.compare(b));
     return receivingNode;
 }
 function insertRouteAddTo(
@@ -243,11 +248,11 @@ function insertRouteAddTo(
     addNode.parameter = null;
 
     const childNode = receivingNode.children.
-        find(childNode => routeNodeEqual(childNode, addNode));
+        find(childNode => childNode.equal(addNode));
     if (childNode == null) {
         receivingNode.parent = currentNode;
         receivingNode.children.push(addNode);
-        receivingNode.children.sort(routeNodeCompare);
+        receivingNode.children.sort((a, b) => a.compare(b));
         return addNode;
     }
     else {
@@ -260,24 +265,21 @@ function insertRouteIntermediate(
     childNode: RouteNode,
     commonPrefixLength: number,
 ) {
-    const intermediateNode = {
-        anchor: childNode.anchor.substring(0, commonPrefixLength),
-        name: null,
-        parameter: childNode.parameter,
-        children: [
-            childNode,
-            newNode,
-        ],
-        parent: currentNode,
-    };
-    intermediateNode.children.sort(routeNodeCompare);
+    const intermediateNode = new RouteNode(
+        childNode.anchor.substring(0, commonPrefixLength),
+        childNode.parameter,
+    );
+    intermediateNode.parent = currentNode;
+    intermediateNode.children.push(childNode);
+    intermediateNode.children.push(newNode);
+    intermediateNode.children.sort((a, b) => a.compare(b));
 
     currentNode.children.splice(
         currentNode.children.indexOf(childNode),
         1,
         intermediateNode,
     );
-    currentNode.children.sort(routeNodeCompare);
+    currentNode.children.sort((a, b) => a.compare(b));
 
     childNode.parent = intermediateNode;
     newNode.parent = intermediateNode;
@@ -303,13 +305,11 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
             throw new TypeError("expected anchors");
         }
 
-        yield {
+        yield new RouteNode(
             anchor,
-            name: currentName,
             parameter,
-            children: [],
-            parent: null,
-        };
+            currentName,
+        );
 
         currentName = null;
     }

@@ -1,6 +1,6 @@
 import { permutations } from "itertools";
 import test from "tape-promise/tape.js";
-import { insertRouteNode, RouteNode, routeNodeCompare } from "./route-node.js";
+import { insertRouteNode, RouteNode } from "./route-node.js";
 
 test("route-node-permutations", async t => {
     const routeConfigs = [
@@ -44,7 +44,7 @@ test("route-node-sort", async t => {
     ];
 
     const nodesExpected = [...nodes];
-    const nodesActual = [...nodes].sort(routeNodeCompare);
+    const nodesActual = [...nodes].sort((a, b) => a.compare(b));
 
     t.deepEqual(nodesActual, nodesExpected);
 
