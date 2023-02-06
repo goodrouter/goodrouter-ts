@@ -154,10 +154,9 @@ export class RouteNode {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
         for (const chainNode of chainNodes) {
-            const similarChildResult = findSimilarChildNode(currentNode, chainNode);
+            const similarChildResult = currentNode.findSimilarChild(chainNode);
             if (similarChildResult == null) {
-                currentNode = insertRouteNew(
-                    currentNode,
+                currentNode = currentNode.insertRouteNew(
                     chainNode,
                 );
             }
@@ -166,16 +165,14 @@ export class RouteNode {
                 const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
                 switch (strategy) {
                     case "merge":
-                        currentNode = insertRouteMerge(
-                            currentNode,
+                        currentNode = currentNode.insertRouteMerge(
                             chainNode,
                             similarNode,
                         );
                         break;
 
                     case "add-to-left":
-                        currentNode = insertRouteAddTo(
-                            currentNode,
+                        currentNode = currentNode.insertRouteAddTo(
                             chainNode,
                             similarNode,
                             commonPrefixLength,
@@ -183,8 +180,7 @@ export class RouteNode {
                         break;
 
                     case "add-to-right":
-                        currentNode = insertRouteAddTo(
-                            currentNode,
+                        currentNode = currentNode.insertRouteAddTo(
                             similarNode,
                             chainNode,
                             commonPrefixLength,
@@ -192,8 +188,7 @@ export class RouteNode {
                         break;
 
                     case "intermediate":
-                        currentNode = insertRouteIntermediate(
-                            currentNode,
+                        currentNode = currentNode.insertRouteIntermediate(
                             chainNode,
                             similarNode,
                             commonPrefixLength,
@@ -207,87 +202,96 @@ export class RouteNode {
         return currentNode;
     }
 
-}
+    private findSimilarChild(otherNode: RouteNode) {
+        if (this.parameter != null) return;
 
-function insertRouteNew(
-    currentNode: RouteNode,
-    chainNode: RouteNode,
-) {
-    const childNode = new RouteNode(
-        chainNode.anchor,
-        chainNode.parameter,
-        chainNode.name,
-    );
-    childNode.parent = currentNode;
-    currentNode.children.push(childNode);
-    currentNode.children.sort((a, b) => a.compare(b));
-    return childNode;
-}
-function insertRouteMerge(
-    currentNode: RouteNode,
-    appendNode: RouteNode,
-    receivingNode: RouteNode,
-) {
-    receivingNode.children.push(...appendNode.children);
-    receivingNode.children.sort((a, b) => a.compare(b));
-    return receivingNode;
-}
-function insertRouteAddTo(
-    currentNode: RouteNode,
-    addNode: RouteNode,
-    receivingNode: RouteNode,
-    commonPrefixLength: number,
-) {
-    addNode.anchor = addNode.anchor.substring(commonPrefixLength);
-    addNode.parent = receivingNode;
+        for (const childNode of this.children) {
+            if (childNode.parameter != null) continue;
 
-    // addNode.parameter = receivingNode.parameter;
-    addNode.parameter = null;
+            const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
+            if (commonPrefixLength === 0) continue;
 
-    const childNode = receivingNode.children.
-        find(childNode => childNode.equal(addNode));
-    if (childNode == null) {
-        receivingNode.parent = currentNode;
-        receivingNode.children.push(addNode);
-        receivingNode.children.sort((a, b) => a.compare(b));
-        return addNode;
+            return { commonPrefixLength, similarNode: childNode };
+        }
     }
-    else {
+
+    private insertRouteNew(
+        chainNode: RouteNode,
+    ) {
+        const childNode = new RouteNode(
+            chainNode.anchor,
+            chainNode.parameter,
+            chainNode.name,
+        );
+        childNode.parent = this;
+        this.children.push(childNode);
+        this.children.sort((a, b) => a.compare(b));
         return childNode;
     }
-}
-function insertRouteIntermediate(
-    currentNode: RouteNode,
-    newNode: RouteNode,
-    childNode: RouteNode,
-    commonPrefixLength: number,
-) {
-    const intermediateNode = new RouteNode(
-        childNode.anchor.substring(0, commonPrefixLength),
-        childNode.parameter,
-    );
-    intermediateNode.parent = currentNode;
-    intermediateNode.children.push(childNode);
-    intermediateNode.children.push(newNode);
-    intermediateNode.children.sort((a, b) => a.compare(b));
+    private insertRouteMerge(
+        appendNode: RouteNode,
+        receivingNode: RouteNode,
+    ) {
+        receivingNode.children.push(...appendNode.children);
+        receivingNode.children.sort((a, b) => a.compare(b));
+        return receivingNode;
+    }
+    private insertRouteAddTo(
+        addNode: RouteNode,
+        receivingNode: RouteNode,
+        commonPrefixLength: number,
+    ) {
+        addNode.anchor = addNode.anchor.substring(commonPrefixLength);
+        addNode.parent = receivingNode;
 
-    currentNode.children.splice(
-        currentNode.children.indexOf(childNode),
-        1,
-        intermediateNode,
-    );
-    currentNode.children.sort((a, b) => a.compare(b));
+        // addNode.parameter = receivingNode.parameter;
+        addNode.parameter = null;
 
-    childNode.parent = intermediateNode;
-    newNode.parent = intermediateNode;
+        const childNode = receivingNode.children.
+            find(childNode => childNode.equal(addNode));
+        if (childNode == null) {
+            receivingNode.parent = this;
+            receivingNode.children.push(addNode);
+            receivingNode.children.sort((a, b) => a.compare(b));
+            return addNode;
+        }
+        else {
+            return childNode;
+        }
+    }
+    private insertRouteIntermediate(
+        newNode: RouteNode,
+        childNode: RouteNode,
+        commonPrefixLength: number,
+    ) {
+        const intermediateNode = new RouteNode(
+            childNode.anchor.substring(0, commonPrefixLength),
+            childNode.parameter,
+        );
+        intermediateNode.parent = this;
+        intermediateNode.children.push(childNode);
+        intermediateNode.children.push(newNode);
+        intermediateNode.children.sort((a, b) => a.compare(b));
 
-    childNode.anchor = childNode.anchor.substring(commonPrefixLength);
-    newNode.anchor = newNode.anchor.substring(commonPrefixLength);
+        this.children.splice(
+            this.children.indexOf(childNode),
+            1,
+            intermediateNode,
+        );
+        this.children.sort((a, b) => a.compare(b));
 
-    childNode.parameter = null;
-    newNode.parameter = null;
+        childNode.parent = intermediateNode;
+        newNode.parent = intermediateNode;
 
-    return newNode;
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
+
+        childNode.parameter = null;
+        newNode.parameter = null;
+
+        return newNode;
+    }
+
 }
 
 function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
@@ -311,19 +315,6 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
         currentName = null;
     }
 
-}
-
-function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
-    if (targetNode.parameter != null) return;
-
-    for (const childNode of targetNode.children) {
-        if (childNode.parameter != null) continue;
-
-        const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
-        if (commonPrefixLength === 0) continue;
-
-        return { commonPrefixLength, similarNode: childNode };
-    }
 }
 
 function getInsertStrategy(leftNode: RouteNode, rightNode: RouteNode, commonPrefixLength: number) {
