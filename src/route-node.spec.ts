@@ -36,41 +36,11 @@ test("route-node-permutations", async t => {
 
 test("route-node-sort", async t => {
     const nodes: RouteNode[] = [
-        {
-            name: null,
-            parameter: "p",
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "xx",
-            parent: null,
-            children: [],
-        },
-        {
-            name: "n",
-            parameter: null,
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "x",
-            parent: null,
-            children: [],
-        },
+        new RouteNode("aa", "p"),
+        new RouteNode("aa"),
+        new RouteNode("xx"),
+        new RouteNode("aa", null, "n"),
+        new RouteNode("x", null, "n"),
     ];
 
     const nodesExpected = [...nodes];
