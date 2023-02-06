@@ -303,7 +303,7 @@ function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode>
         const parameter = parts.pop() ?? null;
 
         if (anchor == null) {
-            throw new TypeError("expected anchors");
+            throw new TypeError("expected anchor");
         }
 
         yield new RouteNode(
