@@ -147,65 +147,66 @@ export class RouteNode {
         );
     }
 
-}
+    insert(name: string, template: string) {
+        const chainNodes = [...newRouteNodeChain(name, template)];
+        chainNodes.reverse();
 
-export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
-    const chainNodes = [...newRouteNodeChain(name, template)];
-    chainNodes.reverse();
-
-    let currentNode = targetNode;
-    for (const chainNode of chainNodes) {
-        const similarChildResult = findSimilarChildNode(currentNode, chainNode);
-        if (similarChildResult == null) {
-            currentNode = insertRouteNew(
-                currentNode,
-                chainNode,
-            );
-        }
-        else {
-            const { commonPrefixLength, similarNode } = similarChildResult;
-            const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
-            switch (strategy) {
-                case "merge":
-                    currentNode = insertRouteMerge(
-                        currentNode,
-                        chainNode,
-                        similarNode,
-                    );
-                    break;
-
-                case "add-to-left":
-                    currentNode = insertRouteAddTo(
-                        currentNode,
-                        chainNode,
-                        similarNode,
-                        commonPrefixLength,
-                    );
-                    break;
-
-                case "add-to-right":
-                    currentNode = insertRouteAddTo(
-                        currentNode,
-                        similarNode,
-                        chainNode,
-                        commonPrefixLength,
-                    );
-                    break;
-
-                case "intermediate":
-                    currentNode = insertRouteIntermediate(
-                        currentNode,
-                        chainNode,
-                        similarNode,
-                        commonPrefixLength,
-                    );
-                    break;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let currentNode: RouteNode = this;
+        for (const chainNode of chainNodes) {
+            const similarChildResult = findSimilarChildNode(currentNode, chainNode);
+            if (similarChildResult == null) {
+                currentNode = insertRouteNew(
+                    currentNode,
+                    chainNode,
+                );
             }
+            else {
+                const { commonPrefixLength, similarNode } = similarChildResult;
+                const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
+                switch (strategy) {
+                    case "merge":
+                        currentNode = insertRouteMerge(
+                            currentNode,
+                            chainNode,
+                            similarNode,
+                        );
+                        break;
 
+                    case "add-to-left":
+                        currentNode = insertRouteAddTo(
+                            currentNode,
+                            chainNode,
+                            similarNode,
+                            commonPrefixLength,
+                        );
+                        break;
+
+                    case "add-to-right":
+                        currentNode = insertRouteAddTo(
+                            currentNode,
+                            similarNode,
+                            chainNode,
+                            commonPrefixLength,
+                        );
+                        break;
+
+                    case "intermediate":
+                        currentNode = insertRouteIntermediate(
+                            currentNode,
+                            chainNode,
+                            similarNode,
+                            commonPrefixLength,
+                        );
+                        break;
+                }
+
+            }
         }
+
+        return currentNode;
     }
 
-    return currentNode;
 }
 
 function insertRouteNew(

@@ -1,4 +1,4 @@
-import { insertRouteNode, RouteNode } from "./route-node.js";
+import { RouteNode } from "./route-node.js";
 import { Route } from "./route.js";
 
 /**
@@ -109,7 +109,7 @@ export class Router {
      * @param template template for the route, als defines parameters
      */
     public insertRoute(name: string, template: string) {
-        const leafNode = insertRouteNode(this.rootNode, name, template);
+        const leafNode = this.rootNode.insert(name, template);
         this.leafNodes.set(name, leafNode);
     }
 

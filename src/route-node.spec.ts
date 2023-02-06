@@ -1,6 +1,6 @@
 import { permutations } from "itertools";
 import test from "tape-promise/tape.js";
-import { insertRouteNode, RouteNode } from "./route-node.js";
+import { RouteNode } from "./route-node.js";
 
 test("route-node-permutations", async t => {
     const routeConfigs = [
@@ -19,7 +19,7 @@ test("route-node-permutations", async t => {
         const rootNode = new RouteNode();
 
         for (const template of routeConfigs) {
-            insertRouteNode(rootNode, template, template);
+            rootNode.insert(template, template);
         }
 
         {
