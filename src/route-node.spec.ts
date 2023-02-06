@@ -40,7 +40,7 @@ test("route-node-sort", async t => {
         new RouteNode("aa"),
         new RouteNode("xx"),
         new RouteNode("aa", null, "n"),
-        new RouteNode("x", null, "n"),
+        new RouteNode("x"),
     ];
 
     const nodesExpected = [...nodes];
