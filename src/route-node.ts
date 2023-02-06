@@ -12,12 +12,12 @@ export class RouteNode {
      * @description
      * children that represent the rest of the path that needs to be matched
      */
-    children = new Array<RouteNode>;
+    private readonly children = new Array<RouteNode>();
     /**
      * @description
      * parent node, should only be null for the root node
      */
-    parent: RouteNode | null = null;
+    private parent: RouteNode | null = null;
 
     constructor(
         /**
@@ -37,6 +37,42 @@ export class RouteNode {
         public name: string | null = null,
     ) {
 
+    }
+    getChildren(): Iterable<RouteNode> {
+        return this.children.values();
+    }
+
+    countChildren() {
+        return this.children.length;
+    }
+
+    getParent() {
+        return this.parent;
+    }
+
+    addChild(childNode: RouteNode) {
+        if (childNode.parent === this) {
+            throw new TypeError("cannot add childNode to self");
+        }
+
+        if (childNode.parent != null) {
+            throw new TypeError("childNode already has parent");
+        }
+
+        childNode.parent = this;
+        this.children.push(childNode);
+        this.children.sort((a, b) => a.compare(b));
+    }
+
+    removeChild(childNode: RouteNode) {
+        const childIndex = this.children.indexOf(childNode);
+
+        if (childNode.parent !== this || childIndex < 0) {
+            throw new TypeError("childNode is not a child of this node");
+        }
+
+        childNode.parent = null;
+        this.children.splice(childIndex, 1);
     }
 
     parse(
@@ -81,7 +117,7 @@ export class RouteNode {
             };
         }
 
-        for (const childNode of this.children) {
+        for (const childNode of this.getChildren()) {
             // find a route in every child node
             const route = childNode.parse(
                 path,
@@ -154,14 +190,13 @@ export class RouteNode {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
         for (const chainNode of chainNodes) {
-            const similarChildResult = currentNode.findSimilarChild(chainNode);
-            if (similarChildResult == null) {
+            const [commonPrefixLength, similarNode] = currentNode.findSimilarChild(chainNode);
+            if (similarNode == null) {
                 currentNode = currentNode.insertRouteNew(
                     chainNode,
                 );
             }
             else {
-                const { commonPrefixLength, similarNode } = similarChildResult;
                 const commonPrefix = similarNode.anchor.substring(0, commonPrefixLength);
 
                 if (similarNode.anchor === chainNode.anchor) {
@@ -219,16 +254,18 @@ export class RouteNode {
     }
 
     private findSimilarChild(otherNode: RouteNode) {
-        if (this.parameter != null) return;
+        if (this.parameter != null) return [0, null] as const;
 
-        for (const childNode of this.children) {
+        for (const childNode of this.getChildren()) {
             if (childNode.parameter != null) continue;
 
             const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
             if (commonPrefixLength === 0) continue;
 
-            return { commonPrefixLength, similarNode: childNode };
+            return [commonPrefixLength, childNode] as const;
         }
+
+        return [0, null] as const;
     }
 
     private insertRouteNew(
@@ -239,17 +276,16 @@ export class RouteNode {
             chainNode.parameter,
             chainNode.name,
         );
-        childNode.parent = this;
-        this.children.push(childNode);
-        this.children.sort((a, b) => a.compare(b));
+        this.addChild(childNode);
         return childNode;
     }
     private insertRouteMerge(
         appendNode: RouteNode,
         receivingNode: RouteNode,
     ) {
-        receivingNode.children.push(...appendNode.children);
-        receivingNode.children.sort((a, b) => a.compare(b));
+        for (const childNode of appendNode.getChildren()) {
+            receivingNode.addChild(childNode);
+        }
         return receivingNode;
     }
     private insertRouteAddTo(
@@ -263,7 +299,7 @@ export class RouteNode {
         // addNode.parameter = receivingNode.parameter;
         addNode.parameter = null;
 
-        const childNode = receivingNode.children.
+        const childNode = [...receivingNode.getChildren()].
             find(childNode => childNode.equal(addNode));
         if (childNode == null) {
             receivingNode.parent = this;
@@ -280,24 +316,16 @@ export class RouteNode {
         childNode: RouteNode,
         commonPrefixLength: number,
     ) {
+        this.removeChild(childNode);
+
         const intermediateNode = new RouteNode(
             childNode.anchor.substring(0, commonPrefixLength),
             childNode.parameter,
         );
-        intermediateNode.parent = this;
-        intermediateNode.children.push(childNode);
-        intermediateNode.children.push(newNode);
-        intermediateNode.children.sort((a, b) => a.compare(b));
+        intermediateNode.addChild(childNode);
+        intermediateNode.addChild(newNode);
 
-        this.children.splice(
-            this.children.indexOf(childNode),
-            1,
-            intermediateNode,
-        );
-        this.children.sort((a, b) => a.compare(b));
-
-        childNode.parent = intermediateNode;
-        newNode.parent = intermediateNode;
+        this.addChild(intermediateNode);
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);

@@ -23,7 +23,7 @@ test("route-node-permutations", async t => {
         }
 
         {
-            t.equal(rootNode.children.length, 1);
+            t.equal(rootNode.countChildren(), 1);
         }
 
         if (rootNodePrevious != null) {
