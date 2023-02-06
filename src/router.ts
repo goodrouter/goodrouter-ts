@@ -1,4 +1,4 @@
-import { insertRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
+import { insertRouteNode, RouteNode } from "./route-node.js";
 import { Route } from "./route.js";
 
 /**
@@ -121,7 +121,7 @@ export class Router {
      * @returns route that is matches to the path or null if no match is found
      */
     public parseRoute(path: string): Route | null {
-        const route = parseRoute(this.rootNode, path, this.options.decode);
+        const route = this.rootNode.parse(path, this.options.decode);
         return route;
     }
 
@@ -135,6 +135,6 @@ export class Router {
     public stringifyRoute(route: Route): string | null {
         const node = this.leafNodes.get(route.name);
         if (!node) return null;
-        return stringifyRoute(node, route.parameters, this.options.encode);
+        return node.stringify(route.parameters, this.options.encode);
     }
 }

@@ -39,6 +39,90 @@ export class RouteNode {
 
     }
 
+    parse(
+        path: string,
+        decode: (value: string) => string,
+        parameters: Record<string, string> = {},
+    ): Route | null {
+        if (this.parameter == null) {
+            // if this node does not represent a parameter we expect the path to start with the `anchor`
+            if (!path.startsWith(this.anchor)) {
+                // this node does not match the path
+                return null;
+            }
+
+            // we successfully matches the node to the path, now remove the matched part from the path
+            path = path.substring(this.anchor.length);
+        }
+        else {
+            // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
+            if (path.length === 0) {
+                return null;
+            }
+
+            // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
+            const index = this.anchor.length === 0 ?
+                path.length :
+                path.indexOf(this.anchor);
+            if (index < 0) {
+                return null;
+            }
+
+            // get the parameter value
+            const value = decode(path.substring(0, index));
+
+            // remove the matches part from the path
+            path = path.substring(index + this.anchor.length);
+
+            // update parameters, parameters is immutable!
+            parameters = {
+                ...parameters,
+                [this.parameter]: value,
+            };
+        }
+
+        for (const childNode of this.children) {
+            // find a route in every child node
+            const route = childNode.parse(
+                path,
+                decode,
+                parameters,
+            );
+
+            // if a child node is matches, return that node instead of the current! So child nodes are matches first!
+            if (route != null) return route;
+        }
+
+        // if the node had a route name and there is no path left to match against then we found a route
+        if (this.name != null && path.length === 0) {
+            return {
+                name: this.name,
+                parameters,
+            };
+        }
+
+        // we did not found a route :-(
+        return null;
+    }
+
+    stringify(
+        parameters: Record<string, string> = {},
+        encode: (value: string) => string,
+    ) {
+        let path = "";
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let currentNode: RouteNode | null = this;
+        while (currentNode != null) {
+            path = currentNode.anchor + path;
+            if (currentNode.parameter != null && currentNode.parameter in parameters) {
+                const value = parameters[currentNode.parameter];
+                path = encode(value) + path;
+            }
+            currentNode = currentNode.parent;
+        }
+        return path;
+    }
+
     compare(other: RouteNode) {
         if (this.anchor.length < other.anchor.length) return 1;
         if (this.anchor.length > other.anchor.length) return -1;
@@ -63,94 +147,6 @@ export class RouteNode {
         );
     }
 
-}
-
-export function stringifyRoute(
-    node: RouteNode | null,
-    parameters: Record<string, string> = {},
-    encode: (value: string) => string,
-) {
-    let path = "";
-    let currentNode = node;
-    while (currentNode != null) {
-        path = currentNode.anchor + path;
-        if (currentNode.parameter != null && currentNode.parameter in parameters) {
-            const value = parameters[currentNode.parameter];
-            path = encode(value) + path;
-        }
-        currentNode = currentNode.parent;
-    }
-    return path;
-}
-
-export function parseRoute(
-    node: RouteNode | null,
-    path: string,
-    decode: (value: string) => string,
-    parameters: Record<string, string> = {},
-): Route | null {
-    if (!node) return null;
-
-    if (node.parameter == null) {
-        // if this node does not represent a parameter we expect the path to start with the `anchor`
-        if (!path.startsWith(node.anchor)) {
-            // this node does not match the path
-            return null;
-        }
-
-        // we successfully matches the node to the path, now remove the matched part from the path
-        path = path.substring(node.anchor.length);
-    }
-    else {
-        // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
-        if (path.length === 0) {
-            return null;
-        }
-
-        // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
-        const index = node.anchor.length === 0 ?
-            path.length :
-            path.indexOf(node.anchor);
-        if (index < 0) {
-            return null;
-        }
-
-        // get the parameter value
-        const value = decode(path.substring(0, index));
-
-        // remove the matches part from the path
-        path = path.substring(index + node.anchor.length);
-
-        // update parameters, parameters is immutable!
-        parameters = {
-            ...parameters,
-            [node.parameter]: value,
-        };
-    }
-
-    for (const childNode of node.children) {
-        // find a route in every child node
-        const route = parseRoute(
-            childNode,
-            path,
-            decode,
-            parameters,
-        );
-
-        // if a child node is matches, return that node instead of the current! So child nodes are matches first!
-        if (route != null) return route;
-    }
-
-    // if the node had a route name and there is no path left to match against then we found a route
-    if (node.name != null && path.length === 0) {
-        return {
-            name: node.name,
-            parameters,
-        };
-    }
-
-    // we did not found a route :-(
-    return null;
 }
 
 export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
