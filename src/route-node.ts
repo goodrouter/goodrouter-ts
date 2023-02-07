@@ -44,6 +44,10 @@ export class RouteNode {
         return this.children.values();
     }
 
+    findSameChild(sameChild: RouteNode) {
+        return this.children.find(child => child.equal(sameChild));
+    }
+
     countChildren() {
         return this.children.length;
     }
@@ -363,12 +367,17 @@ export class RouteNode {
             throw new Error("newNode is not supposed to have any children");
         }
 
-        childNode.addChild(newNode);
-
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
         newNode.parameter = null;
 
-        return newNode;
+        const sameNode = childNode.findSameChild(newNode);
+        if (sameNode == null) {
+            childNode.addChild(newNode);
+            return newNode;
+        }
+        else {
+            return sameNode;
+        }
     }
     private insertAddToNew(
         childNode: RouteNode,
