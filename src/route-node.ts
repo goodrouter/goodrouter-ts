@@ -19,6 +19,8 @@ export class RouteNode {
      */
     private parent: RouteNode | null = null;
 
+    public maximumParameterValueLength = 20;
+
     constructor(
         /**
          * @description
@@ -99,7 +101,7 @@ export class RouteNode {
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
             const index = this.anchor.length === 0 ?
                 path.length :
-                path.indexOf(this.anchor);
+                path.indexOf(this.anchor.substring(0, this.maximumParameterValueLength));
             if (index < 0) {
                 return null;
             }
@@ -159,6 +161,7 @@ export class RouteNode {
         return path;
     }
 
+    // eslint-disable-next-line complexity
     compare(other: RouteNode) {
         if (this.anchor.length < other.anchor.length) return 1;
         if (this.anchor.length > other.anchor.length) return -1;
@@ -168,6 +171,15 @@ export class RouteNode {
 
         if ((this.parameter == null) < (other.parameter == null)) return -1;
         if ((this.parameter == null) > (other.parameter == null)) return 1;
+
+        if (this.countChildren() > other.countChildren()) return -1;
+        if (this.countChildren() < other.countChildren()) return 1;
+
+        if ((this.name ?? "") < (other.name ?? "")) return -1;
+        if ((this.name ?? "") > (other.name ?? "")) return 1;
+
+        if ((this.parameter ?? "") < (other.parameter ?? "")) return -1;
+        if ((this.parameter ?? "") > (other.parameter ?? "")) return 1;
 
         if (this.anchor < other.anchor) return -1;
         if (this.anchor > other.anchor) return 1;
@@ -183,66 +195,69 @@ export class RouteNode {
         );
     }
 
-    insert(name: string, template: string) {
-        const chainNodes = [...newRouteNodeChain(name, template)];
-        chainNodes.reverse();
+    insert(
+        name: string,
+        template: string,
+    ) {
+        const newNodes = [...newRouteNodesFromTemplate(name, template)];
+        newNodes.reverse();
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
-        for (const chainNode of chainNodes) {
-            const [commonPrefixLength, similarNode] = currentNode.findSimilarChild(chainNode);
+        for (const newNode of newNodes) {
+            const [commonPrefixLength, similarNode] = currentNode.findSimilarChild(newNode);
             if (similarNode == null) {
                 currentNode = currentNode.insertRouteNew(
-                    chainNode,
+                    newNode,
                 );
             }
             else {
                 const commonPrefix = similarNode.anchor.substring(0, commonPrefixLength);
 
-                if (similarNode.anchor === chainNode.anchor) {
+                if (similarNode.anchor === newNode.anchor) {
                     if (
                         similarNode.name != null &&
-                        chainNode.name != null &&
-                        similarNode.name !== chainNode.name
+                        newNode.name != null &&
+                        similarNode.name !== newNode.name
                     ) {
                         throw new Error("ambiguous route");
                     }
                     else if (
                         similarNode.parameter != null &&
-                        chainNode.parameter != null &&
-                        similarNode.parameter !== chainNode.parameter
+                        newNode.parameter != null &&
+                        similarNode.parameter !== newNode.parameter
                     ) {
                         currentNode = currentNode.insertRouteIntermediate(
-                            chainNode,
                             similarNode,
+                            newNode,
                             commonPrefixLength,
                         );
                     }
                     else {
                         currentNode = currentNode.insertRouteMerge(
-                            chainNode,
                             similarNode,
+                            newNode,
                         );
                     }
                 }
                 else if (similarNode.anchor === commonPrefix) {
                     currentNode = currentNode.insertRouteAddTo(
-                        chainNode,
+                        newNode,
                         similarNode,
                         commonPrefixLength,
                     );
                 }
-                else if (chainNode.anchor === commonPrefix) {
+                else if (newNode.anchor === commonPrefix) {
                     currentNode = currentNode.insertRouteAddTo(
                         similarNode,
-                        chainNode,
+                        newNode,
                         commonPrefixLength,
                     );
                 }
                 else {
                     currentNode = currentNode.insertRouteIntermediate(
-                        chainNode,
                         similarNode,
+                        newNode,
                         commonPrefixLength,
                     );
                 }
@@ -269,24 +284,72 @@ export class RouteNode {
     }
 
     private insertRouteNew(
-        chainNode: RouteNode,
+        newNode: RouteNode,
     ) {
-        const childNode = new RouteNode(
-            chainNode.anchor,
-            chainNode.parameter,
-            chainNode.name,
-        );
-        this.addChild(childNode);
-        return childNode;
+        this.addChild(newNode);
+        return newNode;
     }
     private insertRouteMerge(
-        appendNode: RouteNode,
-        receivingNode: RouteNode,
+        childNode: RouteNode,
+        newNode: RouteNode,
     ) {
-        for (const childNode of appendNode.getChildren()) {
-            receivingNode.addChild(childNode);
+        if (
+            childNode.parameter !== newNode.parameter
+        ) {
+            throw new Error("parameters should be the same");
         }
-        return receivingNode;
+
+        if (
+            childNode.name !== null ||
+            newNode.name !== null ||
+            childNode.name !== newNode.name
+        ) {
+            throw new Error("names should be null or same");
+        }
+
+        if (newNode.countChildren() > 0) {
+            throw new Error("newNode is not supposed to have any children");
+        }
+
+        childNode.name ??= newNode.name;
+
+        // for (const childNode of newNode.getChildren()) {
+        //     childNode.addChild(childNode);
+        // }
+
+        return childNode;
+    }
+    private insertRouteIntermediate(
+        childNode: RouteNode,
+        newNode: RouteNode,
+        commonPrefixLength: number,
+    ) {
+        if (
+            childNode.parameter !== null ||
+            newNode.parameter !== null ||
+            childNode.parameter !== newNode.parameter
+        ) {
+            throw new Error("parameters should be null or same");
+        }
+
+        this.removeChild(childNode);
+
+        const intermediateNode = new RouteNode(
+            childNode.anchor.substring(0, commonPrefixLength),
+            childNode.parameter,
+        );
+        intermediateNode.addChild(childNode);
+        intermediateNode.addChild(newNode);
+
+        this.addChild(intermediateNode);
+
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
+
+        childNode.parameter = null;
+        newNode.parameter = null;
+
+        return newNode;
     }
     private insertRouteAddTo(
         addNode: RouteNode,
@@ -311,34 +374,9 @@ export class RouteNode {
             return childNode;
         }
     }
-    private insertRouteIntermediate(
-        newNode: RouteNode,
-        childNode: RouteNode,
-        commonPrefixLength: number,
-    ) {
-        this.removeChild(childNode);
-
-        const intermediateNode = new RouteNode(
-            childNode.anchor.substring(0, commonPrefixLength),
-            childNode.parameter,
-        );
-        intermediateNode.addChild(childNode);
-        intermediateNode.addChild(newNode);
-
-        this.addChild(intermediateNode);
-
-        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
-        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
-
-        childNode.parameter = null;
-        newNode.parameter = null;
-
-        return newNode;
-    }
-
 }
 
-function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
+function* newRouteNodesFromTemplate(name: string, template: string): Iterable<RouteNode> {
     const parts = [...emitTemplatePathParts(template)];
     let currentName: string | null = name;
 

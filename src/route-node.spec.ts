@@ -26,7 +26,7 @@ test("route-node-permutations", async t => {
         }
 
         if (rootNodePrevious != null) {
-            t.deepEqual(rootNodePrevious, rootNode);
+            t.deepEqual(rootNode, rootNodePrevious);
         }
 
         rootNodePrevious = rootNode;
@@ -46,5 +46,4 @@ test("route-node-sort", async t => {
     const nodesActual = [...nodes].sort((a, b) => a.compare(b));
 
     t.deepEqual(nodesActual, nodesExpected);
-
 });
