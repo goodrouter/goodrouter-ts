@@ -209,63 +209,13 @@ export class RouteNode {
         let currentNode: RouteNode = this;
         for (const newNode of newNodes) {
             const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
-            if (childNode == null) {
-                currentNode = currentNode.insertNew(
-                    newNode,
-                );
-            }
-            else {
-                const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
 
-                if (childNode.anchor === newNode.anchor) {
-                    if (
-                        childNode.name != null &&
-                        newNode.name != null &&
-                        childNode.name !== newNode.name
-                    ) {
-                        throw new Error("ambiguous route");
-                    }
-                    else if (
-                        childNode.parameter != null &&
-                        newNode.parameter != null &&
-                        childNode.parameter !== newNode.parameter
-                    ) {
-                        currentNode = currentNode.insertIntermediate(
-                            childNode,
-                            newNode,
-                            commonPrefixLength,
-                        );
-                    }
-                    else {
-                        currentNode = currentNode.insertMerge(
-                            childNode,
-                            newNode,
-                        );
-                    }
-                }
-                else if (childNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertAddToChild(
-                        childNode,
-                        newNode,
-                        commonPrefixLength,
-                    );
-                }
-                else if (newNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertAddToNew(
-                        childNode,
-                        newNode,
-                        commonPrefixLength,
-                    );
-                }
-                else {
-                    currentNode = currentNode.insertIntermediate(
-                        childNode,
-                        newNode,
-                        commonPrefixLength,
-                    );
-                }
+            currentNode = currentNode.merge(
+                childNode,
+                newNode,
+                commonPrefixLength,
+            );
 
-            }
         }
 
         return currentNode;
@@ -286,13 +236,74 @@ export class RouteNode {
         return [0, null] as const;
     }
 
-    private insertNew(
+    private merge(
+        childNode: RouteNode | null,
+        newNode: RouteNode,
+        commonPrefixLength: number,
+    ) {
+        if (childNode == null) {
+            return this.mergeNew(
+                newNode,
+            );
+        }
+
+        const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
+
+        if (childNode.anchor === newNode.anchor) {
+            if (
+                childNode.name != null &&
+                newNode.name != null &&
+                childNode.name !== newNode.name
+            ) {
+                throw new Error("ambiguous route");
+            }
+            else if (
+                childNode.parameter != null &&
+                newNode.parameter != null &&
+                childNode.parameter !== newNode.parameter
+            ) {
+                return this.mergeIntermediate(
+                    childNode,
+                    newNode,
+                    commonPrefixLength,
+                );
+            }
+            else {
+                return this.mergeJoin(
+                    childNode,
+                    newNode,
+                );
+            }
+        }
+        else if (childNode.anchor === commonPrefix) {
+            return this.mergeAddToChild(
+                childNode,
+                newNode,
+                commonPrefixLength,
+            );
+        }
+        else if (newNode.anchor === commonPrefix) {
+            return this.mergeAddToNew(
+                childNode,
+                newNode,
+                commonPrefixLength,
+            );
+        }
+        else {
+            return this.mergeIntermediate(
+                childNode,
+                newNode,
+                commonPrefixLength,
+            );
+        }
+    }
+    private mergeNew(
         newNode: RouteNode,
     ) {
         this.addChild(newNode);
         return newNode;
     }
-    private insertMerge(
+    private mergeJoin(
         childNode: RouteNode,
         newNode: RouteNode,
     ) {
@@ -316,13 +327,9 @@ export class RouteNode {
 
         childNode.name ??= newNode.name;
 
-        // for (const childNode of newNode.getChildren()) {
-        //     childNode.addChild(childNode);
-        // }
-
         return childNode;
     }
-    private insertIntermediate(
+    private mergeIntermediate(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
@@ -352,7 +359,7 @@ export class RouteNode {
 
         return newNode;
     }
-    private insertAddToChild(
+    private mergeAddToChild(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
@@ -379,7 +386,7 @@ export class RouteNode {
             return sameNode;
         }
     }
-    private insertAddToNew(
+    private mergeAddToNew(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
