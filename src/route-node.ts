@@ -44,10 +44,6 @@ export class RouteNode {
         return this.children.values();
     }
 
-    findSameChild(sameChild: RouteNode) {
-        return this.children.find(child => child.equal(sameChild));
-    }
-
     countChildren() {
         return this.children.length;
     }
