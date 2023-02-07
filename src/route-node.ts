@@ -48,14 +48,14 @@ export function newRootRouteNode(): RouteNode {
 export function stringifyRoute(
     node: RouteNode | null,
     parameters: Record<string, string> = {},
-    encode: (value: string) => string,
+    encode: (decodedValue: string, name: string) => string,
 ) {
     let path = "";
     while (node) {
         path = node.anchor + path;
         if (node.parameter != null && node.parameter in parameters) {
             const value = parameters[node.parameter];
-            path = encode(value) + path;
+            path = encode(value, node.parameter) + path;
         }
         node = node.parent;
     }
@@ -65,7 +65,7 @@ export function stringifyRoute(
 export function parseRoute(
     node: RouteNode | null,
     path: string,
-    decode: (value: string) => string,
+    decode: (encodedValue: string, name: string) => string,
     parameters: Record<string, string> = {},
 ): Route | null {
     if (!node) return null;
@@ -93,7 +93,7 @@ export function parseRoute(
         }
 
         // get the parameter value
-        const value = decode(path.substring(0, index));
+        const value = decode(path.substring(0, index), node.parameter);
 
         // remove the matches part from the path
         path = path.substring(index + node.anchor.length);

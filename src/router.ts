@@ -1,33 +1,6 @@
 import { insertRouteNode, newRootRouteNode, parseRoute, RouteNode, stringifyRoute } from "./route-node.js";
 import { Route } from "./route.js";
-
-/**
- * Options to be passed to the router
- */
-export interface RouterOptions {
-    /**
-     * @deprecated
-     * Don't use this
-     * 
-     * @description
-     * This function wil be used on each parameter value when parsing a route
-     * 
-     * @param value value to be encoded
-     * @returns encoded value
-     */
-    encode?: (value: string) => string
-    /**
-     * @deprecated
-     * Don't use this
-     * 
-     * @description
-     * This function wil be used on each parameter value when constructing a route
-     * 
-     * @param value value to be decoded
-     * @returns decoded value
-     */
-    decode?: (value: string) => string
-}
+import { defaultRouterOptions, RouterOptions } from "./router-options.js";
 
 /**
  * @description
@@ -88,12 +61,11 @@ export interface RouterOptions {
  */
 export class Router {
 
-    protected options: Required<RouterOptions>;
+    protected options: RouterOptions & typeof defaultRouterOptions;
 
     constructor(options: RouterOptions = {}) {
         this.options = {
-            encode: encodeURIComponent,
-            decode: decodeURIComponent,
+            ...defaultRouterOptions,
             ...options,
         };
     }
