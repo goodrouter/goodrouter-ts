@@ -200,63 +200,62 @@ export class RouteNode {
         template: string,
     ) {
         const newNodes = [...newRouteNodesFromTemplate(name, template)];
-        newNodes.reverse();
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
         for (const newNode of newNodes) {
-            const [commonPrefixLength, similarNode] = currentNode.findSimilarChild(newNode);
-            if (similarNode == null) {
+            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
+            if (childNode == null) {
                 currentNode = currentNode.insertRouteNew(
                     newNode,
                 );
             }
             else {
-                const commonPrefix = similarNode.anchor.substring(0, commonPrefixLength);
+                const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
 
-                if (similarNode.anchor === newNode.anchor) {
+                if (childNode.anchor === newNode.anchor) {
                     if (
-                        similarNode.name != null &&
+                        childNode.name != null &&
                         newNode.name != null &&
-                        similarNode.name !== newNode.name
+                        childNode.name !== newNode.name
                     ) {
                         throw new Error("ambiguous route");
                     }
                     else if (
-                        similarNode.parameter != null &&
+                        childNode.parameter != null &&
                         newNode.parameter != null &&
-                        similarNode.parameter !== newNode.parameter
+                        childNode.parameter !== newNode.parameter
                     ) {
                         currentNode = currentNode.insertRouteIntermediate(
-                            similarNode,
+                            childNode,
                             newNode,
                             commonPrefixLength,
                         );
                     }
                     else {
                         currentNode = currentNode.insertRouteMerge(
-                            similarNode,
+                            childNode,
                             newNode,
                         );
                     }
                 }
-                else if (similarNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertRouteAddTo(
+                else if (childNode.anchor === commonPrefix) {
+                    currentNode = currentNode.insertRouteAddToChild(
+                        childNode,
                         newNode,
-                        similarNode,
                         commonPrefixLength,
                     );
                 }
                 else if (newNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertRouteAddTo(
-                        similarNode,
+                    currentNode = currentNode.insertRouteAddToNew(
+                        childNode,
                         newNode,
                         commonPrefixLength,
                     );
                 }
                 else {
                     currentNode = currentNode.insertRouteIntermediate(
-                        similarNode,
+                        childNode,
                         newNode,
                         commonPrefixLength,
                     );
@@ -325,11 +324,9 @@ export class RouteNode {
         commonPrefixLength: number,
     ) {
         if (
-            childNode.parameter !== null ||
-            newNode.parameter !== null ||
             childNode.parameter !== newNode.parameter
         ) {
-            throw new Error("parameters should be null or same");
+            throw new Error("parameters should be the same");
         }
 
         this.removeChild(childNode);
@@ -351,50 +348,73 @@ export class RouteNode {
 
         return newNode;
     }
-    private insertRouteAddTo(
-        addNode: RouteNode,
-        receivingNode: RouteNode,
+    private insertRouteAddToChild(
+        childNode: RouteNode,
+        newNode: RouteNode,
         commonPrefixLength: number,
     ) {
-        addNode.anchor = addNode.anchor.substring(commonPrefixLength);
-        addNode.parent = receivingNode;
-
-        // addNode.parameter = receivingNode.parameter;
-        addNode.parameter = null;
-
-        const childNode = [...receivingNode.getChildren()].
-            find(childNode => childNode.equal(addNode));
-        if (childNode == null) {
-            receivingNode.parent = this;
-            receivingNode.children.push(addNode);
-            receivingNode.children.sort((a, b) => a.compare(b));
-            return addNode;
+        if (
+            childNode.parameter !== newNode.parameter
+        ) {
+            throw new Error("parameters should be null or same");
         }
-        else {
-            return childNode;
+
+        if (newNode.countChildren() > 0) {
+            throw new Error("newNode is not supposed to have any children");
         }
+
+        childNode.addChild(newNode);
+
+        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
+        newNode.parameter = null;
+
+        return newNode;
+    }
+    private insertRouteAddToNew(
+        childNode: RouteNode,
+        newNode: RouteNode,
+        commonPrefixLength: number,
+    ) {
+        if (
+            childNode.parameter !== newNode.parameter
+        ) {
+            throw new Error("parameters should be null or same");
+        }
+
+        if (newNode.countChildren() > 0) {
+            throw new Error("newNode is not supposed to have any children");
+        }
+
+        this.removeChild(childNode);
+        this.addChild(newNode);
+
+        newNode.addChild(childNode);
+
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        childNode.parameter = null;
+
+        return childNode;
     }
 }
 
-function* newRouteNodesFromTemplate(name: string, template: string): Iterable<RouteNode> {
-    const parts = [...emitTemplatePathParts(template)];
-    let currentName: string | null = name;
+function* newRouteNodesFromTemplate(
+    routeName: string,
+    routeTemplate: string,
+): Iterable<RouteNode> {
+    const parts = [...emitTemplatePathParts(routeTemplate)];
 
-    while (parts.length > 0) {
-        const anchor = parts.pop();
-        const parameter = parts.pop() ?? null;
+    for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
+        const anchor = parts[partIndex + 0];
+        const parameter = parts[partIndex - 1] ?? null;
 
-        if (anchor == null) {
-            throw new TypeError("expected anchor");
-        }
-
+        const name = (partIndex >= parts.length - 1) ?
+            routeName :
+            null;
         yield new RouteNode(
             anchor,
             parameter,
-            currentName,
+            name,
         );
-
-        currentName = null;
     }
 
 }
