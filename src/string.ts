@@ -4,7 +4,9 @@ export function findCommonPrefixLength(stringLeft: string, stringRight: string) 
     for (index = 0; index < length; index++) {
         const charLeft = stringLeft.charAt(index);
         const charRight = stringRight.charAt(index);
-        if (charLeft !== charRight) break;
+        if (charLeft !== charRight) {
+            break;
+        }
     }
     return index;
 }
