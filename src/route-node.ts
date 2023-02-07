@@ -215,7 +215,6 @@ export class RouteNode {
                 newNode,
                 commonPrefixLength,
             );
-
         }
 
         return currentNode;
@@ -363,7 +362,7 @@ export class RouteNode {
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
-    ) {
+    ): RouteNode {
         if (
             childNode.parameter !== newNode.parameter
         ) {
@@ -377,20 +376,19 @@ export class RouteNode {
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
         newNode.parameter = null;
 
-        const sameNode = childNode.findSameChild(newNode);
-        if (sameNode == null) {
-            childNode.addChild(newNode);
-            return newNode;
-        }
-        else {
-            return sameNode;
-        }
+        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode);
+
+        return childNode.merge(
+            childNode2,
+            newNode,
+            commonPrefixLength2,
+        );
     }
     private mergeAddToNew(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
-    ) {
+    ): RouteNode {
         if (
             childNode.parameter !== newNode.parameter
         ) {
@@ -409,7 +407,7 @@ export class RouteNode {
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
         childNode.parameter = null;
 
-        return childNode;
+        return newNode;
     }
 }
 
