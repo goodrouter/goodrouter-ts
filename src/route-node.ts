@@ -206,7 +206,7 @@ export class RouteNode {
         for (const newNode of newNodes) {
             const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
             if (childNode == null) {
-                currentNode = currentNode.insertRouteNew(
+                currentNode = currentNode.insertNew(
                     newNode,
                 );
             }
@@ -226,35 +226,35 @@ export class RouteNode {
                         newNode.parameter != null &&
                         childNode.parameter !== newNode.parameter
                     ) {
-                        currentNode = currentNode.insertRouteIntermediate(
+                        currentNode = currentNode.insertIntermediate(
                             childNode,
                             newNode,
                             commonPrefixLength,
                         );
                     }
                     else {
-                        currentNode = currentNode.insertRouteMerge(
+                        currentNode = currentNode.insertMerge(
                             childNode,
                             newNode,
                         );
                     }
                 }
                 else if (childNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertRouteAddToChild(
+                    currentNode = currentNode.insertAddToChild(
                         childNode,
                         newNode,
                         commonPrefixLength,
                     );
                 }
                 else if (newNode.anchor === commonPrefix) {
-                    currentNode = currentNode.insertRouteAddToNew(
+                    currentNode = currentNode.insertAddToNew(
                         childNode,
                         newNode,
                         commonPrefixLength,
                     );
                 }
                 else {
-                    currentNode = currentNode.insertRouteIntermediate(
+                    currentNode = currentNode.insertIntermediate(
                         childNode,
                         newNode,
                         commonPrefixLength,
@@ -282,13 +282,13 @@ export class RouteNode {
         return [0, null] as const;
     }
 
-    private insertRouteNew(
+    private insertNew(
         newNode: RouteNode,
     ) {
         this.addChild(newNode);
         return newNode;
     }
-    private insertRouteMerge(
+    private insertMerge(
         childNode: RouteNode,
         newNode: RouteNode,
     ) {
@@ -318,7 +318,7 @@ export class RouteNode {
 
         return childNode;
     }
-    private insertRouteIntermediate(
+    private insertIntermediate(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
@@ -348,7 +348,7 @@ export class RouteNode {
 
         return newNode;
     }
-    private insertRouteAddToChild(
+    private insertAddToChild(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
@@ -370,7 +370,7 @@ export class RouteNode {
 
         return newNode;
     }
-    private insertRouteAddToNew(
+    private insertAddToNew(
         childNode: RouteNode,
         newNode: RouteNode,
         commonPrefixLength: number,
