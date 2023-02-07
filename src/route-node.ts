@@ -40,6 +40,7 @@ export class RouteNode {
     ) {
 
     }
+
     getChildren(): Iterable<RouteNode> {
         return this.children.values();
     }
@@ -79,7 +80,7 @@ export class RouteNode {
 
     parse(
         path: string,
-        decode: (value: string) => string,
+        decode: (value: string, name: string) => string,
         parameters: Record<string, string> = {},
     ): Route | null {
         if (this.parameter == null) {
@@ -107,7 +108,7 @@ export class RouteNode {
             }
 
             // get the parameter value
-            const value = decode(path.substring(0, index));
+            const value = decode(path.substring(0, index), this.parameter);
 
             // remove the matches part from the path
             path = path.substring(index + this.anchor.length);
@@ -145,7 +146,7 @@ export class RouteNode {
 
     stringify(
         parameters: Record<string, string> = {},
-        encode: (value: string) => string,
+        encode: (value: string, name: string) => string,
     ) {
         let path = "";
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -154,7 +155,7 @@ export class RouteNode {
             path = currentNode.anchor + path;
             if (currentNode.parameter != null && currentNode.parameter in parameters) {
                 const value = parameters[currentNode.parameter];
-                path = encode(value) + path;
+                path = encode(value, currentNode.parameter) + path;
             }
             currentNode = currentNode.parent;
         }
