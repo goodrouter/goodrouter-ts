@@ -61,14 +61,14 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  */
 export class Router {
 
-    protected options: RouterOptions & typeof defaultRouterOptions;
-
     constructor(options: RouterOptions = {}) {
         this.options = {
             ...defaultRouterOptions,
             ...options,
         };
     }
+
+    protected options: RouterOptions & typeof defaultRouterOptions;
 
     private rootNode: RouteNode = new RouteNode();
     private leafNodes = new Map<string, RouteNode>();
