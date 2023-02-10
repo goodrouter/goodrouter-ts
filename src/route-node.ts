@@ -8,18 +8,6 @@ import { findCommonPrefixLength } from "./string.js";
  * for the routes
  */
 export class RouteNode {
-    /**
-     * @description
-     * children that represent the rest of the path that needs to be matched
-     */
-    private readonly children = new Array<RouteNode>();
-    /**
-     * @description
-     * parent node, should only be null for the root node
-     */
-    private parent: RouteNode | null = null;
-
-    public maximumParameterValueLength = 20;
 
     constructor(
         /**
@@ -40,6 +28,19 @@ export class RouteNode {
     ) {
 
     }
+
+    public maximumParameterValueLength = 20;
+
+    /**
+     * @description
+     * children that represent the rest of the path that needs to be matched
+     */
+    private readonly children = new Array<RouteNode>();
+    /**
+     * @description
+     * parent node, should only be null for the root node
+     */
+    private parent: RouteNode | null = null;
 
     getChildren(): Iterable<RouteNode> {
         return this.children.values();
@@ -76,6 +77,27 @@ export class RouteNode {
 
         childNode.parent = null;
         this.children.splice(childIndex, 1);
+    }
+
+    insert(
+        name: string,
+        template: string,
+    ) {
+        const newNodes = [...newRouteNodesFromTemplate(name, template)];
+
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let currentNode: RouteNode = this;
+        for (const newNode of newNodes) {
+            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
+
+            currentNode = currentNode.merge(
+                childNode,
+                newNode,
+                commonPrefixLength,
+            );
+        }
+
+        return currentNode;
     }
 
     parse(
@@ -160,27 +182,6 @@ export class RouteNode {
             currentNode = currentNode.parent;
         }
         return path;
-    }
-
-    insert(
-        name: string,
-        template: string,
-    ) {
-        const newNodes = [...newRouteNodesFromTemplate(name, template)];
-
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let currentNode: RouteNode = this;
-        for (const newNode of newNodes) {
-            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
-
-            currentNode = currentNode.merge(
-                childNode,
-                newNode,
-                commonPrefixLength,
-            );
-        }
-
-        return currentNode;
     }
 
     private merge(
