@@ -151,7 +151,9 @@ export class RouteNode {
             );
 
             // if a child node is matches, return that node instead of the current! So child nodes are matches first!
-            if (route != null) return route;
+            if (route != null) {
+                return route;
+            }
         }
 
         // if the node had a route name and there is no path left to match against then we found a route
