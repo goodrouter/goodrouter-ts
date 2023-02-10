@@ -255,26 +255,7 @@ export class RouteNode {
         childNode: RouteNode,
         newNode: RouteNode,
     ) {
-        if (
-            childNode.parameter !== newNode.parameter
-        ) {
-            throw new Error("parameters should be the same");
-        }
-
-        if (
-            childNode.name !== null ||
-            newNode.name !== null ||
-            childNode.name !== newNode.name
-        ) {
-            throw new Error("names should be null or same");
-        }
-
-        if (newNode.countChildren() > 0) {
-            throw new Error("newNode is not supposed to have any children");
-        }
-
         childNode.name ??= newNode.name;
-
         return childNode;
     }
     private mergeIntermediate(
@@ -282,12 +263,6 @@ export class RouteNode {
         newNode: RouteNode,
         commonPrefixLength: number,
     ) {
-        if (
-            childNode.parameter !== newNode.parameter
-        ) {
-            throw new Error("parameters should be the same");
-        }
-
         this.removeChild(childNode);
 
         const intermediateNode = new RouteNode(
@@ -312,16 +287,6 @@ export class RouteNode {
         newNode: RouteNode,
         commonPrefixLength: number,
     ): RouteNode {
-        if (
-            childNode.parameter !== newNode.parameter
-        ) {
-            throw new Error("parameters should be null or same");
-        }
-
-        if (newNode.countChildren() > 0) {
-            throw new Error("newNode is not supposed to have any children");
-        }
-
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
         newNode.parameter = null;
 
@@ -338,16 +303,6 @@ export class RouteNode {
         newNode: RouteNode,
         commonPrefixLength: number,
     ): RouteNode {
-        if (
-            childNode.parameter !== newNode.parameter
-        ) {
-            throw new Error("parameters should be null or same");
-        }
-
-        if (newNode.countChildren() > 0) {
-            throw new Error("newNode is not supposed to have any children");
-        }
-
         this.removeChild(childNode);
         this.addChild(newNode);
 
@@ -359,13 +314,15 @@ export class RouteNode {
         return newNode;
     }
 
-    private findSimilarChild(otherNode: RouteNode) {
+    private findSimilarChild(
+        findNode: RouteNode,
+    ) {
         if (this.parameter != null) return [0, null] as const;
 
         for (const childNode of this.getChildren()) {
             if (childNode.parameter != null) continue;
 
-            const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
+            const commonPrefixLength = findCommonPrefixLength(findNode.anchor, childNode.anchor);
             if (commonPrefixLength === 0) continue;
 
             return [commonPrefixLength, childNode] as const;
