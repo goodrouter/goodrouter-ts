@@ -162,40 +162,6 @@ export class RouteNode {
         return path;
     }
 
-    // eslint-disable-next-line complexity
-    compare(other: RouteNode) {
-        if (this.anchor.length < other.anchor.length) return 1;
-        if (this.anchor.length > other.anchor.length) return -1;
-
-        if ((this.name == null) < (other.name == null)) return 1;
-        if ((this.name == null) > (other.name == null)) return -1;
-
-        if ((this.parameter == null) < (other.parameter == null)) return -1;
-        if ((this.parameter == null) > (other.parameter == null)) return 1;
-
-        if (this.countChildren() > other.countChildren()) return -1;
-        if (this.countChildren() < other.countChildren()) return 1;
-
-        if ((this.name ?? "") < (other.name ?? "")) return -1;
-        if ((this.name ?? "") > (other.name ?? "")) return 1;
-
-        if ((this.parameter ?? "") < (other.parameter ?? "")) return -1;
-        if ((this.parameter ?? "") > (other.parameter ?? "")) return 1;
-
-        if (this.anchor < other.anchor) return -1;
-        if (this.anchor > other.anchor) return 1;
-
-        return 0;
-    }
-
-    equal(other: RouteNode) {
-        return (
-            this.name === other.name &&
-            this.anchor === other.anchor &&
-            this.parameter === other.parameter
-        );
-    }
-
     insert(
         name: string,
         template: string,
@@ -215,21 +181,6 @@ export class RouteNode {
         }
 
         return currentNode;
-    }
-
-    private findSimilarChild(otherNode: RouteNode) {
-        if (this.parameter != null) return [0, null] as const;
-
-        for (const childNode of this.getChildren()) {
-            if (childNode.parameter != null) continue;
-
-            const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
-            if (commonPrefixLength === 0) continue;
-
-            return [commonPrefixLength, childNode] as const;
-        }
-
-        return [0, null] as const;
     }
 
     private merge(
@@ -406,6 +357,53 @@ export class RouteNode {
 
         return newNode;
     }
+
+    private findSimilarChild(otherNode: RouteNode) {
+        if (this.parameter != null) return [0, null] as const;
+
+        for (const childNode of this.getChildren()) {
+            if (childNode.parameter != null) continue;
+
+            const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
+            if (commonPrefixLength === 0) continue;
+
+            return [commonPrefixLength, childNode] as const;
+        }
+
+        return [0, null] as const;
+    }
+
+    // eslint-disable-next-line complexity
+    compare(other: RouteNode) {
+        if (this.anchor.length < other.anchor.length) return 1;
+        if (this.anchor.length > other.anchor.length) return -1;
+
+        if ((this.name == null) < (other.name == null)) return 1;
+        if ((this.name == null) > (other.name == null)) return -1;
+
+        if ((this.parameter == null) < (other.parameter == null)) return -1;
+        if ((this.parameter == null) > (other.parameter == null)) return 1;
+
+        if (this.countChildren() > other.countChildren()) return -1;
+        if (this.countChildren() < other.countChildren()) return 1;
+
+        if ((this.name ?? "") < (other.name ?? "")) return -1;
+        if ((this.name ?? "") > (other.name ?? "")) return 1;
+
+        if ((this.parameter ?? "") < (other.parameter ?? "")) return -1;
+        if ((this.parameter ?? "") > (other.parameter ?? "")) return 1;
+
+        if (this.anchor < other.anchor) return -1;
+        if (this.anchor > other.anchor) return 1;
+
+        return 0;
+    }
+
+    equal(other: RouteNode) {
+        return this.anchor === other.anchor &&
+            this.parameter === other.parameter &&
+            this.name === other.name;
+    }
 }
 
 function* newRouteNodesFromTemplate(
@@ -416,7 +414,9 @@ function* newRouteNodesFromTemplate(
 
     for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
         const anchor = parts[partIndex + 0];
-        const parameter = parts[partIndex - 1] ?? null;
+        const parameter = partIndex > 0 ?
+            parts[partIndex - 1] :
+            null;
 
         const name = (partIndex >= parts.length - 1) ?
             routeName :
