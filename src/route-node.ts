@@ -177,7 +177,10 @@ export class RouteNode {
         let currentNode: RouteNode | null = this;
         while (currentNode != null) {
             path = currentNode.anchor + path;
-            if (currentNode.parameter != null && currentNode.parameter in parameters) {
+            if (
+                currentNode.parameter != null &&
+                parameters[currentNode.parameter] == null
+            ) {
                 const value = parameters[currentNode.parameter];
                 path = encode(value, currentNode.parameter) + path;
             }
