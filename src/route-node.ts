@@ -322,8 +322,6 @@ export class RouteNode {
     private findSimilarChild(
         findNode: RouteNode,
     ) {
-        if (this.parameter != null) return [0, null] as const;
-
         for (const childNode of this.getChildren()) {
             if (childNode.parameter != null) continue;
 
