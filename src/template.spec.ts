@@ -1,5 +1,5 @@
 import test from "tape-promise/tape.js";
-import { emitTemplatePathParts } from "./template";
+import { emitTemplatePathParts } from "./template.js";
 
 test("emit-template-path-parts", async t => {
     {
