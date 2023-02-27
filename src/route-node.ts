@@ -1,5 +1,4 @@
 import { emitTemplatePathParts } from "./path.js";
-import { Route } from "./route.js";
 import { findCommonPrefixLength } from "./string.js";
 
 /**
@@ -104,12 +103,12 @@ export class RouteNode {
         path: string,
         decode: (value: string, name: string) => string,
         parameters: Record<string, string> = {},
-    ): Route | null {
+    ): [string | null, Record<string, string>] {
         if (this.parameter == null) {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
             if (!path.startsWith(this.anchor)) {
                 // this node does not match the path
-                return null;
+                return [null, {}];
             }
 
             // we successfully matches the node to the path, now remove the matched part from the path
@@ -118,7 +117,7 @@ export class RouteNode {
         else {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
             if (path.length === 0) {
-                return null;
+                return [null, {}];
             }
 
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
@@ -126,7 +125,7 @@ export class RouteNode {
                 path.length :
                 path.indexOf(this.anchor.substring(0, this.maximumParameterValueLength));
             if (index < 0) {
-                return null;
+                return [null, {}];
             }
 
             // get the parameter value
@@ -144,28 +143,28 @@ export class RouteNode {
 
         for (const childNode of this.getChildren()) {
             // find a route in every child node
-            const route = childNode.parse(
+            const [routeName, routeParameters] = childNode.parse(
                 path,
                 decode,
                 parameters,
             );
 
             // if a child node is matches, return that node instead of the current! So child nodes are matches first!
-            if (route != null) {
-                return route;
+            if (routeName != null) {
+                return [routeName, routeParameters];
             }
         }
 
         // if the node had a route name and there is no path left to match against then we found a route
         if (this.name != null && path.length === 0) {
-            return {
-                name: this.name,
+            return [
+                this.name,
                 parameters,
-            };
+            ];
         }
 
         // we did not found a route :-(
-        return null;
+        return [null, {}];
     }
 
     stringify(

@@ -11,24 +11,20 @@ test("parse-route 1", async t => {
     router.insertRoute("d", "/b/{x}/d");
 
     {
-        const route = router.parseRoute("/a");
-        assert(route != null);
-        t.equal(route.name, "a");
+        const [routeName] = router.parseRoute("/a");
+        t.equal(routeName, "a");
     }
     {
-        const route = router.parseRoute("/b/x");
-        assert(route != null);
-        t.equal(route.name, "b");
+        const [routeName] = router.parseRoute("/b/x");
+        t.equal(routeName, "b");
     }
     {
-        const route = router.parseRoute("/b/y/c");
-        assert(route != null);
-        t.equal(route.name, "c");
+        const [routeName] = router.parseRoute("/b/y/c");
+        t.equal(routeName, "c");
     }
     {
-        const route = router.parseRoute("/b/z/d");
-        assert(route != null);
-        t.equal(route.name, "d");
+        const [routeName] = router.parseRoute("/b/z/d");
+        t.equal(routeName, "d");
     }
 
 });
@@ -45,56 +41,50 @@ test("parse-route 2", async t => {
     router.insertRoute("four", "/c/{x}/{y}/");
 
     {
-        const route = router.parseRoute("/a");
-        assert(route);
-        t.equal(route.name, "one");
+        const [routeName, routeParameters] = router.parseRoute("/a");
+        t.equal(routeName, "one");
     }
 
     {
-        const route = router.parseRoute("/a/1/2");
-        assert(route);
-        t.equal(route.name, "two");
-        t.deepEqual(route.parameters, { x: "1", y: "2" });
+        const [routeName, routeParameters] = router.parseRoute("/a/1/2");
+        t.equal(routeName, "two");
+        t.deepEqual(routeParameters, { x: "1", y: "2" });
     }
 
     {
-        const path = router.stringifyRoute({
-            name: "two",
-            parameters: { x: "1", y: "2" },
-        });
+        const path = router.stringifyRoute(
+            "two",
+            { x: "1", y: "2" },
+        );
         assert(path);
         t.equal(path, "/a/1/2");
     }
 
     {
-        const route = router.parseRoute("/c/3");
-        assert(route);
-        t.equal(route.name, "three");
-        t.deepEqual(route.parameters, { x: "3" });
+        const [routeName, routeParameters] = router.parseRoute("/c/3");
+        t.equal(routeName, "three");
+        t.deepEqual(routeParameters, { x: "3" });
     }
 
     {
-        const route = router.parseRoute("/c/3/4");
-        assert(route);
-        t.equal(route.name, "three");
-        t.deepEqual(route.parameters, { x: "3/4" });
+        const [routeName, routeParameters] = router.parseRoute("/c/3/4");
+        t.equal(routeName, "three");
+        t.deepEqual(routeParameters, { x: "3/4" });
     }
 
     {
-        const path = router.stringifyRoute({
-            name: "three",
-            parameters: { x: "3/4" },
-        });
+        const path = router.stringifyRoute(
+            "three",
+            { x: "3/4" },
+        );
         assert(path);
         t.equal(path, "/c/3%2F4");
     }
 
     {
-        const route = router.parseRoute("/c/3/4/");
-        assert(route);
-
-        t.equal(route.name, "four");
-        t.deepEqual(route.parameters, { x: "3", y: "4" });
+        const [routeName, routeParameters] = router.parseRoute("/c/3/4/");
+        t.equal(routeName, "four");
+        t.deepEqual(routeParameters, { x: "3", y: "4" });
     }
 });
 
@@ -121,19 +111,16 @@ test("router bug", async t => {
 
     t.deepEqual(
         router.parseRoute("/docker/images/create"),
-        {
-            name: "/docker/images/create",
-            parameters: {},
-        },
+        ["/docker/images/create", {}],
     );
 
     t.equal(
-        router.stringifyRoute({
-            name: "/docker/containers/{id}/start",
-            parameters: {
+        router.stringifyRoute(
+            "/docker/containers/{id}/start",
+            {
                 id: "e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106",
             },
-        }),
+        ),
         "/docker/containers/e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106/start",
     );
 

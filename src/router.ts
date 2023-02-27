@@ -1,5 +1,4 @@
 import { RouteNode } from "./route-node.js";
-import { Route } from "./route.js";
 import { defaultRouterOptions, RouterOptions } from "./router-options.js";
 
 /**
@@ -90,23 +89,26 @@ export class Router {
      * Match the path against one of the provided routes and parse the parameters in it
      * 
      * @param path path to match
-     * @returns route that is matches to the path or null if no match is found
+     * @returns tuple with the route name or null if no route found. Then the parameters
      */
-    public parseRoute(path: string): Route | null {
-        const route = this.rootNode.parse(path, this.options.decode);
-        return route;
+    public parseRoute(path: string): [string | null, Record<string, string>] {
+        return this.rootNode.parse(path, this.options.decode);
     }
 
     /**
      * @description
      * Convert a route to a path string.
      * 
-     * @param route route to stringify
+     * @param routeName route to stringify
+     * @param routeParameters parameters to include in the path
      * @returns string representing the route or null if the route is not found by name
      */
-    public stringifyRoute(route: Route): string | null {
-        const node = this.leafNodes.get(route.name);
+    public stringifyRoute(
+        routeName: string,
+        routeParameters: Record<string, string>,
+    ): string | null {
+        const node = this.leafNodes.get(routeName);
         if (!node) return null;
-        return node.stringify(route.parameters, this.options.encode);
+        return node.stringify(routeParameters, this.options.encode);
     }
 }
