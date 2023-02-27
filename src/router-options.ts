@@ -8,21 +8,21 @@ export const defaultRouterOptions = {
      * Default encoding function to use, this is the encodeUriComponent function by default
      *
      * @param decodedValue value to be encoded
-     * @param name name of the parameter
+     * @param parameterName name of the parameter
      * @returns encoded value
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    encode: (decodedValue: string, name: string) => encodeURIComponent(decodedValue),
+    encode: (decodedValue: string, parameterName: string) => encodeURIComponent(decodedValue),
     /**
      * @description
      * Default decoding function to use, this is the decodeURIComponent function by default
      *
      * @param encodedValue value to be decoded
-     * @param name name of the parameter
+     * @param parameterName name of the parameter
      * @returns decoded value
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    decode: (encodedValue: string, name: string) => decodeURIComponent(encodedValue),
+    decode: (encodedValue: string, parameterName: string) => decodeURIComponent(encodedValue),
 
     /**
      * Use { and } as a default for matching placeholders in the route templates.
@@ -40,19 +40,19 @@ export interface RouterOptions {
      * This function wil be used on each parameter value when parsing a route
      * 
      * @param decodedValue value to be encoded
-     * @param name name of the parameter
+     * @param parameterName name of the parameter
      * @returns encoded value
      */
-    encode?: (decodedValue: string, name: string) => string
+    encode?: (decodedValue: string, parameterName: string) => string
     /**
      * @description
      * This function wil be used on each parameter value when constructing a route
      * 
      * @param encodedValue value to be decoded
-     * @param name name of the parameter
+     * @param parameterName name of the parameter
      * @returns decoded value
      */
-    decode?: (encodedValue: string, name: string) => string
+    decode?: (encodedValue: string, parameterName: string) => string
 
     /**
      * Regular expression to use when parsing placeholders from a route template. This regular
