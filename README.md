@@ -22,45 +22,30 @@ router.insertRoute("product-detail", "/product/{id}");
 // And now we can parse routes!
 
 {
-  const route = router.parseRoute("/not-found");
-  assert.equal(route, null);
+  const [routeName] = router.parseRoute("/not-found");
+  assert.equal(routeName, null);
 }
 
 {
-  const route = router.parseRoute("/product/all");
-  assert.deepEqual(route, {
-    name: "all-products",
-    parameters: {},
-  });
+  const [routeName] = router.parseRoute("/product/all");
+  assert.equal(routeName, "all-products");
 }
 
 {
-  const route = router.parseRoute("/product/1");
-  assert.deepEqual(route, {
-    name: "product-detail",
-    parameters: {
-      id: "1",
-    },
-  });
+  const [routeName, routeParameters] = router.parseRoute("/product/1");
+  assert.equal(routeName, "product-detail");
+  assert.deepEqual(routeParameters, { id: "1" });
 }
 
 // And we can stringify routes
 
 {
-  const path = router.stringifyRoute({
-    name: "all-products",
-    parameters: {},
-  });
+  const path = router.stringifyRoute("all-products");
   assert.equal(path, "/product/all");
 }
 
 {
-  const path = router.stringifyRoute({
-    name: "product-detail",
-    parameters: {
-      id: "2",
-    },
-  });
+  const path = router.stringifyRoute("product-detail", { id: "2" });
   assert.equal(path, "/product/2");
 }
 ```

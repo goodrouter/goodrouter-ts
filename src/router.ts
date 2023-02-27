@@ -20,40 +20,31 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  * }
  * 
  * {
- *   const route = router.parseRoute("/product/all");
- *   assert.deepEqual(route, {
- *     name: "all-products",
- *     parameters: {},
- *   });
+ *   const [routeName, routeParameters] = router.parseRoute("/product/all");
+ *   assert.equal(routeName, "all-products");
+ *   assert.deepEqual(routeParameters, {});
  * }
  * 
  * {
- *   const route = router.parseRoute("/product/1");
- *   assert.deepEqual(route, {
- *     name: "product-detail",
- *     parameters: {
- *       id: "1",
- *     },
- *   });
+ *   const [routeName, routeParameters] = router.parseRoute("/product/1");
+ *   assert.equal(routeName, "product-detail");
+ *   assert.deepEqual(routeParameters, { id: "1" });
  * }
  * 
  * // And we can stringify routes
  * 
  * {
- *   const path = router.stringifyRoute({
- *     name: "all-products",
- *     parameters: {},
+ *   const path = router.stringifyRoute(
+ *     "all-products",
  *   });
  *   assert.equal(path, "/product/all");
  * }
  * 
  * {
- *   const path = router.stringifyRoute({
- *     name: "product-detail",
- *     parameters: {
- *       id: "2",
- *     },
- *   });
+ *   const path = router.stringifyRoute(
+ *     "product-detail",
+ *     { id: "2" },
+ *   );
  *   assert.equal(path, "/product/2");
  * }
  * ```
@@ -105,7 +96,7 @@ export class Router {
      */
     public stringifyRoute(
         routeName: string,
-        routeParameters: Record<string, string>,
+        routeParameters: Record<string, string> = {},
     ): string | null {
         const node = this.leafNodes.get(routeName);
         if (!node) return null;
