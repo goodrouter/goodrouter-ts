@@ -1,6 +1,6 @@
 export function* emitTemplatePathParts(template: string, re: RegExp) {
     if (!re.global) {
-        throw new TypeError("regular expression needs to be global");
+        throw new Error("regular expression needs to be global");
     }
 
     let match;

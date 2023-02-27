@@ -55,11 +55,11 @@ export class RouteNode {
 
     addChild(childNode: RouteNode) {
         if (childNode.parent === this) {
-            throw new TypeError("cannot add childNode to self");
+            throw new Error("cannot add childNode to self");
         }
 
         if (childNode.parent != null) {
-            throw new TypeError("childNode already has parent");
+            throw new Error("childNode already has parent");
         }
 
         childNode.parent = this;
@@ -71,7 +71,7 @@ export class RouteNode {
         const childIndex = this.children.indexOf(childNode);
 
         if (childNode.parent !== this || childIndex < 0) {
-            throw new TypeError("childNode is not a child of this node");
+            throw new Error("childNode is not a child of this node");
         }
 
         childNode.parent = null;
