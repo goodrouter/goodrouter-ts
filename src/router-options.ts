@@ -25,7 +25,7 @@ export const defaultRouterOptions = {
     decode: (encodedValue: string, parameterName: string) => decodeURIComponent(encodedValue),
 
     /**
-     * Use { and } as a default for matching placeholders in the route templates.
+     * Use `{` and `}` as a default for matching placeholders in the route templates.
      */
     placeholderRE: /\{(.*?)\}/gu,
 };
