@@ -1,5 +1,5 @@
-import { emitTemplatePathParts } from "./path.js";
 import { findCommonPrefixLength } from "./string.js";
+import { emitTemplatePathParts } from "./template.js";
 
 /**
  * @description
