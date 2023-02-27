@@ -1,4 +1,4 @@
-export function* emitTemplatePathParts(template: string, re = /\{(.*?)\}/gu) {
+export function* emitTemplatePathParts(template: string, re: RegExp) {
     if (!re.global) {
         throw new TypeError("regular expression needs to be global");
     }

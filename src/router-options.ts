@@ -23,6 +23,11 @@ export const defaultRouterOptions = {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     decode: (encodedValue: string, name: string) => decodeURIComponent(encodedValue),
+
+    /**
+     * Use { and } as a default for matching placeholders in the route templates.
+     */
+    placeholderRE: /\{(.*?)\}/gu,
 };
 
 /**
@@ -48,4 +53,11 @@ export interface RouterOptions {
      * @returns decoded value
      */
     decode?: (encodedValue: string, name: string) => string
+
+    /**
+     * Regular expression to use when parsing placeholders from a route template. This regular
+     * expression must have the global option set! Defaults to `/\{(.*?)\}/gu`.
+     */
+    placeholderRE?: RegExp,
+
 }
