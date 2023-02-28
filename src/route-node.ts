@@ -123,7 +123,8 @@ export class RouteNode {
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
             const index = this.anchor.length === 0 ?
                 path.length :
-                path.indexOf(this.anchor.substring(0, maximumParameterValueLength));
+                path.substring(0, maximumParameterValueLength + this.anchor.length).
+                    indexOf(this.anchor);
             if (index < 0) {
                 return [null, {}];
             }
