@@ -71,7 +71,7 @@ export class Router {
      * @param template template for the route, als defines parameters
      */
     public insertRoute(name: string, template: string) {
-        const leafNode = this.rootNode.insert(name, template, this.options.placeholderRE);
+        const leafNode = this.rootNode.insert(name, template, this.options.parameterPlaceholderRE);
         this.leafNodes.set(name, leafNode);
         return this;
     }

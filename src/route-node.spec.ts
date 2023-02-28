@@ -21,7 +21,7 @@ test("route-node-permutations", async t => {
         const rootNode = new RouteNode();
 
         for (const template of routeConfigs) {
-            rootNode.insert(template, template, defaultRouterOptions.placeholderRE);
+            rootNode.insert(template, template, defaultRouterOptions.parameterPlaceholderRE);
         }
 
         {

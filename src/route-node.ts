@@ -79,9 +79,9 @@ export class RouteNode {
     insert(
         name: string,
         template: string,
-        placeholderRE: RegExp,
+        parameterPlaceholderRE: RegExp,
     ) {
-        const newNodes = [...newRouteNodesFromTemplate(name, template, placeholderRE)];
+        const newNodes = [...newRouteNodesFromTemplate(name, template, parameterPlaceholderRE)];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
@@ -373,9 +373,9 @@ export class RouteNode {
 function* newRouteNodesFromTemplate(
     routeName: string,
     routeTemplate: string,
-    placeholderRE: RegExp,
+    parameterPlaceholderRE: RegExp,
 ): Iterable<RouteNode> {
-    const parts = [...emitTemplatePathParts(routeTemplate, placeholderRE)];
+    const parts = [...emitTemplatePathParts(routeTemplate, parameterPlaceholderRE)];
 
     for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
         const anchor = parts[partIndex + 0];

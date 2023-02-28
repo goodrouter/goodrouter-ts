@@ -27,7 +27,7 @@ export const defaultRouterOptions = {
     /**
      * Use `{` and `}` as a default for matching placeholders in the route templates.
      */
-    placeholderRE: /\{(.*?)\}/gu,
+    parameterPlaceholderRE: /\{(.*?)\}/gu,
 
     /**
      * Assume a maximum parameter value length of 20
@@ -63,7 +63,7 @@ export interface RouterOptions {
      * Regular expression to use when parsing placeholders from a route template. This regular
      * expression must have the global option set! Defaults to `/\{(.*?)\}/gu`.
      */
-    placeholderRE?: RegExp,
+    parameterPlaceholderRE?: RegExp,
 
     /**
      * The expected maximum character length of a parameter value. No parameter value should
