@@ -809,20 +809,19 @@ function runBenchmark(
         return path;
     });
 
-    const suite = new Benchmark.Suite();
-
     let iteration = 0;
-    suite.add(name, () => {
+    function benchmarkTask() {
         const path = paths[iteration % templateCount];
 
-        const route = router.parseRoute(path);
+        router.parseRoute(path);
 
         iteration++;
-    });
+    }
 
-    suite.on("cycle", (e: any) => {
-        console.log(String(e.target));
-    });
-    suite.run();
+    const benchmark = new Benchmark(name, benchmarkTask);
+
+    benchmark.run();
+
+    console.log(String(benchmark));
 }
 
