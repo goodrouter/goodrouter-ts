@@ -83,7 +83,12 @@ export class Router {
      * @returns tuple with the route name or null if no route found. Then the parameters
      */
     public parseRoute(path: string): [string | null, Record<string, string>] {
-        return this.rootNode.parse(path, this.options.decode);
+        return this.rootNode.parse(
+            path,
+            this.options.decode,
+            {},
+            this.options.maximumParameterValueLength,
+        );
     }
 
     /**

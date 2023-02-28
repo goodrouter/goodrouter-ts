@@ -28,8 +28,6 @@ export class RouteNode {
 
     }
 
-    public maximumParameterValueLength = 20;
-
     /**
      * @description
      * children that represent the rest of the path that needs to be matched
@@ -103,7 +101,8 @@ export class RouteNode {
     parse(
         path: string,
         decode: (value: string, name: string) => string,
-        parameters: Record<string, string> = {},
+        parameters: Record<string, string>,
+        maximumParameterValueLength: number,
     ): [string | null, Record<string, string>] {
         if (this.parameter == null) {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
@@ -124,7 +123,7 @@ export class RouteNode {
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
             const index = this.anchor.length === 0 ?
                 path.length :
-                path.indexOf(this.anchor.substring(0, this.maximumParameterValueLength));
+                path.indexOf(this.anchor.substring(0, maximumParameterValueLength));
             if (index < 0) {
                 return [null, {}];
             }
@@ -148,6 +147,7 @@ export class RouteNode {
                 path,
                 decode,
                 parameters,
+                maximumParameterValueLength,
             );
 
             // if a child node is matches, return that node instead of the current! So child nodes are matches first!
