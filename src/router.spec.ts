@@ -128,37 +128,30 @@ test("parse-route 2", async t => {
 test("router bug", async t => {
     const router = new Router();
 
-    router.insertRoute("/node-exporter/metrics", "/node-exporter/metrics");
-    router.insertRoute("/mutex/lock", "/mutex/lock");
-    router.insertRoute("/docker/info", "/docker/info");
-    router.insertRoute("/docker/events", "/docker/events");
-    router.insertRoute("/docker/containers/{id}/stats", "/docker/containers/{id}/stats");
-    router.insertRoute("/docker/images/json", "/docker/images/json");
-    router.insertRoute("/docker/images/{name}/json", "/docker/images/{name}/json");
-    router.insertRoute("/docker/images/create", "/docker/images/create");
-    router.insertRoute("/docker/images/{name}", "/docker/images/{name}");
-    router.insertRoute("/docker/containers/json", "/docker/containers/json");
-    router.insertRoute("/docker/containers/{id}/json", "/docker/containers/{id}/json");
-    router.insertRoute("/docker/containers/create", "/docker/containers/create");
-    router.insertRoute("/docker/containers/{id}/start", "/docker/containers/{id}/start");
-    router.insertRoute("/docker/containers/{id}/stop", "/docker/containers/{id}/stop");
-    router.insertRoute("/docker/containers/{id}/logs", "/docker/containers/{id}/logs");
-    router.insertRoute("/docker/containers/{id}/archive", "/docker/containers/{id}/archive");
-    router.insertRoute("/docker/containers/{id}/changes", "/docker/containers/{id}/changes");
+    router
+        .insertRoute("a", "/enterprises/{enterprise}/actions/runner-groups")
+        .insertRoute(
+            "b",
+            "/enterprises/{enterprise}/actions/runner-groups/{runner_group_id}",
+        )
+        .insertRoute(
+            "c",
+            "/enterprises/{enterprise}/actions/runner-groups/{runner_group_id}/organizations",
+        );
 
     t.deepEqual(
-        router.parseRoute("/docker/images/create"),
-        ["/docker/images/create", {}],
+        router.parseRoute("/enterprises/xx/actions/runner-groups"),
+        ["a", { "enterprise": "xx" }],
     );
 
-    t.equal(
-        router.stringifyRoute(
-            "/docker/containers/{id}/start",
-            {
-                id: "e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106",
-            },
-        ),
-        "/docker/containers/e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106/start",
+    t.deepEqual(
+        router.parseRoute("/enterprises/xx/actions/runner-groups/yy"),
+        ["b", { "enterprise": "xx", "runner_group_id": "yy" }],
+    );
+
+    t.deepEqual(
+        router.parseRoute("/enterprises/xx/actions/runner-groups/yy/organizations"),
+        ["c", { "enterprise": "xx", "runner_group_id": "yy" }],
     );
 
 });

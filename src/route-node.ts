@@ -323,7 +323,12 @@ export class RouteNode {
         findNode: RouteNode,
     ) {
         for (const childNode of this.getChildren()) {
-            if (childNode.parameter != null) continue;
+            if (
+                childNode.parameter != null &&
+                childNode.parameter !== findNode.parameter
+            ) {
+                continue;
+            }
 
             const commonPrefixLength = findCommonPrefixLength(findNode.anchor, childNode.anchor);
             if (commonPrefixLength === 0) continue;
@@ -344,9 +349,6 @@ export class RouteNode {
 
         if ((this.parameter == null) < (other.parameter == null)) return -1;
         if ((this.parameter == null) > (other.parameter == null)) return 1;
-
-        if (this.countChildren() > other.countChildren()) return -1;
-        if (this.countChildren() < other.countChildren()) return 1;
 
         if ((this.name ?? "") < (other.name ?? "")) return -1;
         if ((this.name ?? "") > (other.name ?? "")) return 1;
