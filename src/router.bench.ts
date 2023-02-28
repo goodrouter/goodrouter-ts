@@ -1,15 +1,12 @@
 import assert from "assert";
+import Benchmark from "benchmark";
 import { Router } from "./router.js";
 
-const iterations = 10000;
+runBenchmarkSmall();
+runBenchmarkDocker();
+runBenchmarkGithub();
 
-runBenchmarkSmall(iterations);
-runBenchmarkDocker(iterations);
-runBenchmarkGithub(iterations);
-
-function runBenchmarkSmall(
-    iterations: number,
-) {
+function runBenchmarkSmall() {
     const templates = [
         "/product/all",
         "/product/{id}",
@@ -20,16 +17,13 @@ function runBenchmarkSmall(
     };
 
     runBenchmark(
-        iterations,
         "small",
         templates,
         parameters,
     );
 }
 
-function runBenchmarkDocker(
-    iterations: number,
-) {
+function runBenchmarkDocker() {
     const templates = [
         "/_ping",
         "/auth",
@@ -136,16 +130,13 @@ function runBenchmarkDocker(
     };
 
     runBenchmark(
-        iterations,
         "docker",
         templates,
         parameters,
     );
 }
 
-function runBenchmarkGithub(
-    iterations: number,
-) {
+function runBenchmarkGithub() {
     const templates = [
         "/",
         "/admin/hooks",
@@ -794,7 +785,6 @@ function runBenchmarkGithub(
     };
 
     runBenchmark(
-        iterations,
         "github",
         templates,
         parameters,
@@ -802,7 +792,6 @@ function runBenchmarkGithub(
 }
 
 function runBenchmark(
-    iterations: number,
     name: string,
     templates: string[],
     parameters: Record<string, string>,
@@ -820,9 +809,20 @@ function runBenchmark(
         return path;
     });
 
-    for (let iteration = 0; iteration < iterations; iteration++) {
+    const suite = new Benchmark.Suite();
+
+    let iteration = 0;
+    suite.add(name, () => {
         const path = paths[iteration % templateCount];
 
         const route = router.parseRoute(path);
-    }
+
+        iteration++;
+    });
+
+    suite.on("cycle", (e: any) => {
+        console.log(String(e.target));
+    });
+    suite.run();
 }
+
