@@ -1,22 +1,22 @@
 import test from "tape-promise/tape.js";
 import { defaultRouterOptions } from "./router-options.js";
-import { emitTemplatePathParts } from "./template.js";
+import { splitTemplate } from "./template.js";
 
-test("emit-template-path-parts", async t => {
+test("split-template", async t => {
     {
-        const parts = [...emitTemplatePathParts("/a/{b}/{c}", defaultRouterOptions.parameterPlaceholderRE)];
+        const parts = [...splitTemplate("/a/{b}/{c}", defaultRouterOptions.parameterPlaceholderRE)];
 
         t.deepEqual(parts, ["/a/", "b", "/", "c", ""]);
     }
 
     {
-        const parts = [...emitTemplatePathParts("/a/{b}/{c}/", defaultRouterOptions.parameterPlaceholderRE)];
+        const parts = [...splitTemplate("/a/{b}/{c}/", defaultRouterOptions.parameterPlaceholderRE)];
 
         t.deepEqual(parts, ["/a/", "b", "/", "c", "/"]);
     }
 
     {
-        const parts = [...emitTemplatePathParts("", defaultRouterOptions.parameterPlaceholderRE)];
+        const parts = [...splitTemplate("", defaultRouterOptions.parameterPlaceholderRE)];
 
         t.deepEqual(parts, [""]);
     }

@@ -1,5 +1,5 @@
 import { findCommonPrefixLength } from "./string.js";
-import { emitTemplatePathParts } from "./template.js";
+import { splitTemplate } from "./template.js";
 
 /**
  * @description
@@ -375,7 +375,7 @@ function* newRouteNodesFromTemplate(
     routeTemplate: string,
     parameterPlaceholderRE: RegExp,
 ): Iterable<RouteNode> {
-    const parts = [...emitTemplatePathParts(routeTemplate, parameterPlaceholderRE)];
+    const parts = [...splitTemplate(routeTemplate, parameterPlaceholderRE)];
 
     for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
         const anchor = parts[partIndex + 0];
