@@ -213,13 +213,6 @@ export class RouteNode {
         const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
 
         if (childNode.anchor === anchor) {
-            if (
-                childNode.route != null &&
-                route != null
-            ) {
-                throw new Error("ambiguous route");
-            }
-
             return this.mergeJoin(
                 childNode,
                 route,
@@ -270,6 +263,13 @@ export class RouteNode {
         childNode: RouteNode,
         route: Route | null,
     ) {
+        if (
+            childNode.route != null &&
+            route != null
+        ) {
+            throw new Error("ambiguous route");
+        }
+
         childNode.route ??= route;
         return childNode;
     }
