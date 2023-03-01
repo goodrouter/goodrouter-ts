@@ -101,7 +101,7 @@ export class RouteNode {
                 index === pairs.length - 1 ? route : null,
             );
 
-            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
+            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(anchor);
 
             currentNode = currentNode.merge(
                 childNode,
@@ -299,7 +299,7 @@ export class RouteNode {
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
         newNode.hasParameter = false;
 
-        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode);
+        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode.anchor);
 
         return childNode.merge(
             childNode2,
@@ -324,14 +324,10 @@ export class RouteNode {
     }
 
     private findSimilarChild(
-        findNode: RouteNode,
+        anchor: string,
     ) {
         for (const childNode of this.getChildren()) {
-            if (childNode.hasParameter !== findNode.hasParameter) {
-                continue;
-            }
-
-            const commonPrefixLength = findCommonPrefixLength(findNode.anchor, childNode.anchor);
+            const commonPrefixLength = findCommonPrefixLength(anchor, childNode.anchor);
             if (commonPrefixLength === 0) continue;
 
             return [commonPrefixLength, childNode] as const;
