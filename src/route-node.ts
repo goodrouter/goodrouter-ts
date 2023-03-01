@@ -107,8 +107,9 @@ export class RouteNode {
         path: string,
         decode: (value: string) => string,
         maximumParameterValueLength: number,
-        parameters: string[],
     ): [Route | null, string[]] {
+        const parameters = new Array<string>();
+
         if (this.hasParameter) {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
             if (path.length === 0) {
@@ -130,11 +131,8 @@ export class RouteNode {
             // remove the matches part from the path
             path = path.substring(index + this.anchor.length);
 
-            // update parameters, parameters is immutable!
-            parameters = [
-                ...parameters,
-                value,
-            ];
+            // add value to parameters
+            parameters.push(value);
         }
         else {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
@@ -149,16 +147,21 @@ export class RouteNode {
 
         for (const childNode of this.children) {
             // find a route in every child node
-            const [routeName, routeParameters] = childNode.parse(
+            const [childRoute, childParameters] = childNode.parse(
                 path,
                 decode,
                 maximumParameterValueLength,
-                parameters,
             );
 
             // if a child node is matched, return that node instead of the current! So child nodes are matched first!
-            if (routeName != null) {
-                return [routeName, routeParameters];
+            if (childRoute != null) {
+                return [
+                    childRoute,
+                    [
+                        ...parameters,
+                        ...childParameters,
+                    ],
+                ];
             }
         }
 

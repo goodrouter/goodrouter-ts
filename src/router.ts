@@ -94,7 +94,6 @@ export class Router {
             path,
             this.options.decode,
             this.options.maximumParameterValueLength,
-            [],
         );
         if (route == null) {
             return [null, {}];
