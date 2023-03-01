@@ -84,12 +84,22 @@ export class Router {
      * @returns tuple with the route name or null if no route found. Then the parameters
      */
     public parseRoute(path: string): [string | null, Record<string, string>] {
-        return this.rootNode.parse(
+        const [route, parameters] = this.rootNode.parse(
             path,
             this.options.decode,
-            {},
+            [],
             this.options.maximumParameterValueLength,
         );
+        if (route == null) {
+            return [null, {}];
+        }
+
+        return [
+            route.name,
+            Object.fromEntries(
+                route.parameters.map((name, index) => [name, parameters[Number(index)]]),
+            ),
+        ];
     }
 
     /**
@@ -106,6 +116,11 @@ export class Router {
     ): string | null {
         const node = this.leafNodes.get(routeName);
         if (!node) return null;
-        return node.stringify(routeParameters, this.options.encode);
+        if (!node.route) return null;
+
+        return node.stringify(
+            node.route.parameters.map(name => routeParameters[String(name)]),
+            this.options.encode,
+        );
     }
 }

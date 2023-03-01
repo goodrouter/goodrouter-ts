@@ -92,7 +92,7 @@ export class RouteNode {
         const route: Route = {
             name,
             parameters: pairs.
-                map(([parameter]) => parameter).
+                map(([, parameter]) => parameter).
                 filter(parameter => parameter) as string[],
         };
 
@@ -121,15 +121,15 @@ export class RouteNode {
 
     parse(
         path: string,
-        decode: (value: string, name: string) => string,
-        parameters: Record<string, string>,
+        decode: (value: string) => string,
+        parameters: string[],
         maximumParameterValueLength: number,
-    ): [string | null, Record<string, string>] {
-        if (this.parameter == null) {
+    ): [Route | null, string[]] {
+        if (!this.hasParameter) {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
             if (!path.startsWith(this.anchor)) {
                 // this node does not match the path
-                return [null, {}];
+                return [null, []];
             }
 
             // we successfully matches the node to the path, now remove the matched part from the path
@@ -138,7 +138,7 @@ export class RouteNode {
         else {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
             if (path.length === 0) {
-                return [null, {}];
+                return [null, []];
             }
 
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
@@ -147,20 +147,20 @@ export class RouteNode {
                 path.substring(0, maximumParameterValueLength + this.anchor.length).
                     indexOf(this.anchor);
             if (index < 0) {
-                return [null, {}];
+                return [null, []];
             }
 
             // get the parameter value
-            const value = decode(path.substring(0, index), this.parameter);
+            const value = decode(path.substring(0, index));
 
             // remove the matches part from the path
             path = path.substring(index + this.anchor.length);
 
             // update parameters, parameters is immutable!
-            parameters = {
+            parameters = [
                 ...parameters,
-                [this.parameter]: value,
-            };
+                value,
+            ];
         }
 
         for (const childNode of this.getChildren()) {
@@ -181,30 +181,29 @@ export class RouteNode {
         // if the node had a route name and there is no path left to match against then we found a route
         if (this.route != null && path.length === 0) {
             return [
-                this.route.name,
+                this.route,
                 parameters,
             ];
         }
 
         // we did not found a route :-(
-        return [null, {}];
+        return [null, []];
     }
 
     stringify(
-        parameters: Record<string, string> = {},
-        encode: (value: string, name: string) => string,
+        parameters: string[],
+        encode: (value: string) => string,
     ) {
+        let parameterIndex = parameters.length;
         let path = "";
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode | null = this;
         while (currentNode != null) {
             path = currentNode.anchor + path;
-            if (
-                currentNode.parameter != null &&
-                parameters[currentNode.parameter] != null
-            ) {
-                const value = parameters[currentNode.parameter];
-                path = encode(value, currentNode.parameter) + path;
+            if (currentNode.hasParameter) {
+                parameterIndex--;
+                const value = parameters[Number(parameterIndex)];
+                path = encode(value) + path;
             }
             currentNode = currentNode.parent;
         }
