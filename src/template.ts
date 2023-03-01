@@ -4,21 +4,47 @@
  * The first and the last elements are always literal strings taken from the template,
  * therefore the number of elements in the resulting iterable is always uneven!
  * 
- * @param template template to chop up
- * @param re regular expression to use when searching for parameter placeholders
+ * @param routeTemplate template to chop up
+ * @param parameterPlaceholderRE regular expression to use when searching for parameter placeholders
  * @returns Iterable of strings, always an uneven number of elements.
  */
-export function* splitTemplate(template: string, re: RegExp) {
-    if (!re.global) {
+export function* splitTemplate(
+    routeTemplate: string,
+    parameterPlaceholderRE: RegExp,
+) {
+    if (!parameterPlaceholderRE.global) {
         throw new Error("regular expression needs to be global");
     }
 
     let match;
     let offsetIndex = 0;
-    while ((match = re.exec(template)) != null) {
-        yield template.substring(offsetIndex, re.lastIndex - match[0].length);
+    while ((match = parameterPlaceholderRE.exec(routeTemplate)) != null) {
+        yield routeTemplate.substring(
+            offsetIndex,
+            parameterPlaceholderRE.lastIndex - match[0].length,
+        );
         yield match[1];
-        offsetIndex = re.lastIndex;
+        offsetIndex = parameterPlaceholderRE.lastIndex;
     }
-    yield template.substring(offsetIndex);
+    yield routeTemplate.substring(offsetIndex);
+}
+
+export function* splitTemplatePairs(
+    routeTemplate: string,
+    parameterPlaceholderRE: RegExp,
+) {
+    const parts = splitTemplate(routeTemplate, parameterPlaceholderRE);
+
+    let even = true;
+    let parameter: string | null = null;
+    for (const part of parts) {
+        if (even) {
+            yield [part, parameter] as const;
+        }
+        else {
+            parameter = part;
+        }
+        even = !even;
+    }
+
 }
