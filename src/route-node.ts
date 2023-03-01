@@ -1,6 +1,6 @@
 import { Route } from "./route.js";
 import { findCommonPrefixLength } from "./string.js";
-import { splitTemplatePairs } from "./template.js";
+import { parseTemplatePairs } from "./template.js";
 
 /**
  * @description
@@ -73,7 +73,7 @@ export class RouteNode {
         routeTemplate: string,
         parameterPlaceholderRE: RegExp,
     ) {
-        const pairs = [...splitTemplatePairs(routeTemplate, parameterPlaceholderRE)];
+        const pairs = [...parseTemplatePairs(routeTemplate, parameterPlaceholderRE)];
 
         const route: Route = {
             name: routeName,

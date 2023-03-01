@@ -8,7 +8,7 @@
  * @param parameterPlaceholderRE regular expression to use when searching for parameter placeholders
  * @returns Iterable of strings, always an uneven number of elements.
  */
-export function* splitTemplate(
+export function* parseTemplateParts(
     routeTemplate: string,
     parameterPlaceholderRE: RegExp,
 ) {
@@ -29,11 +29,11 @@ export function* splitTemplate(
     yield routeTemplate.substring(offsetIndex);
 }
 
-export function* splitTemplatePairs(
+export function* parseTemplatePairs(
     routeTemplate: string,
     parameterPlaceholderRE: RegExp,
 ) {
-    const parts = splitTemplate(routeTemplate, parameterPlaceholderRE);
+    const parts = parseTemplateParts(routeTemplate, parameterPlaceholderRE);
 
     let even = true;
     let parameter: string | null = null;
