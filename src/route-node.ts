@@ -40,16 +40,8 @@ export class RouteNode {
      */
     private parent: RouteNode | null = null;
 
-    getChildren(): Iterable<RouteNode> {
-        return this.children.values();
-    }
-
     countChildren() {
         return this.children.length;
-    }
-
-    getParent() {
-        return this.parent;
     }
 
     addChild(childNode: RouteNode) {
@@ -78,14 +70,14 @@ export class RouteNode {
     }
 
     insert(
-        name: string,
-        template: string,
+        routeName: string,
+        routeTemplate: string,
         parameterPlaceholderRE: RegExp,
     ) {
-        const pairs = [...splitTemplatePairs(template, parameterPlaceholderRE)];
+        const pairs = [...splitTemplatePairs(routeTemplate, parameterPlaceholderRE)];
 
         const route: Route = {
-            name,
+            name: routeName,
             parameters: pairs.
                 map(([, parameter]) => parameter).
                 filter(parameter => parameter) as string[],
@@ -95,13 +87,15 @@ export class RouteNode {
         let currentNode: RouteNode = this;
         for (let index = 0; index < pairs.length; index++) {
             const [anchor, parameter] = pairs[Number(index)];
+            const hasParameter = parameter != null;
 
-            const [commonPrefixLength, childNode] = currentNode.findSimilarChild(anchor);
+            const [commonPrefixLength, childNode] =
+                currentNode.findSimilarChild(anchor, hasParameter);
 
             currentNode = currentNode.merge(
                 childNode,
                 anchor,
-                parameter != null,
+                hasParameter,
                 index === pairs.length - 1 ? route : null,
                 commonPrefixLength,
             );
@@ -154,7 +148,7 @@ export class RouteNode {
             path = path.substring(this.anchor.length);
         }
 
-        for (const childNode of this.getChildren()) {
+        for (const childNode of this.children) {
             // find a route in every child node
             const [routeName, routeParameters] = childNode.parse(
                 path,
@@ -225,21 +219,11 @@ export class RouteNode {
             ) {
                 throw new Error("ambiguous route");
             }
-            else if (
-                childNode.hasParameter == childNode.hasParameter
-            ) {
-                return this.mergeJoin(
-                    childNode,
-                    route,
-                );
-            }
-            else {
-                return this.mergeNew(
-                    anchor,
-                    hasParameter,
-                    route,
-                );
-            }
+
+            return this.mergeJoin(
+                childNode,
+                route,
+            );
         }
         else if (childNode.anchor === commonPrefix) {
             return this.mergeAddToChild(
@@ -328,7 +312,8 @@ export class RouteNode {
         anchor = anchor.substring(commonPrefixLength);
         hasParameter = false;
 
-        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(anchor);
+        const [commonPrefixLength2, childNode2] =
+            childNode.findSimilarChild(anchor, hasParameter);
 
         return childNode.merge(
             childNode2,
@@ -350,22 +335,27 @@ export class RouteNode {
             hasParameter,
             route,
         );
-
-        this.removeChild(childNode);
         this.addChild(newNode);
 
-        newNode.addChild(childNode);
+        this.removeChild(childNode);
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
         childNode.hasParameter = false;
+
+        newNode.addChild(childNode);
 
         return newNode;
     }
 
     private findSimilarChild(
         anchor: string,
+        hasParameter: boolean,
     ) {
-        for (const childNode of this.getChildren()) {
+        for (const childNode of this.children) {
+            if (childNode.hasParameter !== hasParameter) {
+                continue;
+            }
+
             const commonPrefixLength = findCommonPrefixLength(anchor, childNode.anchor);
             if (commonPrefixLength === 0) continue;
 
