@@ -221,14 +221,22 @@ export class RouteNode {
         if (childNode.anchor === anchor) {
             if (
                 childNode.route != null &&
-                route != null &&
-                childNode.route.name !== route.name
+                route != null
             ) {
                 throw new Error("ambiguous route");
             }
-            else {
+            else if (
+                childNode.hasParameter == childNode.hasParameter
+            ) {
                 return this.mergeJoin(
                     childNode,
+                    route,
+                );
+            }
+            else {
+                return this.mergeNew(
+                    anchor,
+                    hasParameter,
                     route,
                 );
             }
@@ -288,28 +296,25 @@ export class RouteNode {
         route: Route | null,
         commonPrefixLength: number,
     ) {
+        this.removeChild(childNode);
+
         const newNode = new RouteNode(
-            anchor,
-            hasParameter,
+            anchor.substring(commonPrefixLength),
+            false,
             route,
         );
 
-        this.removeChild(childNode);
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        childNode.hasParameter = false;
 
         const intermediateNode = new RouteNode(
-            childNode.anchor.substring(0, commonPrefixLength),
-            childNode.hasParameter,
+            anchor.substring(0, commonPrefixLength),
+            hasParameter,
         );
         intermediateNode.addChild(childNode);
         intermediateNode.addChild(newNode);
 
         this.addChild(intermediateNode);
-
-        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
-        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
-
-        childNode.hasParameter = false;
-        newNode.hasParameter = false;
 
         return newNode;
     }
