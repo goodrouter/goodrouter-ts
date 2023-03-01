@@ -208,32 +208,28 @@ export class RouteNode {
         route: Route | null,
         commonPrefixLength: number,
     ) {
-        const newNode = new RouteNode(
-            anchor,
-            hasParameter,
-            route,
-        );
-
         if (childNode == null) {
             return this.mergeNew(
-                newNode,
+                anchor,
+                hasParameter,
+                route,
             );
         }
 
         const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
 
-        if (childNode.anchor === newNode.anchor) {
+        if (childNode.anchor === anchor) {
             if (
                 childNode.route != null &&
-                newNode.route != null &&
-                childNode.route.name !== newNode.route.name
+                route != null &&
+                childNode.route.name !== route.name
             ) {
                 throw new Error("ambiguous route");
             }
             else {
                 return this.mergeJoin(
                     childNode,
-                    newNode,
+                    route,
                 );
             }
         }
@@ -246,7 +242,12 @@ export class RouteNode {
                 commonPrefixLength,
             );
         }
-        else if (newNode.anchor === commonPrefix) {
+        else if (anchor === commonPrefix) {
+            const newNode = new RouteNode(
+                anchor,
+                hasParameter,
+                route,
+            );
             return this.mergeAddToNew(
                 childNode,
                 newNode,
@@ -254,6 +255,11 @@ export class RouteNode {
             );
         }
         else {
+            const newNode = new RouteNode(
+                anchor,
+                hasParameter,
+                route,
+            );
             return this.mergeIntermediate(
                 childNode,
                 newNode,
@@ -262,16 +268,23 @@ export class RouteNode {
         }
     }
     private mergeNew(
-        newNode: RouteNode,
+        anchor: string,
+        hasParameter: boolean,
+        route: Route | null,
     ) {
+        const newNode = new RouteNode(
+            anchor,
+            hasParameter,
+            route,
+        );
         this.addChild(newNode);
         return newNode;
     }
     private mergeJoin(
         childNode: RouteNode,
-        newNode: RouteNode,
+        route: Route | null,
     ) {
-        childNode.route ??= newNode.route;
+        childNode.route ??= route;
         return childNode;
     }
     private mergeIntermediate(
