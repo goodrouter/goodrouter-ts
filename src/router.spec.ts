@@ -805,7 +805,7 @@ test("github routes", async t => {
     ];
 
     const allParameters = Object.fromEntries(
-        allParameterNames.map((name, index) => [name, String(index)]),
+        allParameterNames.map((name, index) => [name, `p${index}`]),
     );
 
     const templateCount = templates.length;
