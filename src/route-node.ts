@@ -95,17 +95,14 @@ export class RouteNode {
         let currentNode: RouteNode = this;
         for (let index = 0; index < pairs.length; index++) {
             const [anchor, parameter] = pairs[Number(index)];
-            const newNode = new RouteNode(
-                anchor,
-                parameter != null,
-                index === pairs.length - 1 ? route : null,
-            );
 
             const [commonPrefixLength, childNode] = currentNode.findSimilarChild(anchor);
 
             currentNode = currentNode.merge(
                 childNode,
-                newNode,
+                anchor,
+                parameter != null,
+                index === pairs.length - 1 ? route : null,
                 commonPrefixLength,
             );
         }
@@ -206,9 +203,17 @@ export class RouteNode {
 
     private merge(
         childNode: RouteNode | null,
-        newNode: RouteNode,
+        anchor: string,
+        hasParameter: boolean,
+        route: Route | null,
         commonPrefixLength: number,
     ) {
+        const newNode = new RouteNode(
+            anchor,
+            hasParameter,
+            route,
+        );
+
         if (childNode == null) {
             return this.mergeNew(
                 newNode,
@@ -235,7 +240,9 @@ export class RouteNode {
         else if (childNode.anchor === commonPrefix) {
             return this.mergeAddToChild(
                 childNode,
-                newNode,
+                anchor,
+                hasParameter,
+                route,
                 commonPrefixLength,
             );
         }
@@ -293,17 +300,21 @@ export class RouteNode {
     }
     private mergeAddToChild(
         childNode: RouteNode,
-        newNode: RouteNode,
+        anchor: string,
+        hasParameter: boolean,
+        route: Route | null,
         commonPrefixLength: number,
     ): RouteNode {
-        newNode.anchor = newNode.anchor.substring(commonPrefixLength);
-        newNode.hasParameter = false;
+        anchor = anchor.substring(commonPrefixLength);
+        hasParameter = false;
 
-        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode.anchor);
+        const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(anchor);
 
         return childNode.merge(
             childNode2,
-            newNode,
+            anchor,
+            hasParameter,
+            route,
             commonPrefixLength2,
         );
     }
