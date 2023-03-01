@@ -243,26 +243,20 @@ export class RouteNode {
             );
         }
         else if (anchor === commonPrefix) {
-            const newNode = new RouteNode(
+            return this.mergeAddToNew(
+                childNode,
                 anchor,
                 hasParameter,
                 route,
-            );
-            return this.mergeAddToNew(
-                childNode,
-                newNode,
                 commonPrefixLength,
             );
         }
         else {
-            const newNode = new RouteNode(
+            return this.mergeIntermediate(
+                childNode,
                 anchor,
                 hasParameter,
                 route,
-            );
-            return this.mergeIntermediate(
-                childNode,
-                newNode,
                 commonPrefixLength,
             );
         }
@@ -289,9 +283,17 @@ export class RouteNode {
     }
     private mergeIntermediate(
         childNode: RouteNode,
-        newNode: RouteNode,
+        anchor: string,
+        hasParameter: boolean,
+        route: Route | null,
         commonPrefixLength: number,
     ) {
+        const newNode = new RouteNode(
+            anchor,
+            hasParameter,
+            route,
+        );
+
         this.removeChild(childNode);
 
         const intermediateNode = new RouteNode(
@@ -333,9 +335,17 @@ export class RouteNode {
     }
     private mergeAddToNew(
         childNode: RouteNode,
-        newNode: RouteNode,
+        anchor: string,
+        hasParameter: boolean,
+        route: Route | null,
         commonPrefixLength: number,
     ): RouteNode {
+        const newNode = new RouteNode(
+            anchor,
+            hasParameter,
+            route,
+        );
+
         this.removeChild(childNode);
         this.addChild(newNode);
 
