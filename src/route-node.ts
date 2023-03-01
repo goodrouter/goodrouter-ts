@@ -31,14 +31,14 @@ export class RouteNode {
 
     /**
      * @description
-     * children that represent the rest of the path that needs to be matched
-     */
-    private readonly children = new Array<RouteNode>();
-    /**
-     * @description
      * parent node, should only be null for the root node
      */
     private parent: RouteNode | null = null;
+    /**
+     * @description
+     * children that represent the rest of the path that needs to be matched
+     */
+    private readonly children = new Array<RouteNode>();
 
     private addChild(childNode: RouteNode) {
         if (childNode.parent === this) {
