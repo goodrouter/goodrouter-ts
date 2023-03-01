@@ -709,7 +709,7 @@ test("github routes", async t => {
         "/zen",
     ];
 
-    const parameterNames = [
+    const allParameterNames = [
         "alert_number",
         "analysis_id",
         "app_slug",
@@ -804,8 +804,8 @@ test("github routes", async t => {
         "workflow_id",
     ];
 
-    const parameters = Object.fromEntries(
-        parameterNames.map((name, index) => [name, String(index)]),
+    const allParameters = Object.fromEntries(
+        allParameterNames.map((name, index) => [name, String(index)]),
     );
 
     const templateCount = templates.length;
@@ -816,7 +816,7 @@ test("github routes", async t => {
     }
 
     const paths = templates.map(template => {
-        const path = router.stringifyRoute(template, parameters);
+        const path = router.stringifyRoute(template, allParameters);
         assert(path != null);
         return path;
     });
@@ -826,8 +826,13 @@ test("github routes", async t => {
         const template = templates[Number(index)];
 
         const [routeName, routeParameters] = router.parseRoute(path);
+        const expectedParameters = Object.fromEntries(
+            Object.keys(routeParameters).
+                map(name => [name, allParameters[String(name)]]),
+        );
 
         t.equal(routeName, template);
+        t.deepEqual(routeParameters, expectedParameters);
     }
 
 });
