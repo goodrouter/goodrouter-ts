@@ -17,11 +17,6 @@ export class RouteNode {
         public anchor = "",
         /**
          * @description
-         * parameter name or null if this node does not represent a parameter
-         */
-        public parameter: string | null = null,
-        /**
-         * @description
          * does this node have a parameter value
          */
         public hasParameter = false,
@@ -102,7 +97,6 @@ export class RouteNode {
             const [anchor, parameter] = pairs[Number(index)];
             const newNode = new RouteNode(
                 anchor,
-                parameter,
                 parameter != null,
                 index === pairs.length - 1 ? route : null,
             );
@@ -231,17 +225,6 @@ export class RouteNode {
             ) {
                 throw new Error("ambiguous route");
             }
-            else if (
-                childNode.parameter != null &&
-                newNode.parameter != null &&
-                childNode.parameter !== newNode.parameter
-            ) {
-                return this.mergeIntermediate(
-                    childNode,
-                    newNode,
-                    commonPrefixLength,
-                );
-            }
             else {
                 return this.mergeJoin(
                     childNode,
@@ -293,7 +276,6 @@ export class RouteNode {
 
         const intermediateNode = new RouteNode(
             childNode.anchor.substring(0, commonPrefixLength),
-            childNode.parameter,
             childNode.hasParameter,
         );
         intermediateNode.addChild(childNode);
@@ -303,9 +285,6 @@ export class RouteNode {
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
-
-        childNode.parameter = null;
-        newNode.parameter = null;
 
         childNode.hasParameter = false;
         newNode.hasParameter = false;
@@ -318,7 +297,6 @@ export class RouteNode {
         commonPrefixLength: number,
     ): RouteNode {
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
-        newNode.parameter = null;
         newNode.hasParameter = false;
 
         const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode);
@@ -340,7 +318,6 @@ export class RouteNode {
         newNode.addChild(childNode);
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
-        childNode.parameter = null;
         childNode.hasParameter = false;
 
         return newNode;
@@ -350,10 +327,7 @@ export class RouteNode {
         findNode: RouteNode,
     ) {
         for (const childNode of this.getChildren()) {
-            if (
-                childNode.parameter != null &&
-                childNode.parameter !== findNode.parameter
-            ) {
+            if (childNode.hasParameter !== findNode.hasParameter) {
                 continue;
             }
 
