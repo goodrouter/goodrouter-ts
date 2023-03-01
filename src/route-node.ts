@@ -377,10 +377,5 @@ export class RouteNode {
         return 0;
     }
 
-    equal(other: RouteNode) {
-        return this.anchor === other.anchor &&
-            this.parameter === other.parameter &&
-            this.route?.name === other.route?.name;
-    }
 }
 
