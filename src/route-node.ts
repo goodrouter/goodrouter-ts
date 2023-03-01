@@ -40,11 +40,7 @@ export class RouteNode {
      */
     private parent: RouteNode | null = null;
 
-    countChildren() {
-        return this.children.length;
-    }
-
-    addChild(childNode: RouteNode) {
+    private addChild(childNode: RouteNode) {
         if (childNode.parent === this) {
             throw new Error("cannot add childNode to self");
         }
@@ -57,7 +53,7 @@ export class RouteNode {
         this.children.push(childNode);
     }
 
-    removeChild(childNode: RouteNode) {
+    private removeChild(childNode: RouteNode) {
         const childIndex = this.children.indexOf(childNode);
 
         if (childNode.parent !== this || childIndex < 0) {
@@ -66,6 +62,10 @@ export class RouteNode {
 
         childNode.parent = null;
         this.children.splice(childIndex, 1);
+    }
+
+    countChildren() {
+        return this.children.length;
     }
 
     insert(
@@ -106,8 +106,8 @@ export class RouteNode {
     parse(
         path: string,
         decode: (value: string) => string,
-        parameters: string[],
         maximumParameterValueLength: number,
+        parameters: string[],
     ): [Route | null, string[]] {
         if (this.hasParameter) {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
@@ -152,8 +152,8 @@ export class RouteNode {
             const [routeName, routeParameters] = childNode.parse(
                 path,
                 decode,
-                parameters,
                 maximumParameterValueLength,
+                parameters,
             );
 
             // if a child node is matches, return that node instead of the current! So child nodes are matches first!

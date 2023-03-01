@@ -87,8 +87,8 @@ export class Router {
         const [route, parameters] = this.rootNode.parse(
             path,
             this.options.decode,
-            [],
             this.options.maximumParameterValueLength,
+            [],
         );
         if (route == null) {
             return [null, {}];
