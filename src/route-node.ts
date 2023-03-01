@@ -1,3 +1,4 @@
+import { Route } from "./route.js";
 import { findCommonPrefixLength } from "./string.js";
 import { splitTemplatePairs } from "./template.js";
 
@@ -21,9 +22,9 @@ export class RouteNode {
         public parameter: string | null = null,
         /**
          * @description
-         * name that identifies the route
+         * route
          */
-        public name: string | null = null,
+        public route: Route | null = null,
     ) {
 
     }
@@ -83,13 +84,20 @@ export class RouteNode {
     ) {
         const pairs = [...splitTemplatePairs(template, parameterPlaceholderRE)];
 
+        const route: Route = {
+            name,
+            parameters: pairs.
+                map(([parameter]) => parameter).
+                filter(parameter => parameter) as string[],
+        };
+
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
         for (let index = 0; index < pairs.length; index++) {
             const [anchor, parameter] = pairs[Number(index)];
             const newNode = new RouteNode(
                 anchor, parameter,
-                index === pairs.length - 1 ? name : null,
+                index === pairs.length - 1 ? route : null,
             );
 
             const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
@@ -164,9 +172,9 @@ export class RouteNode {
         }
 
         // if the node had a route name and there is no path left to match against then we found a route
-        if (this.name != null && path.length === 0) {
+        if (this.route != null && path.length === 0) {
             return [
-                this.name,
+                this.route.name,
                 parameters,
             ];
         }
@@ -211,9 +219,9 @@ export class RouteNode {
 
         if (childNode.anchor === newNode.anchor) {
             if (
-                childNode.name != null &&
-                newNode.name != null &&
-                childNode.name !== newNode.name
+                childNode.route != null &&
+                newNode.route != null &&
+                childNode.route.name !== newNode.route.name
             ) {
                 throw new Error("ambiguous route");
             }
@@ -267,7 +275,7 @@ export class RouteNode {
         childNode: RouteNode,
         newNode: RouteNode,
     ) {
-        childNode.name ??= newNode.name;
+        childNode.route ??= newNode.route;
         return childNode;
     }
     private mergeIntermediate(
@@ -351,14 +359,14 @@ export class RouteNode {
         if (this.anchor.length < other.anchor.length) return 1;
         if (this.anchor.length > other.anchor.length) return -1;
 
-        if ((this.name == null) < (other.name == null)) return 1;
-        if ((this.name == null) > (other.name == null)) return -1;
+        if ((this.route == null) < (other.route == null)) return 1;
+        if ((this.route == null) > (other.route == null)) return -1;
 
         if ((this.parameter == null) < (other.parameter == null)) return -1;
         if ((this.parameter == null) > (other.parameter == null)) return 1;
 
-        if ((this.name ?? "") < (other.name ?? "")) return -1;
-        if ((this.name ?? "") > (other.name ?? "")) return 1;
+        if ((this.route?.name ?? "") < (other.route?.name ?? "")) return -1;
+        if ((this.route?.name ?? "") > (other.route?.name ?? "")) return 1;
 
         if ((this.parameter ?? "") < (other.parameter ?? "")) return -1;
         if ((this.parameter ?? "") > (other.parameter ?? "")) return 1;
@@ -372,7 +380,7 @@ export class RouteNode {
     equal(other: RouteNode) {
         return this.anchor === other.anchor &&
             this.parameter === other.parameter &&
-            this.name === other.name;
+            this.route?.name === other.route?.name;
     }
 }
 
