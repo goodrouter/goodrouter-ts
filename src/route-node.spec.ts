@@ -38,9 +38,9 @@ test("route-node-permutations", async t => {
 
 test("route-node-sort", async t => {
     const nodes: RouteNode[] = [
-        new RouteNode("aa", true),
         new RouteNode("aa"),
         new RouteNode("xx"),
+        new RouteNode("aa", true),
         new RouteNode("aa", false, { name: "n", parameters: [] }),
         new RouteNode("x"),
     ];

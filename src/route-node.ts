@@ -55,7 +55,6 @@ export class RouteNode {
 
         childNode.parent = this;
         this.children.push(childNode);
-        this.children.sort((a, b) => a.compare(b));
     }
 
     removeChild(childNode: RouteNode) {
@@ -257,6 +256,7 @@ export class RouteNode {
             route,
         );
         this.addChild(newNode);
+        this.children.sort((a, b) => a.compare(b));
         return newNode;
     }
     private mergeJoin(
@@ -271,6 +271,7 @@ export class RouteNode {
         }
 
         childNode.route ??= route;
+        childNode.parent?.children.sort((a, b) => a.compare(b));
         return childNode;
     }
     private mergeIntermediate(
@@ -299,6 +300,9 @@ export class RouteNode {
         intermediateNode.addChild(newNode);
 
         this.addChild(intermediateNode);
+
+        this.children.sort((a, b) => a.compare(b));
+        intermediateNode.children.sort((a, b) => a.compare(b));
 
         return newNode;
     }
@@ -344,6 +348,9 @@ export class RouteNode {
 
         newNode.addChild(childNode);
 
+        this.children.sort((a, b) => a.compare(b));
+        newNode.children.sort((a, b) => a.compare(b));
+
         return newNode;
     }
 
@@ -373,8 +380,8 @@ export class RouteNode {
         if ((this.route == null) < (other.route == null)) return 1;
         if ((this.route == null) > (other.route == null)) return -1;
 
-        if (this.hasParameter < other.hasParameter) return 1;
-        if (this.hasParameter > other.hasParameter) return -1;
+        if (this.hasParameter < other.hasParameter) return -1;
+        if (this.hasParameter > other.hasParameter) return 1;
 
         if (this.anchor < other.anchor) return -1;
         if (this.anchor > other.anchor) return 1;
