@@ -22,6 +22,11 @@ export class RouteNode {
         public parameter: string | null = null,
         /**
          * @description
+         * does this node have a parameter value
+         */
+        public hasParameter = false,
+        /**
+         * @description
          * route
          */
         public route: Route | null = null,
@@ -96,7 +101,9 @@ export class RouteNode {
         for (let index = 0; index < pairs.length; index++) {
             const [anchor, parameter] = pairs[Number(index)];
             const newNode = new RouteNode(
-                anchor, parameter,
+                anchor,
+                parameter,
+                parameter != null,
                 index === pairs.length - 1 ? route : null,
             );
 
@@ -288,6 +295,7 @@ export class RouteNode {
         const intermediateNode = new RouteNode(
             childNode.anchor.substring(0, commonPrefixLength),
             childNode.parameter,
+            childNode.hasParameter,
         );
         intermediateNode.addChild(childNode);
         intermediateNode.addChild(newNode);
@@ -300,6 +308,9 @@ export class RouteNode {
         childNode.parameter = null;
         newNode.parameter = null;
 
+        childNode.hasParameter = false;
+        newNode.hasParameter = false;
+
         return newNode;
     }
     private mergeAddToChild(
@@ -309,6 +320,7 @@ export class RouteNode {
     ): RouteNode {
         newNode.anchor = newNode.anchor.substring(commonPrefixLength);
         newNode.parameter = null;
+        newNode.hasParameter = false;
 
         const [commonPrefixLength2, childNode2] = childNode.findSimilarChild(newNode);
 
@@ -330,6 +342,7 @@ export class RouteNode {
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
         childNode.parameter = null;
+        childNode.hasParameter = false;
 
         return newNode;
     }
@@ -362,8 +375,8 @@ export class RouteNode {
         if ((this.route == null) < (other.route == null)) return 1;
         if ((this.route == null) > (other.route == null)) return -1;
 
-        if ((this.parameter == null) < (other.parameter == null)) return -1;
-        if ((this.parameter == null) > (other.parameter == null)) return 1;
+        if (this.hasParameter < other.hasParameter) return 1;
+        if (this.hasParameter > other.hasParameter) return -1;
 
         if ((this.route?.name ?? "") < (other.route?.name ?? "")) return -1;
         if ((this.route?.name ?? "") > (other.route?.name ?? "")) return 1;
