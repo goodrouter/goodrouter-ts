@@ -156,7 +156,7 @@ export class RouteNode {
                 parameters,
             );
 
-            // if a child node is matches, return that node instead of the current! So child nodes are matches first!
+            // if a child node is matched, return that node instead of the current! So child nodes are matched first!
             if (routeName != null) {
                 return [routeName, routeParameters];
             }

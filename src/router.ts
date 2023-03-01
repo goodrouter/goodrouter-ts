@@ -71,20 +71,24 @@ export class Router {
      * @param template template for the route, als defines parameters
      */
     public insertRoute(name: string, template: string) {
-        const leafNode = this.rootNode.insert(name, template, this.options.parameterPlaceholderRE);
+        const leafNode = this.rootNode.insert(
+            name,
+            template,
+            this.options.parameterPlaceholderRE,
+        );
         this.leafNodes.set(name, leafNode);
         return this;
     }
 
     /**
      * @description
-     * Match the path against one of the provided routes and parse the parameters in it
+     * Match the path against a known routes and parse the parameters in it
      * 
      * @param path path to match
      * @returns tuple with the route name or null if no route found. Then the parameters
      */
     public parseRoute(path: string): [string | null, Record<string, string>] {
-        const [route, parameters] = this.rootNode.parse(
+        const [route, parameterValues] = this.rootNode.parse(
             path,
             this.options.decode,
             this.options.maximumParameterValueLength,
@@ -94,11 +98,14 @@ export class Router {
             return [null, {}];
         }
 
+        const parameters = Object.fromEntries(
+            route.parameters.
+                map((name, index) => [name, parameterValues[Number(index)]]),
+        );
+
         return [
             route.name,
-            Object.fromEntries(
-                route.parameters.map((name, index) => [name, parameters[Number(index)]]),
-            ),
+            parameters,
         ];
     }
 
@@ -118,8 +125,11 @@ export class Router {
         if (!node) return null;
         if (!node.route) return null;
 
+        const parameterValues = node.route.parameters.
+            map(name => routeParameters[String(name)]);
+
         return node.stringify(
-            node.route.parameters.map(name => routeParameters[String(name)]),
+            parameterValues,
             this.options.encode,
         );
     }
