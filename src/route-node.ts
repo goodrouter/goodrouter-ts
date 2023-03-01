@@ -1,5 +1,5 @@
 import { findCommonPrefixLength } from "./string.js";
-import { splitTemplate } from "./template.js";
+import { splitTemplatePairs } from "./template.js";
 
 /**
  * @description
@@ -81,11 +81,17 @@ export class RouteNode {
         template: string,
         parameterPlaceholderRE: RegExp,
     ) {
-        const newNodes = [...newRouteNodesFromTemplate(name, template, parameterPlaceholderRE)];
+        const pairs = [...splitTemplatePairs(template, parameterPlaceholderRE)];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
-        for (const newNode of newNodes) {
+        for (let index = 0; index < pairs.length; index++) {
+            const [anchor, parameter] = pairs[Number(index)];
+            const newNode = new RouteNode(
+                anchor, parameter,
+                index === pairs.length - 1 ? name : null,
+            );
+
             const [commonPrefixLength, childNode] = currentNode.findSimilarChild(newNode);
 
             currentNode = currentNode.merge(
@@ -368,30 +374,5 @@ export class RouteNode {
             this.parameter === other.parameter &&
             this.name === other.name;
     }
-}
-
-function* newRouteNodesFromTemplate(
-    routeName: string,
-    routeTemplate: string,
-    parameterPlaceholderRE: RegExp,
-): Iterable<RouteNode> {
-    const parts = [...splitTemplate(routeTemplate, parameterPlaceholderRE)];
-
-    for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
-        const anchor = parts[partIndex + 0];
-        const parameter = partIndex > 0 ?
-            parts[partIndex - 1] :
-            null;
-
-        const name = (partIndex >= parts.length - 1) ?
-            routeName :
-            null;
-        yield new RouteNode(
-            anchor,
-            parameter,
-            name,
-        );
-    }
-
 }
 
