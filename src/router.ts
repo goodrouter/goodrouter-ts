@@ -87,7 +87,9 @@ export class Router {
      * @param path path to match
      * @returns tuple with the route name or null if no route found. Then the parameters
      */
-    public parseRoute(path: string): [string | null, Record<string, string>] {
+    public parseRoute(
+        path: string,
+    ): [string | null, Record<string, string>] {
         const [route, parameterValues] = this.rootNode.parse(
             path,
             this.options.decode,
