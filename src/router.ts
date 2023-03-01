@@ -100,10 +100,12 @@ export class Router {
             return [null, {}];
         }
 
-        const parameters = Object.fromEntries(
-            route.parameters.
-                map((name, index) => [name, parameterValues[Number(index)]]),
-        );
+        const parameters: Record<string, string> = {};
+        for (let index = 0; index < route.parameters.length; index++) {
+            const parameterName = route.parameters[Number(index)];
+            const parameterValue = parameterValues[Number(index)];
+            parameters[String(parameterName)] = parameterValue;
+        }
 
         return [
             route.name,
@@ -127,8 +129,10 @@ export class Router {
         if (!node) return null;
         if (!node.route) return null;
 
-        const parameterValues = node.route.parameters.
-            map(name => routeParameters[String(name)]);
+        const parameterValues = new Array<string>();
+        for (const parameterName of node.route.parameters) {
+            parameterValues.push(routeParameters[String(parameterName)]);
+        }
 
         return node.stringify(
             parameterValues,
