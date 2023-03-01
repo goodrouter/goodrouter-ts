@@ -119,17 +119,7 @@ export class RouteNode {
         parameters: string[],
         maximumParameterValueLength: number,
     ): [Route | null, string[]] {
-        if (!this.hasParameter) {
-            // if this node does not represent a parameter we expect the path to start with the `anchor`
-            if (!path.startsWith(this.anchor)) {
-                // this node does not match the path
-                return [null, []];
-            }
-
-            // we successfully matches the node to the path, now remove the matched part from the path
-            path = path.substring(this.anchor.length);
-        }
-        else {
+        if (this.hasParameter) {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
             if (path.length === 0) {
                 return [null, []];
@@ -155,6 +145,16 @@ export class RouteNode {
                 ...parameters,
                 value,
             ];
+        }
+        else {
+            // if this node does not represent a parameter we expect the path to start with the `anchor`
+            if (!path.startsWith(this.anchor)) {
+                // this node does not match the path
+                return [null, []];
+            }
+
+            // we successfully matches the node to the path, now remove the matched part from the path
+            path = path.substring(this.anchor.length);
         }
 
         for (const childNode of this.getChildren()) {
