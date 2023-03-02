@@ -1,4 +1,4 @@
-# GoodRouter, TypeScript edition
+# Goodrouter, TypeScript edition
 
 A good router should:
 
