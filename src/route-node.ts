@@ -1,6 +1,6 @@
 import { Route } from "./route.js";
-import { findCommonPrefixLength } from "./string.js";
 import { parseTemplatePairs } from "./template.js";
+import { findCommonPrefixLength } from "./utils/string.js";
 
 /**
  * @description

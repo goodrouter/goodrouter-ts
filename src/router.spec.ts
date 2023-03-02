@@ -1,7 +1,8 @@
 import assert from "assert";
 import test from "tape-promise/tape.js";
 import { Router } from "./router.js";
-import * as testing from "./testing/index.js";
+import { parametersFromTemplates } from "./testing/parameters.js";
+import { loadTemplates } from "./testing/templates.js";
 
 test("router-readme", async t => {
     const router = new Router();
@@ -163,8 +164,8 @@ testTemplates("github");
 
 function testTemplates(name: string) {
     test(`${name} templates`, async t => {
-        const templates = testing.loadTemplates(name);
-        const allParameterNames = [...testing.parametersFromTemplates(templates)];
+        const templates = loadTemplates(name);
+        const allParameterNames = [...parametersFromTemplates(templates)];
 
         const allParameters = Object.fromEntries(
             allParameterNames.map((name, index) => [name, `p${index}`]),

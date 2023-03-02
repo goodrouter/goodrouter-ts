@@ -1,6 +1,7 @@
 import Benchmark from "benchmark";
 import { Router } from "./router.js";
-import * as testing from "./testing/index.js";
+import { parametersFromTemplates } from "./testing/parameters.js";
+import { loadTemplates } from "./testing/templates.js";
 
 runBenchmark("small");
 runBenchmark("docker");
@@ -9,8 +10,8 @@ runBenchmark("github");
 function runBenchmark(
     name: string,
 ) {
-    const templates = testing.loadTemplates(name);
-    const parameterNames = [...testing.parametersFromTemplates(templates)];
+    const templates = loadTemplates(name);
+    const parameterNames = [...parametersFromTemplates(templates)];
     const parameters = Object.fromEntries(
         parameterNames.map((name, index) => [name, `p${index}`]),
     );
