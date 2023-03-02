@@ -22,12 +22,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.com:luvdasun/goodrouter-ts.git"
+    "url": "git@github.com:goodrouter/goodrouter-ts.git"
   },
   "author": "LuvDaSun Software B.V.",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/goodrouter/goodrouter-ts/-/issues"
+    "url": "https://github.com/goodrouter/goodrouter-ts/issues"
   },
   "keywords": [
     "good",
