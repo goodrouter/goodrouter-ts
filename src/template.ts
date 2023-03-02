@@ -35,16 +35,16 @@ export function* parseTemplatePairs(
 ) {
     const parts = parseTemplateParts(routeTemplate, parameterPlaceholderRE);
 
-    let even = true;
+    let index = 0;
     let parameter: string | null = null;
     for (const part of parts) {
-        if (even) {
+        if (index % 2 === 0) {
             yield [part, parameter] as const;
         }
         else {
             parameter = part;
         }
-        even = !even;
+        index++;
     }
 
 }
