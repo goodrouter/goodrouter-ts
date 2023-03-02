@@ -41,7 +41,6 @@ test("route-node-sort", async t => {
         new RouteNode("aa"),
         new RouteNode("xx"),
         new RouteNode("aa", true),
-        new RouteNode("aa", false, { name: "n", parameters: [] }),
         new RouteNode("x"),
     ];
 

@@ -380,9 +380,6 @@ export class RouteNode {
         if (this.anchor.length < other.anchor.length) return 1;
         if (this.anchor.length > other.anchor.length) return -1;
 
-        if ((this.route == null) < (other.route == null)) return 1;
-        if ((this.route == null) > (other.route == null)) return -1;
-
         if (this.hasParameter < other.hasParameter) return -1;
         if (this.hasParameter > other.hasParameter) return 1;
 
