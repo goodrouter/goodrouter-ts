@@ -157,12 +157,13 @@ test("router bug", async t => {
 
 });
 
-testTemplates("small", testing.templatesSmall);
-testTemplates("docker", testing.templatesDocker);
-testTemplates("github", testing.templatesGithub);
+testTemplates("small");
+testTemplates("docker");
+testTemplates("github");
 
-function testTemplates(name: string, templates: string[]) {
+function testTemplates(name: string) {
     test(`${name} templates`, async t => {
+        const templates = testing.loadTemplates(name);
         const allParameterNames = [...testing.parametersFromTemplates(templates)];
 
         const allParameters = Object.fromEntries(
