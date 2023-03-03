@@ -107,13 +107,13 @@ export class RouteNode {
         path: string,
         decode: (value: string) => string,
         maximumParameterValueLength: number,
-    ): [Route | null, string[]] {
+    ): [string | null, string[], string[]] {
         const parameters = new Array<string>();
 
         if (this.hasParameter) {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
             if (path.length === 0) {
-                return [null, []];
+                return [null, [], []];
             }
 
             // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
@@ -122,7 +122,7 @@ export class RouteNode {
                 path.substring(0, maximumParameterValueLength + this.anchor.length).
                     indexOf(this.anchor);
             if (index < 0) {
-                return [null, []];
+                return [null, [], []];
             }
 
             // get the parameter value
@@ -138,7 +138,7 @@ export class RouteNode {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
             if (!path.startsWith(this.anchor)) {
                 // this node does not match the path
-                return [null, []];
+                return [null, [], []];
             }
 
             // we successfully matches the node to the path, now remove the matched part from the path
@@ -147,7 +147,7 @@ export class RouteNode {
 
         for (const childNode of this.children) {
             // find a route in every child node
-            const [childRoute, childParameters] = childNode.parse(
+            const [childRoute, childRouteParameters, childParameters] = childNode.parse(
                 path,
                 decode,
                 maximumParameterValueLength,
@@ -157,6 +157,7 @@ export class RouteNode {
             if (childRoute != null) {
                 return [
                     childRoute,
+                    childRouteParameters,
                     [
                         ...parameters,
                         ...childParameters,
@@ -168,13 +169,14 @@ export class RouteNode {
         // if the node had a route name and there is no path left to match against then we found a route
         if (this.route != null && path.length === 0) {
             return [
-                this.route,
+                this.route.name,
+                this.route.parameters,
                 parameters,
             ];
         }
 
         // we did not found a route :-(
-        return [null, []];
+        return [null, [], []];
     }
 
     stringify(

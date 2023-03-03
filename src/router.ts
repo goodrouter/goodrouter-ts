@@ -90,24 +90,24 @@ export class Router {
     public parseRoute(
         path: string,
     ): [string | null, Record<string, string>] {
-        const [route, parameterValues] = this.rootNode.parse(
+        const [routeName, parameterNames, parameterValues] = this.rootNode.parse(
             path,
             this.options.decode,
             this.options.maximumParameterValueLength,
         );
-        if (route == null) {
+        if (routeName == null) {
             return [null, {}];
         }
 
         const parameters: Record<string, string> = {};
-        for (let index = 0; index < route.parameters.length; index++) {
-            const parameterName = route.parameters[Number(index)];
+        for (let index = 0; index < parameterNames.length; index++) {
+            const parameterName = parameterNames[Number(index)];
             const parameterValue = parameterValues[Number(index)];
             parameters[String(parameterName)] = parameterValue;
         }
 
         return [
-            route.name,
+            routeName,
             parameters,
         ];
     }
