@@ -1,4 +1,3 @@
-import { Route } from "./route.js";
 import { parseTemplatePairs } from "./template.js";
 import { findCommonPrefixLength } from "./utils/string.js";
 
@@ -24,7 +23,12 @@ export class RouteNode {
          * @description
          * route
          */
-        public route: Route | null = null,
+        public routeName: string | null = null,
+        /**
+         * @description
+         * route
+         */
+        public routeParameterNames = new Array<string>(),
     ) {
 
     }
@@ -75,12 +79,9 @@ export class RouteNode {
     ) {
         const pairs = [...parseTemplatePairs(routeTemplate, parameterPlaceholderRE)];
 
-        const route: Route = {
-            name: routeName,
-            parameters: pairs.
-                map(([, parameter]) => parameter).
-                filter(parameter => parameter) as string[],
-        };
+        const routeParameterNames = pairs.
+            map(([, parameter]) => parameter).
+            filter(parameter => parameter) as string[];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode = this;
@@ -95,7 +96,8 @@ export class RouteNode {
                 childNode,
                 anchor,
                 hasParameter,
-                index === pairs.length - 1 ? route : null,
+                index === pairs.length - 1 ? routeName : null,
+                routeParameterNames,
                 commonPrefixLength,
             );
         }
@@ -108,7 +110,7 @@ export class RouteNode {
         decode: (value: string) => string,
         maximumParameterValueLength: number,
     ): [string | null, string[], string[]] {
-        const parameters = new Array<string>();
+        const parameterValues = new Array<string>();
 
         if (this.hasParameter) {
             // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
@@ -132,7 +134,7 @@ export class RouteNode {
             path = path.substring(index + this.anchor.length);
 
             // add value to parameters
-            parameters.push(value);
+            parameterValues.push(value);
         }
         else {
             // if this node does not represent a parameter we expect the path to start with the `anchor`
@@ -159,7 +161,7 @@ export class RouteNode {
                     childRoute,
                     childRouteParameters,
                     [
-                        ...parameters,
+                        ...parameterValues,
                         ...childParameters,
                     ],
                 ];
@@ -167,11 +169,11 @@ export class RouteNode {
         }
 
         // if the node had a route name and there is no path left to match against then we found a route
-        if (this.route != null && path.length === 0) {
+        if (this.routeName != null && path.length === 0) {
             return [
-                this.route.name,
-                this.route.parameters,
-                parameters,
+                this.routeName,
+                this.routeParameterNames,
+                parameterValues,
             ];
         }
 
@@ -180,10 +182,10 @@ export class RouteNode {
     }
 
     stringify(
-        parameters: string[],
+        parameterValuess: string[],
         encode: (value: string) => string,
     ) {
-        let parameterIndex = parameters.length;
+        let parameterIndex = parameterValuess.length;
         let path = "";
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode | null = this;
@@ -191,7 +193,7 @@ export class RouteNode {
             path = currentNode.anchor + path;
             if (currentNode.hasParameter) {
                 parameterIndex--;
-                const value = parameters[Number(parameterIndex)];
+                const value = parameterValuess[Number(parameterIndex)];
                 path = encode(value) + path;
             }
             currentNode = currentNode.parent;
@@ -203,14 +205,16 @@ export class RouteNode {
         childNode: RouteNode | null,
         anchor: string,
         hasParameter: boolean,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
         commonPrefixLength: number,
     ) {
         if (childNode == null) {
             return this.mergeNew(
                 anchor,
                 hasParameter,
-                route,
+                routeName,
+                routeParameterNames,
             );
         }
 
@@ -219,7 +223,8 @@ export class RouteNode {
         if (childNode.anchor === anchor) {
             return this.mergeJoin(
                 childNode,
-                route,
+                routeName,
+                routeParameterNames,
             );
         }
         else if (childNode.anchor === commonPrefix) {
@@ -227,7 +232,8 @@ export class RouteNode {
                 childNode,
                 anchor,
                 hasParameter,
-                route,
+                routeName,
+                routeParameterNames,
                 commonPrefixLength,
             );
         }
@@ -236,7 +242,8 @@ export class RouteNode {
                 childNode,
                 anchor,
                 hasParameter,
-                route,
+                routeName,
+                routeParameterNames,
                 commonPrefixLength,
             );
         }
@@ -245,7 +252,8 @@ export class RouteNode {
                 childNode,
                 anchor,
                 hasParameter,
-                route,
+                routeName,
+                routeParameterNames,
                 commonPrefixLength,
             );
         }
@@ -253,12 +261,14 @@ export class RouteNode {
     private mergeNew(
         anchor: string,
         hasParameter: boolean,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
     ) {
         const newNode = new RouteNode(
             anchor,
             hasParameter,
-            route,
+            routeName,
+            routeParameterNames,
         );
         this.addChild(newNode);
         this.children.sort((a, b) => a.compare(b));
@@ -266,16 +276,21 @@ export class RouteNode {
     }
     private mergeJoin(
         childNode: RouteNode,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
     ) {
         if (
-            childNode.route != null &&
-            route != null
+            childNode.routeName != null &&
+            routeName != null
         ) {
             throw new Error("ambiguous route");
         }
 
-        childNode.route ??= route;
+        if (childNode.routeName == null) {
+            childNode.routeName = routeName;
+            childNode.routeParameterNames = routeParameterNames;
+        }
+
         childNode.parent?.children.sort((a, b) => a.compare(b));
         return childNode;
     }
@@ -283,7 +298,8 @@ export class RouteNode {
         childNode: RouteNode,
         anchor: string,
         hasParameter: boolean,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
         commonPrefixLength: number,
     ) {
         this.removeChild(childNode);
@@ -291,7 +307,8 @@ export class RouteNode {
         const newNode = new RouteNode(
             anchor.substring(commonPrefixLength),
             false,
-            route,
+            routeName,
+            routeParameterNames,
         );
 
         childNode.anchor = childNode.anchor.substring(commonPrefixLength);
@@ -315,7 +332,8 @@ export class RouteNode {
         childNode: RouteNode,
         anchor: string,
         hasParameter: boolean,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
         commonPrefixLength: number,
     ): RouteNode {
         anchor = anchor.substring(commonPrefixLength);
@@ -328,7 +346,8 @@ export class RouteNode {
             childNode2,
             anchor,
             hasParameter,
-            route,
+            routeName,
+            routeParameterNames,
             commonPrefixLength2,
         );
     }
@@ -336,13 +355,15 @@ export class RouteNode {
         childNode: RouteNode,
         anchor: string,
         hasParameter: boolean,
-        route: Route | null,
+        routeName: string | null,
+        routeParameterNames: string[],
         commonPrefixLength: number,
     ): RouteNode {
         const newNode = new RouteNode(
             anchor,
             hasParameter,
-            route,
+            routeName,
+            routeParameterNames,
         );
         this.addChild(newNode);
 
