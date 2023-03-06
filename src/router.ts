@@ -128,11 +128,12 @@ export class Router {
 
         const parameterValues = new Array<string>();
         for (const parameterName of node.routeParameterNames) {
-            parameterValues.push(routeParameters[String(parameterName)]);
+            const parameterValue = routeParameters[String(parameterName)];
+            parameterValues.push(this.options.encode(parameterValue));
         }
 
         return node.stringify(
-            parameterValues.map(value => this.options.encode(value)),
+            parameterValues,
         );
     }
 }
