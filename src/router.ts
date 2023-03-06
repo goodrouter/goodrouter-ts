@@ -132,8 +132,6 @@ export class Router {
             parameterValues.push(this.options.encode(parameterValue));
         }
 
-        return node.stringify(
-            parameterValues,
-        );
+        return node.stringify(parameterValues);
     }
 }
