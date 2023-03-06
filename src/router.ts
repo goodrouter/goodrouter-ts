@@ -126,7 +126,6 @@ export class Router {
     ): string | null {
         const node = this.leafNodes.get(routeName);
         if (!node) return null;
-        if (node.routeName == null) return null;
 
         const parameterValues = new Array<string>();
         for (const parameterName of node.routeParameterNames) {
