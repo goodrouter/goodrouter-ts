@@ -92,7 +92,6 @@ export class Router {
     ): [string | null, Record<string, string>] {
         const [routeName, parameterNames, parameterValues] = this.rootNode.parse(
             path,
-            this.options.decode,
             this.options.maximumParameterValueLength,
         );
         if (routeName == null) {
@@ -103,7 +102,7 @@ export class Router {
         for (let index = 0; index < parameterNames.length; index++) {
             const parameterName = parameterNames[Number(index)];
             const parameterValue = parameterValues[Number(index)];
-            parameters[String(parameterName)] = parameterValue;
+            parameters[String(parameterName)] = this.options.decode(parameterValue);
         }
 
         return [
@@ -133,8 +132,7 @@ export class Router {
         }
 
         return node.stringify(
-            parameterValues,
-            this.options.encode,
+            parameterValues.map(value => this.options.encode(value)),
         );
     }
 }

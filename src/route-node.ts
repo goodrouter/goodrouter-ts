@@ -107,7 +107,6 @@ export class RouteNode {
 
     parse(
         path: string,
-        decode: (value: string) => string,
         maximumParameterValueLength: number,
     ): [string | null, string[], string[]] {
         const parameterValues = new Array<string>();
@@ -128,7 +127,7 @@ export class RouteNode {
             }
 
             // get the parameter value
-            const value = decode(path.substring(0, index));
+            const value = path.substring(0, index);
 
             // remove the matches part from the path
             path = path.substring(index + this.anchor.length);
@@ -151,7 +150,6 @@ export class RouteNode {
             // find a route in every child node
             const [childRoute, childRouteParameterNames, childParameterValues] = childNode.parse(
                 path,
-                decode,
                 maximumParameterValueLength,
             );
 
@@ -183,7 +181,6 @@ export class RouteNode {
 
     stringify(
         parameterValues: string[],
-        encode: (value: string) => string,
     ) {
         let parameterIndex = parameterValues.length;
         let path = "";
@@ -194,7 +191,7 @@ export class RouteNode {
             if (currentNode.hasParameter) {
                 parameterIndex--;
                 const value = parameterValues[Number(parameterIndex)];
-                path = encode(value) + path;
+                path = value + path;
             }
             currentNode = currentNode.parent;
         }
