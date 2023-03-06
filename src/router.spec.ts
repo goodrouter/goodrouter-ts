@@ -5,10 +5,11 @@ import { Router } from "./router.js";
 test("parse-route 1", async t => {
     const router = new Router();
 
-    router.insertRoute("a", "/a");
-    router.insertRoute("b", "/b/{x}");
-    router.insertRoute("c", "/b/{x}/c");
-    router.insertRoute("d", "/b/{x}/d");
+    router.
+        insertRoute("a", "/a").
+        insertRoute("b", "/b/{x}").
+        insertRoute("c", "/b/{x}/c").
+        insertRoute("d", "/b/{x}/d");
 
     {
         const route = router.parseRoute("/a");

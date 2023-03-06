@@ -83,6 +83,8 @@ export class Router {
     public insertRoute(name: string, template: string) {
         const leafNode = insertRouteNode(this.rootNode, name, template);
         this.leafNodes.set(name, leafNode);
+
+        return this;
     }
 
     /**
