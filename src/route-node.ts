@@ -149,7 +149,7 @@ export class RouteNode {
 
         for (const childNode of this.children) {
             // find a route in every child node
-            const [childRoute, childRouteParameters, childParameters] = childNode.parse(
+            const [childRoute, childRouteParameterNames, childParameterValues] = childNode.parse(
                 path,
                 decode,
                 maximumParameterValueLength,
@@ -159,10 +159,10 @@ export class RouteNode {
             if (childRoute != null) {
                 return [
                     childRoute,
-                    childRouteParameters,
+                    childRouteParameterNames,
                     [
                         ...parameterValues,
-                        ...childParameters,
+                        ...childParameterValues,
                     ],
                 ];
             }
@@ -182,10 +182,10 @@ export class RouteNode {
     }
 
     stringify(
-        parameterValuess: string[],
+        parameterValues: string[],
         encode: (value: string) => string,
     ) {
-        let parameterIndex = parameterValuess.length;
+        let parameterIndex = parameterValues.length;
         let path = "";
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode | null = this;
@@ -193,7 +193,7 @@ export class RouteNode {
             path = currentNode.anchor + path;
             if (currentNode.hasParameter) {
                 parameterIndex--;
-                const value = parameterValuess[Number(parameterIndex)];
+                const value = parameterValues[Number(parameterIndex)];
                 path = encode(value) + path;
             }
             currentNode = currentNode.parent;
