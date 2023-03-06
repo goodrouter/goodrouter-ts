@@ -102,7 +102,7 @@ export class Router {
         for (let index = 0; index < parameterNames.length; index++) {
             const parameterName = parameterNames[Number(index)];
             const parameterValue = parameterValues[Number(index)];
-            parameters[String(parameterName)] = this.options.parameterDecoder(parameterValue);
+            parameters[String(parameterName)] = this.options.parameterValueDecoder(parameterValue);
         }
 
         return [
@@ -129,7 +129,7 @@ export class Router {
         const parameterValues = new Array<string>();
         for (const parameterName of node.routeParameterNames) {
             const parameterValue = routeParameters[String(parameterName)];
-            parameterValues.push(this.options.parameterEncoder(parameterValue));
+            parameterValues.push(this.options.parameterValueEncoder(parameterValue));
         }
 
         return node.stringify(parameterValues);

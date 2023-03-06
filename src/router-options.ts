@@ -10,7 +10,7 @@ export const defaultRouterOptions = {
      * @param decodedValue value to be encoded
      * @returns encoded value
      */
-    parameterEncoder: (decodedValue: string) => encodeURIComponent(decodedValue),
+    parameterValueEncoder: (decodedValue: string) => encodeURIComponent(decodedValue),
     /**
      * @description
      * Default decoding function to use, this is the decodeURIComponent function by default
@@ -18,7 +18,7 @@ export const defaultRouterOptions = {
      * @param encodedValue value to be decoded
      * @returns decoded value
      */
-    parameterDecoder: (encodedValue: string) => decodeURIComponent(encodedValue),
+    parameterValueDecoder: (encodedValue: string) => decodeURIComponent(encodedValue),
 
     /**
      * Use `{` and `}` as a default for matching placeholders in the route templates.
