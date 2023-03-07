@@ -15,8 +15,9 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  * // And now we can parse routes!
  * 
  * {
- *   const route = router.parseRoute("/not-found");
- *   assert.equal(route, null);
+ *   const [routeKey, routeParameters] = router.parseRoute("/not-found");
+ *   assert.equal(routeKey, null);
+ *   assert.deepEqual(routeParameters, {});
  * }
  * 
  * {
