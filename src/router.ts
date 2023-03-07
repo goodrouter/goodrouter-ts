@@ -49,7 +49,7 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  * }
  * ```
  */
-export class Router {
+export class Router<K extends string | number> {
 
     constructor(options: RouterOptions = {}) {
         this.options = {
@@ -60,23 +60,23 @@ export class Router {
 
     protected options: RouterOptions & typeof defaultRouterOptions;
 
-    private rootNode: RouteNode = new RouteNode();
-    private leafNodes = new Map<string, RouteNode>();
+    private rootNode = new RouteNode<K>();
+    private leafNodes = new Map<K, RouteNode<K>>();
 
     /**
      * @description
      * Adds a new route
      *
-     * @param name name of the route
+     * @param key name of the route
      * @param template template for the route, als defines parameters
      */
-    public insertRoute(name: string, template: string) {
+    public insertRoute(key: K, template: string) {
         const leafNode = this.rootNode.insert(
-            name,
+            key,
             template,
             this.options.parameterPlaceholderRE,
         );
-        this.leafNodes.set(name, leafNode);
+        this.leafNodes.set(key, leafNode);
         return this;
     }
 
@@ -89,12 +89,12 @@ export class Router {
      */
     public parseRoute(
         path: string,
-    ): [string | null, Record<string, string>] {
-        const [routeName, parameterNames, parameterValues] = this.rootNode.parse(
+    ): [K | null, Record<string, string>] {
+        const [routeKey, parameterNames, parameterValues] = this.rootNode.parse(
             path,
             this.options.maximumParameterValueLength,
         );
-        if (routeName == null) {
+        if (routeKey == null) {
             return [null, {}];
         }
 
@@ -106,7 +106,7 @@ export class Router {
         }
 
         return [
-            routeName,
+            routeKey,
             parameters,
         ];
     }
@@ -115,15 +115,15 @@ export class Router {
      * @description
      * Convert a route to a path string.
      * 
-     * @param routeName route to stringify
+     * @param routeKey route to stringify
      * @param routeParameters parameters to include in the path
      * @returns string representing the route or null if the route is not found by name
      */
     public stringifyRoute(
-        routeName: string,
+        routeKey: K,
         routeParameters: Record<string, string> = {},
     ): string | null {
-        const node = this.leafNodes.get(routeName);
+        const node = this.leafNodes.get(routeKey);
         if (!node) return null;
 
         const parameterValues = new Array<string>();

@@ -15,10 +15,10 @@ test("route-node-permutations", async t => {
 
     const permutedRouteConfigs = permutations(routeConfigs, routeConfigs.length);
 
-    let rootNodePrevious: RouteNode | null = null;
+    let rootNodePrevious: RouteNode<string> | null = null;
 
     for (const routeConfigs of permutedRouteConfigs) {
-        const rootNode = new RouteNode();
+        const rootNode = new RouteNode<string>();
 
         for (const template of routeConfigs) {
             rootNode.insert(template, template, defaultRouterOptions.parameterPlaceholderRE);
@@ -37,7 +37,7 @@ test("route-node-permutations", async t => {
 });
 
 test("route-node-sort", async t => {
-    const nodes: RouteNode[] = [
+    const nodes: RouteNode<string>[] = [
         new RouteNode("aa"),
         new RouteNode("xx"),
         new RouteNode("aa", true),
