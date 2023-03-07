@@ -7,7 +7,7 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  * 
  * @example
  * ```typescript
- * const router = new Router();
+ * const router = new Router<string>();
  * 
  * router.insertRoute("all-products", "/product/all");
  * router.insertRoute("product-detail", "/product/{id}");
@@ -20,14 +20,14 @@ import { defaultRouterOptions, RouterOptions } from "./router-options.js";
  * }
  * 
  * {
- *   const [routeName, routeParameters] = router.parseRoute("/product/all");
- *   assert.equal(routeName, "all-products");
+ *   const [routeKey, routeParameters] = router.parseRoute("/product/all");
+ *   assert.equal(routeKey, "all-products");
  *   assert.deepEqual(routeParameters, {});
  * }
  * 
  * {
- *   const [routeName, routeParameters] = router.parseRoute("/product/1");
- *   assert.equal(routeName, "product-detail");
+ *   const [routeKey, routeParameters] = router.parseRoute("/product/1");
+ *   assert.equal(routeKey, "product-detail");
  *   assert.deepEqual(routeParameters, { id: "1" });
  * }
  * 

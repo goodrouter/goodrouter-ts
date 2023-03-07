@@ -13,18 +13,18 @@ test("router-readme", async t => {
     // And now we can parse routes!
 
     {
-        const [routeName] = router.parseRoute("/not-found");
-        assert.equal(routeName, null);
+        const [routeKey] = router.parseRoute("/not-found");
+        assert.equal(routeKey, null);
     }
 
     {
-        const [routeName] = router.parseRoute("/product/all");
-        assert.equal(routeName, "all-products");
+        const [routeKey] = router.parseRoute("/product/all");
+        assert.equal(routeKey, "all-products");
     }
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/product/1");
-        assert.equal(routeName, "product-detail");
+        const [routeKey, routeParameters] = router.parseRoute("/product/1");
+        assert.equal(routeKey, "product-detail");
         assert.deepEqual(routeParameters, { id: "1" });
     }
 
@@ -42,28 +42,35 @@ test("router-readme", async t => {
 });
 
 test("parse-route 1", async t => {
-    const router = new Router();
+    enum Route {
+        A,
+        B,
+        C,
+        D
+    }
 
-    router.insertRoute("a", "/a");
-    router.insertRoute("b", "/b/{x}");
-    router.insertRoute("c", "/b/{x}/c");
-    router.insertRoute("d", "/b/{x}/d");
+    const router = new Router<Route>();
+
+    router.insertRoute(Route.A, "/a");
+    router.insertRoute(Route.B, "/b/{x}");
+    router.insertRoute(Route.C, "/b/{x}/c");
+    router.insertRoute(Route.D, "/b/{x}/d");
 
     {
-        const [routeName] = router.parseRoute("/a");
-        t.equal(routeName, "a");
+        const [routeKey] = router.parseRoute("/a");
+        t.equal(routeKey, Route.A);
     }
     {
-        const [routeName] = router.parseRoute("/b/x");
-        t.equal(routeName, "b");
+        const [routeKey] = router.parseRoute("/b/x");
+        t.equal(routeKey, Route.B);
     }
     {
-        const [routeName] = router.parseRoute("/b/y/c");
-        t.equal(routeName, "c");
+        const [routeKey] = router.parseRoute("/b/y/c");
+        t.equal(routeKey, Route.C);
     }
     {
-        const [routeName] = router.parseRoute("/b/z/d");
-        t.equal(routeName, "d");
+        const [routeKey] = router.parseRoute("/b/z/d");
+        t.equal(routeKey, Route.D);
     }
 
 });
@@ -80,13 +87,13 @@ test("parse-route 2", async t => {
     router.insertRoute("four", "/c/{x}/{y}/");
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/a");
-        t.equal(routeName, "one");
+        const [routeKey, routeParameters] = router.parseRoute("/a");
+        t.equal(routeKey, "one");
     }
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/a/1/2");
-        t.equal(routeName, "two");
+        const [routeKey, routeParameters] = router.parseRoute("/a/1/2");
+        t.equal(routeKey, "two");
         t.deepEqual(routeParameters, { x: "1", y: "2" });
     }
 
@@ -100,14 +107,14 @@ test("parse-route 2", async t => {
     }
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/c/3");
-        t.equal(routeName, "three");
+        const [routeKey, routeParameters] = router.parseRoute("/c/3");
+        t.equal(routeKey, "three");
         t.deepEqual(routeParameters, { x: "3" });
     }
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/c/3/4");
-        t.equal(routeName, "three");
+        const [routeKey, routeParameters] = router.parseRoute("/c/3/4");
+        t.equal(routeKey, "three");
         t.deepEqual(routeParameters, { x: "3/4" });
     }
 
@@ -121,8 +128,8 @@ test("parse-route 2", async t => {
     }
 
     {
-        const [routeName, routeParameters] = router.parseRoute("/c/3/4/");
-        t.equal(routeName, "four");
+        const [routeKey, routeParameters] = router.parseRoute("/c/3/4/");
+        t.equal(routeKey, "four");
         t.deepEqual(routeParameters, { x: "3", y: "4" });
     }
 });
@@ -188,13 +195,13 @@ function testTemplates(name: string) {
             const path = paths[Number(index)];
             const template = templates[Number(index)];
 
-            const [routeName, routeParameters] = router.parseRoute(path);
+            const [routeKey, routeParameters] = router.parseRoute(path);
             const expectedParameters = Object.fromEntries(
                 Object.keys(routeParameters).
                     map(name => [name, allParameters[String(name)]]),
             );
 
-            t.equal(routeName, template);
+            t.equal(routeKey, template);
             t.deepEqual(routeParameters, expectedParameters);
         }
 
