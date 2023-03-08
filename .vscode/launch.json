@@ -9,7 +9,9 @@
       "args": [],
       "cwd": "${workspaceRoot}",
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/out/**/*.js"],
+      "outFiles": [
+        "${workspaceRoot}/out/**/*.js"
+      ],
       "preLaunchTask": "watch"
     }
   ]

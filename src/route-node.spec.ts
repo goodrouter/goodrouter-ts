@@ -1,6 +1,7 @@
 import { permutations } from "itertools";
 import test from "tape-promise/tape.js";
-import { insertRouteNode, newRootRouteNode, RouteNode, routeNodeCompare } from "./route-node.js";
+import { RouteNode } from "./route-node.js";
+import { defaultRouterOptions } from "./router-options.js";
 
 test("route-node-permutations", async t => {
     const routeConfigs = [
@@ -9,25 +10,26 @@ test("route-node-permutations", async t => {
         "/b/{x}/",
         "/b/{x}/c",
         "/b/{x}/d",
+        "/b/e/{x}/f",
     ];
 
     const permutedRouteConfigs = permutations(routeConfigs, routeConfigs.length);
 
-    let rootNodePrevious: RouteNode | null = null;
+    let rootNodePrevious: RouteNode<string> | null = null;
 
     for (const routeConfigs of permutedRouteConfigs) {
-        const rootNode = newRootRouteNode();
+        const rootNode = new RouteNode<string>();
 
         for (const template of routeConfigs) {
-            insertRouteNode(rootNode, template, template);
+            rootNode.insert(template, template, defaultRouterOptions.parameterPlaceholderRE);
         }
 
         {
-            t.equal(rootNode.children.length, 1);
+            t.equal(rootNode.countChildren(), 1);
         }
 
         if (rootNodePrevious != null) {
-            t.deepEqual(rootNodePrevious, rootNode);
+            t.deepEqual(rootNode, rootNodePrevious);
         }
 
         rootNodePrevious = rootNode;
@@ -35,47 +37,15 @@ test("route-node-permutations", async t => {
 });
 
 test("route-node-sort", async t => {
-    const nodes: RouteNode[] = [
-        {
-            name: null,
-            parameter: "p",
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "xx",
-            parent: null,
-            children: [],
-        },
-        {
-            name: "n",
-            parameter: null,
-            anchor: "aa",
-            parent: null,
-            children: [],
-        },
-        {
-            name: null,
-            parameter: null,
-            anchor: "x",
-            parent: null,
-            children: [],
-        },
+    const nodes: RouteNode<string>[] = [
+        new RouteNode("aa"),
+        new RouteNode("xx"),
+        new RouteNode("aa", true),
+        new RouteNode("x"),
     ];
 
     const nodesExpected = [...nodes];
-    const nodesActual = [...nodes].sort(routeNodeCompare);
+    const nodesActual = [...nodes].sort((a, b) => a.compare(b));
 
     t.deepEqual(nodesActual, nodesExpected);
-
 });

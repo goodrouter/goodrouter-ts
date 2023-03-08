@@ -1,333 +1,413 @@
-import { emitTemplatePathParts } from "./path.js";
-import { Route } from "./route.js";
-import { findCommonPrefixLength } from "./string.js";
+import { parseTemplatePairs } from "./template.js";
+import { findCommonPrefixLength } from "./utils/string.js";
 
 /**
  * @description
  * This interface represents a node in the tree structure that holds all the node
  * for the routes
  */
-export interface RouteNode {
-    /**
-     * @description
-     * name that identifies the route
-     */
-    name: string | null;
-    /**
-     * @description
-     * suffix that comes after the parameter value (if any!) of the path
-     */
-    anchor: string;
-    /**
-     * @description
-     * parameter name or null if this node does not represent a parameter
-     */
-    parameter: string | null;
-    /**
-     * @description
-     * children that represent the rest of the path that needs to be matched
-     */
-    children: RouteNode[];
+export class RouteNode<K extends string | number> {
+
+    constructor(
+        /**
+         * @description
+         * suffix that comes after the parameter value (if any!) of the path
+         */
+        public anchor = "",
+        /**
+         * @description
+         * does this node have a parameter value
+         */
+        public hasParameter = false,
+        /**
+         * @description
+         * route
+         */
+        public routeKey: K | null = null,
+        /**
+         * @description
+         * route
+         */
+        public routeParameterNames = new Array<string>(),
+    ) {
+
+    }
+
     /**
      * @description
      * parent node, should only be null for the root node
      */
-    parent: RouteNode | null;
-}
+    private parent: RouteNode<K> | null = null;
+    /**
+     * @description
+     * children that represent the rest of the path that needs to be matched
+     */
+    private readonly children = new Array<RouteNode<K>>();
 
-export function newRootRouteNode(): RouteNode {
-    return {
-        name: null,
-        anchor: "",
-        parameter: null,
-        children: [],
-        parent: null,
-    };
-}
-
-export function stringifyRoute(
-    node: RouteNode | null,
-    parameters: Record<string, string> = {},
-    encode: (decodedValue: string, name: string) => string,
-) {
-    let path = "";
-    while (node) {
-        path = node.anchor + path;
-        if (node.parameter != null && node.parameter in parameters) {
-            const value = parameters[node.parameter];
-            path = encode(value, node.parameter) + path;
-        }
-        node = node.parent;
-    }
-    return path;
-}
-
-export function parseRoute(
-    node: RouteNode | null,
-    path: string,
-    decode: (encodedValue: string, name: string) => string,
-    parameters: Record<string, string> = {},
-): Route | null {
-    if (!node) return null;
-
-    if (node.parameter == null) {
-        // if this node does not represent a parameter we expect the path to start with the `anchor`
-        if (!path.startsWith(node.anchor)) {
-            // this node does not match the path
-            return null;
+    private addChild(childNode: RouteNode<K>) {
+        if (childNode.parent === this) {
+            throw new Error("cannot add childNode to self");
         }
 
-        // we successfully matches the node to the path, now remove the matched part from the path
-        path = path.substring(node.anchor.length);
-    }
-    else {
-        // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
-        if (path.length === 0) return null;
-
-        // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
-        const index = node.anchor.length === 0 ?
-            path.length :
-            path.indexOf(node.anchor);
-        if (index < 0) {
-            return null;
+        if (childNode.parent != null) {
+            throw new Error("childNode already has parent");
         }
 
-        // get the parameter value
-        const value = decode(path.substring(0, index), node.parameter);
-
-        // remove the matches part from the path
-        path = path.substring(index + node.anchor.length);
-
-        // update parameters, parameters is immutable!
-        parameters = {
-            ...parameters,
-            [node.parameter]: value,
-        };
+        childNode.parent = this;
+        this.children.push(childNode);
     }
 
-    for (const childNode of node.children) {
-        // find a route in every child node
-        const route = parseRoute(
-            childNode,
-            path,
-            decode,
-            parameters,
-        );
+    private removeChild(childNode: RouteNode<K>) {
+        const childIndex = this.children.indexOf(childNode);
 
-        // if a childnode is matches, return that node instead of the current! So childnodes are matches first!
-        if (route != null) return route;
+        if (childNode.parent !== this || childIndex < 0) {
+            throw new Error("childNode is not a child of this node");
+        }
+
+        childNode.parent = null;
+        this.children.splice(childIndex, 1);
     }
 
-    // if the node had a route name and there is no path left to match against then we found a route
-    if (node.name != null && path.length === 0) {
-        return {
-            name: node.name,
-            parameters,
-        };
+    countChildren() {
+        return this.children.length;
     }
 
-    // we did not found a route :-(
-    return null;
-}
+    insert(
+        routeKey: K,
+        routeTemplate: string,
+        parameterPlaceholderRE: RegExp,
+    ) {
+        const pairs = [...parseTemplatePairs(routeTemplate, parameterPlaceholderRE)];
 
-export function insertRouteNode(targetNode: RouteNode, name: string, template: string) {
-    const chainNodes = [...newRouteNodeChain(name, template)];
-    chainNodes.reverse();
+        const routeParameterNames = pairs.
+            map(([, parameter]) => parameter).
+            filter(parameter => parameter) as string[];
 
-    let currentNode = targetNode;
-    for (const chainNode of chainNodes) {
-        const similarChildResult = findSimilarChildNode(currentNode, chainNode);
-        if (similarChildResult == null) {
-            const childNode = { ...chainNode };
-            childNode.parent = currentNode;
-            currentNode.children.push(childNode);
-            currentNode.children.sort(routeNodeCompare);
-            currentNode = childNode;
-        } else {
-            const { commonPrefixLength, similarNode } = similarChildResult;
-            const strategy = getInsertStrategy(similarNode, chainNode, commonPrefixLength);
-            switch (strategy) {
-                case "merge": {
-                    similarNode.children.push(...chainNode.children);
-                    similarNode.children.sort(routeNodeCompare);
-                    currentNode = similarNode;
-                    break;
-                }
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let currentNode: RouteNode<K> = this;
+        for (let index = 0; index < pairs.length; index++) {
+            const [anchor, parameter] = pairs[Number(index)];
+            const hasParameter = parameter != null;
 
-                case "add-to-left": {
-                    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
-                    chainNode.parent = similarNode;
+            const [commonPrefixLength, childNode] =
+                currentNode.findSimilarChild(anchor, hasParameter);
 
-                    // similarNode.parameter = chainNode.parameter;
-                    chainNode.parameter = null;
+            currentNode = currentNode.merge(
+                childNode,
+                anchor,
+                hasParameter,
+                index === pairs.length - 1 ? routeKey : null,
+                routeParameterNames,
+                commonPrefixLength,
+            );
+        }
 
-                    const childNode = similarNode.children.
-                        find(childNode => routeNodeEqual(childNode, chainNode));
-                    if (childNode == null) {
-                        similarNode.parent = currentNode;
-                        similarNode.children.push(chainNode);
-                        similarNode.children.sort(routeNodeCompare);
-                        currentNode = chainNode;
-                    }
-                    else {
-                        currentNode = childNode;
-                    }
-                    break;
-                }
+        return currentNode;
+    }
 
-                case "add-to-right": {
-                    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-                    similarNode.parent = chainNode;
+    parse(
+        path: string,
+        maximumParameterValueLength: number,
+    ): [K | null, string[], string[]] {
+        const parameterValues = new Array<string>();
 
-                    // chainNode.parameter = similarNode.parameter;
-                    similarNode.parameter = null;
-
-                    const childNode = chainNode.children.
-                        find(childNode => routeNodeEqual(childNode, similarNode));
-                    if (childNode == null) {
-                        chainNode.parent = currentNode;
-                        chainNode.children.push(similarNode);
-                        chainNode.children.sort(routeNodeCompare);
-                        currentNode = similarNode;
-                    }
-                    else {
-                        currentNode = childNode;
-                    }
-                    break;
-                }
-
-                case "intermediate": {
-                    const intermediateNode = {
-                        anchor: similarNode.anchor.substring(0, commonPrefixLength),
-                        name: null,
-                        parameter: similarNode.parameter,
-                        children: [
-                            similarNode,
-                            chainNode,
-                        ],
-                        parent: currentNode,
-                    };
-                    intermediateNode.children.sort(routeNodeCompare);
-
-                    currentNode.children.splice(
-                        currentNode.children.indexOf(similarNode),
-                        1,
-                        intermediateNode,
-                    );
-                    currentNode.children.sort(routeNodeCompare);
-
-                    similarNode.parent = intermediateNode;
-                    chainNode.parent = intermediateNode;
-
-                    similarNode.anchor = similarNode.anchor.substring(commonPrefixLength);
-                    chainNode.anchor = chainNode.anchor.substring(commonPrefixLength);
-
-                    similarNode.parameter = null;
-                    chainNode.parameter = null;
-
-                    currentNode = chainNode;
-                    break;
-                }
+        if (this.hasParameter) {
+            // we are matching a parameter value! If the path's length is 0, there is no match, because a parameter value should have at least length 1
+            if (path.length === 0) {
+                return [null, [], []];
             }
 
+            // look for the anchor in the path (note: indexOf is probably the most expensive operation!) If the anchor is empty, match the remainder of the path
+            const index = this.anchor.length === 0 ?
+                path.length :
+                path.substring(0, maximumParameterValueLength + this.anchor.length).
+                    indexOf(this.anchor);
+            if (index < 0) {
+                return [null, [], []];
+            }
+
+            // get the parameter value
+            const value = path.substring(0, index);
+
+            // remove the matches part from the path
+            path = path.substring(index + this.anchor.length);
+
+            // add value to parameters
+            parameterValues.push(value);
         }
+        else {
+            // if this node does not represent a parameter we expect the path to start with the `anchor`
+            if (!path.startsWith(this.anchor)) {
+                // this node does not match the path
+                return [null, [], []];
+            }
+
+            // we successfully matches the node to the path, now remove the matched part from the path
+            path = path.substring(this.anchor.length);
+        }
+
+        for (const childNode of this.children) {
+            // find a route in every child node
+            const [childRoute, childRouteParameterNames, childParameterValues] = childNode.parse(
+                path,
+                maximumParameterValueLength,
+            );
+
+            // if a child node is matched, return that node instead of the current! So child nodes are matched first!
+            if (childRoute != null) {
+                return [
+                    childRoute,
+                    childRouteParameterNames,
+                    [
+                        ...parameterValues,
+                        ...childParameterValues,
+                    ],
+                ];
+            }
+        }
+
+        // if the node had a route name and there is no path left to match against then we found a route
+        if (this.routeKey != null && path.length === 0) {
+            return [
+                this.routeKey,
+                this.routeParameterNames,
+                parameterValues,
+            ];
+        }
+
+        // we did not found a route :-(
+        return [null, [], []];
     }
 
-    return currentNode;
-}
+    stringify(
+        parameterValues: string[],
+    ) {
+        let parameterIndex = parameterValues.length;
+        let path = "";
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let currentNode: RouteNode<K> | null = this;
+        while (currentNode != null) {
+            path = currentNode.anchor + path;
+            if (currentNode.hasParameter) {
+                parameterIndex--;
+                const value = parameterValues[Number(parameterIndex)];
+                path = value + path;
+            }
+            currentNode = currentNode.parent;
+        }
+        return path;
+    }
 
-export function routeNodeCompare(a: RouteNode, b: RouteNode) {
-    if (a.anchor.length < b.anchor.length) return 1;
-    if (a.anchor.length > b.anchor.length) return -1;
-
-    if ((a.name == null) < (b.name == null)) return 1;
-    if ((a.name == null) > (b.name == null)) return -1;
-
-    if ((a.parameter == null) < (b.parameter == null)) return -1;
-    if ((a.parameter == null) > (b.parameter == null)) return 1;
-
-    if (a.anchor < b.anchor) return -1;
-    if (a.anchor > b.anchor) return 1;
-
-    return 0;
-}
-
-function routeNodeEqual(a: RouteNode, b: RouteNode) {
-    return (
-        a.name === b.name &&
-        a.anchor === b.anchor &&
-        a.parameter === b.parameter
-    );
-}
-
-function* newRouteNodeChain(name: string, template: string): Iterable<RouteNode> {
-    const parts = [...emitTemplatePathParts(template)];
-    let currentName: string | null = name;
-
-    while (parts.length > 0) {
-        const anchor = parts.pop();
-        const parameter = parts.pop() ?? null;
-
-        if (anchor == null) {
-            throw new TypeError("expected anchors");
+    private merge(
+        childNode: RouteNode<K> | null,
+        anchor: string,
+        hasParameter: boolean,
+        routeKey: K | null,
+        routeParameterNames: string[],
+        commonPrefixLength: number,
+    ) {
+        if (childNode == null) {
+            return this.mergeNew(
+                anchor,
+                hasParameter,
+                routeKey,
+                routeParameterNames,
+            );
         }
 
-        yield {
+        const commonPrefix = childNode.anchor.substring(0, commonPrefixLength);
+
+        if (childNode.anchor === anchor) {
+            return this.mergeJoin(
+                childNode,
+                routeKey,
+                routeParameterNames,
+            );
+        }
+        else if (childNode.anchor === commonPrefix) {
+            return this.mergeAddToChild(
+                childNode,
+                anchor,
+                hasParameter,
+                routeKey,
+                routeParameterNames,
+                commonPrefixLength,
+            );
+        }
+        else if (anchor === commonPrefix) {
+            return this.mergeAddToNew(
+                childNode,
+                anchor,
+                hasParameter,
+                routeKey,
+                routeParameterNames,
+                commonPrefixLength,
+            );
+        }
+        else {
+            return this.mergeIntermediate(
+                childNode,
+                anchor,
+                hasParameter,
+                routeKey,
+                routeParameterNames,
+                commonPrefixLength,
+            );
+        }
+    }
+    private mergeNew(
+        anchor: string,
+        hasParameter: boolean,
+        routeKey: K | null,
+        routeParameterNames: string[],
+    ) {
+        const newNode = new RouteNode(
             anchor,
-            name: currentName,
-            parameter,
-            children: [],
-            parent: null,
-        };
-
-        currentName = null;
+            hasParameter,
+            routeKey,
+            routeParameterNames,
+        );
+        this.addChild(newNode);
+        this.children.sort((a, b) => a.compare(b));
+        return newNode;
     }
-
-}
-
-function findSimilarChildNode(targetNode: RouteNode, otherNode: RouteNode) {
-    if (targetNode.parameter != null) return;
-
-    for (const childNode of targetNode.children) {
-        const commonPrefixLength = findCommonPrefixLength(otherNode.anchor, childNode.anchor);
-
-        if (childNode.parameter != null) continue;
-
-        if (commonPrefixLength === 0) continue;
-
-        return { commonPrefixLength, similarNode: childNode };
-    }
-}
-
-function getInsertStrategy(leftNode: RouteNode, rightNode: RouteNode, commonPrefixLength: number) {
-    const commonPrefix = leftNode.anchor.substring(0, commonPrefixLength);
-
-    if (leftNode.anchor === rightNode.anchor) {
+    private mergeJoin(
+        childNode: RouteNode<K>,
+        routeKey: K | null,
+        routeParameterNames: string[],
+    ) {
         if (
-            leftNode.name != null &&
-            rightNode.name != null &&
-            leftNode.name !== rightNode.name
+            childNode.routeKey != null &&
+            routeKey != null
         ) {
             throw new Error("ambiguous route");
         }
-        else if (
-            leftNode.parameter != null &&
-            rightNode.parameter != null &&
-            leftNode.parameter !== rightNode.parameter
-        ) {
-            return "intermediate" as const;
+
+        if (childNode.routeKey == null) {
+            childNode.routeKey = routeKey;
+            childNode.routeParameterNames = routeParameterNames;
         }
-        else {
-            return "merge" as const;
+
+        childNode.parent?.children.sort((a, b) => a.compare(b));
+        return childNode;
+    }
+    private mergeIntermediate(
+        childNode: RouteNode<K>,
+        anchor: string,
+        hasParameter: boolean,
+        routeKey: K | null,
+        routeParameterNames: string[],
+        commonPrefixLength: number,
+    ) {
+        this.removeChild(childNode);
+
+        const newNode = new RouteNode<K>(
+            anchor.substring(commonPrefixLength),
+            false,
+            routeKey,
+            routeParameterNames,
+        );
+
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        childNode.hasParameter = false;
+
+        const intermediateNode = new RouteNode<K>(
+            anchor.substring(0, commonPrefixLength),
+            hasParameter,
+        );
+        intermediateNode.addChild(childNode);
+        intermediateNode.addChild(newNode);
+
+        this.addChild(intermediateNode);
+
+        this.children.sort((a, b) => a.compare(b));
+        intermediateNode.children.sort((a, b) => a.compare(b));
+
+        return newNode;
+    }
+    private mergeAddToChild(
+        childNode: RouteNode<K>,
+        anchor: string,
+        hasParameter: boolean,
+        routeKey: K | null,
+        routeParameterNames: string[],
+        commonPrefixLength: number,
+    ): RouteNode<K> {
+        anchor = anchor.substring(commonPrefixLength);
+        hasParameter = false;
+
+        const [commonPrefixLength2, childNode2] =
+            childNode.findSimilarChild(anchor, hasParameter);
+
+        return childNode.merge(
+            childNode2,
+            anchor,
+            hasParameter,
+            routeKey,
+            routeParameterNames,
+            commonPrefixLength2,
+        );
+    }
+    private mergeAddToNew(
+        childNode: RouteNode<K>,
+        anchor: string,
+        hasParameter: boolean,
+        routeKey: K | null,
+        routeParameterNames: string[],
+        commonPrefixLength: number,
+    ): RouteNode<K> {
+        const newNode = new RouteNode<K>(
+            anchor,
+            hasParameter,
+            routeKey,
+            routeParameterNames,
+        );
+        this.addChild(newNode);
+
+        this.removeChild(childNode);
+
+        childNode.anchor = childNode.anchor.substring(commonPrefixLength);
+        childNode.hasParameter = false;
+
+        newNode.addChild(childNode);
+
+        this.children.sort((a, b) => a.compare(b));
+        newNode.children.sort((a, b) => a.compare(b));
+
+        return newNode;
+    }
+
+    private findSimilarChild(
+        anchor: string,
+        hasParameter: boolean,
+    ) {
+        for (const childNode of this.children) {
+            if (childNode.hasParameter !== hasParameter) {
+                continue;
+            }
+
+            const commonPrefixLength = findCommonPrefixLength(anchor, childNode.anchor);
+            if (commonPrefixLength === 0) continue;
+
+            return [commonPrefixLength, childNode] as const;
         }
+
+        return [0, null] as const;
     }
-    else if (leftNode.anchor === commonPrefix) {
-        return "add-to-left" as const;
+
+    // eslint-disable-next-line complexity
+    compare(other: RouteNode<K>) {
+        if (this.anchor.length < other.anchor.length) return 1;
+        if (this.anchor.length > other.anchor.length) return -1;
+
+        if (!this.hasParameter && other.hasParameter) return -1;
+        if (this.hasParameter && !other.hasParameter) return 1;
+
+        if (this.anchor < other.anchor) return -1;
+        if (this.anchor > other.anchor) return 1;
+
+        return 0;
     }
-    else if (rightNode.anchor === commonPrefix) {
-        return "add-to-right" as const;
-    }
-    else {
-        return "intermediate" as const;
-    }
+
 }
+
