@@ -1,42 +1,15 @@
-on: 
-  - push
-  - pull_request
+on:
+  release:
+    types:
+      - published
+    tags:        
+      - v*
 
 jobs:
-
-  test-unit:
-    runs-on: ubuntu-latest
-    container: node:18
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npm test
-
-  test-lint:
-    runs-on: ubuntu-latest
-    container: node:18
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npm run lint
-
-  test-audit:
-    runs-on: ubuntu-latest
-    container: node:18
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npm audit
 
   publish-npm:
     runs-on: ubuntu-latest
     container: node:18
-    needs:
-      - test-unit
-      - test-lint
-      - test-audit
-    if: >
-      github.ref_type == 'tag' && startsWith( github.ref_name, 'v' )
     env:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
@@ -49,12 +22,6 @@ jobs:
   publish-cloudflare:
     runs-on: ubuntu-latest
     container: node:18
-    needs:
-      - test-unit
-      - test-lint
-      - test-audit
-    if: >
-      github.ref_type == 'tag' && startsWith( github.ref_name, 'v' )
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID}}
