@@ -1,34 +1,76 @@
 import assert from "assert";
 import test from "tape-promise/tape.js";
 import { Router } from "./router.js";
+import { parametersFromTemplates } from "./testing/parameters.js";
+import { loadTemplates } from "./testing/templates.js";
 
-test("parse-route 1", async t => {
+test("router-readme", async t => {
     const router = new Router();
 
-    router.insertRoute("a", "/a");
-    router.insertRoute("b", "/b/{x}");
-    router.insertRoute("c", "/b/{x}/c");
-    router.insertRoute("d", "/b/{x}/d");
+    router.insertRoute("all-products", "/product/all");
+    router.insertRoute("product-detail", "/product/{id}");
+
+    // And now we can parse routes!
 
     {
-        const route = router.parseRoute("/a");
-        assert(route != null);
-        t.equal(route.name, "a");
+        const [routeKey] = router.parseRoute("/not-found");
+        assert.equal(routeKey, null);
+    }
+
+    {
+        const [routeKey] = router.parseRoute("/product/all");
+        assert.equal(routeKey, "all-products");
+    }
+
+    {
+        const [routeKey, routeParameters] = router.parseRoute("/product/1");
+        assert.equal(routeKey, "product-detail");
+        assert.deepEqual(routeParameters, { id: "1" });
+    }
+
+    // And we can stringify routes
+
+    {
+        const path = router.stringifyRoute("all-products");
+        assert.equal(path, "/product/all");
+    }
+
+    {
+        const path = router.stringifyRoute("product-detail", { id: "2" });
+        assert.equal(path, "/product/2");
+    }
+});
+
+test("parse-route 1", async t => {
+    enum Route {
+        A,
+        B,
+        C,
+        D
+    }
+
+    const router = new Router<Route>();
+
+    router.insertRoute(Route.A, "/a");
+    router.insertRoute(Route.B, "/b/{x}");
+    router.insertRoute(Route.C, "/b/{x}/c");
+    router.insertRoute(Route.D, "/b/{x}/d");
+
+    {
+        const [routeKey] = router.parseRoute("/a");
+        t.equal(routeKey, Route.A);
     }
     {
-        const route = router.parseRoute("/b/x");
-        assert(route != null);
-        t.equal(route.name, "b");
+        const [routeKey] = router.parseRoute("/b/x");
+        t.equal(routeKey, Route.B);
     }
     {
-        const route = router.parseRoute("/b/y/c");
-        assert(route != null);
-        t.equal(route.name, "c");
+        const [routeKey] = router.parseRoute("/b/y/c");
+        t.equal(routeKey, Route.C);
     }
     {
-        const route = router.parseRoute("/b/z/d");
-        assert(route != null);
-        t.equal(route.name, "d");
+        const [routeKey] = router.parseRoute("/b/z/d");
+        t.equal(routeKey, Route.D);
     }
 
 });
@@ -45,97 +87,124 @@ test("parse-route 2", async t => {
     router.insertRoute("four", "/c/{x}/{y}/");
 
     {
-        const route = router.parseRoute("/a");
-        assert(route);
-        t.equal(route.name, "one");
+        const [routeKey, routeParameters] = router.parseRoute("/a");
+        t.equal(routeKey, "one");
     }
 
     {
-        const route = router.parseRoute("/a/1/2");
-        assert(route);
-        t.equal(route.name, "two");
-        t.deepEqual(route.parameters, { x: "1", y: "2" });
+        const [routeKey, routeParameters] = router.parseRoute("/a/1/2");
+        t.equal(routeKey, "two");
+        t.deepEqual(routeParameters, { x: "1", y: "2" });
     }
 
     {
-        const path = router.stringifyRoute({
-            name: "two",
-            parameters: { x: "1", y: "2" },
-        });
+        const path = router.stringifyRoute(
+            "two",
+            { x: "1", y: "2" },
+        );
         assert(path);
         t.equal(path, "/a/1/2");
     }
 
     {
-        const route = router.parseRoute("/c/3");
-        assert(route);
-        t.equal(route.name, "three");
-        t.deepEqual(route.parameters, { x: "3" });
+        const [routeKey, routeParameters] = router.parseRoute("/c/3");
+        t.equal(routeKey, "three");
+        t.deepEqual(routeParameters, { x: "3" });
     }
 
     {
-        const route = router.parseRoute("/c/3/4");
-        assert(route);
-        t.equal(route.name, "three");
-        t.deepEqual(route.parameters, { x: "3/4" });
+        const [routeKey, routeParameters] = router.parseRoute("/c/3/4");
+        t.equal(routeKey, "three");
+        t.deepEqual(routeParameters, { x: "3/4" });
     }
 
     {
-        const path = router.stringifyRoute({
-            name: "three",
-            parameters: { x: "3/4" },
-        });
+        const path = router.stringifyRoute(
+            "three",
+            { x: "3/4" },
+        );
         assert(path);
         t.equal(path, "/c/3%2F4");
     }
 
     {
-        const route = router.parseRoute("/c/3/4/");
-        assert(route);
-
-        t.equal(route.name, "four");
-        t.deepEqual(route.parameters, { x: "3", y: "4" });
+        const [routeKey, routeParameters] = router.parseRoute("/c/3/4/");
+        t.equal(routeKey, "four");
+        t.deepEqual(routeParameters, { x: "3", y: "4" });
     }
 });
 
 test("router bug", async t => {
     const router = new Router();
 
-    router.insertRoute("/node-exporter/metrics", "/node-exporter/metrics");
-    router.insertRoute("/mutex/lock", "/mutex/lock");
-    router.insertRoute("/docker/info", "/docker/info");
-    router.insertRoute("/docker/events", "/docker/events");
-    router.insertRoute("/docker/containers/{id}/stats", "/docker/containers/{id}/stats");
-    router.insertRoute("/docker/images/json", "/docker/images/json");
-    router.insertRoute("/docker/images/{name}/json", "/docker/images/{name}/json");
-    router.insertRoute("/docker/images/create", "/docker/images/create");
-    router.insertRoute("/docker/images/{name}", "/docker/images/{name}");
-    router.insertRoute("/docker/containers/json", "/docker/containers/json");
-    router.insertRoute("/docker/containers/{id}/json", "/docker/containers/{id}/json");
-    router.insertRoute("/docker/containers/create", "/docker/containers/create");
-    router.insertRoute("/docker/containers/{id}/start", "/docker/containers/{id}/start");
-    router.insertRoute("/docker/containers/{id}/stop", "/docker/containers/{id}/stop");
-    router.insertRoute("/docker/containers/{id}/logs", "/docker/containers/{id}/logs");
-    router.insertRoute("/docker/containers/{id}/archive", "/docker/containers/{id}/archive");
-    router.insertRoute("/docker/containers/{id}/changes", "/docker/containers/{id}/changes");
+    router
+        .insertRoute("a", "/enterprises/{enterprise}/actions/runner-groups")
+        .insertRoute(
+            "b",
+            "/enterprises/{enterprise}/actions/runner-groups/{runner_group_id}",
+        )
+        .insertRoute(
+            "c",
+            "/enterprises/{enterprise}/actions/runner-groups/{runner_group_id}/organizations",
+        );
 
     t.deepEqual(
-        router.parseRoute("/docker/images/create"),
-        {
-            name: "/docker/images/create",
-            parameters: {},
-        },
+        router.parseRoute("/enterprises/xx/actions/runner-groups"),
+        ["a", { "enterprise": "xx" }],
     );
 
-    t.equal(
-        router.stringifyRoute({
-            name: "/docker/containers/{id}/start",
-            parameters: {
-                id: "e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106",
-            },
-        }),
-        "/docker/containers/e431946a4e0abb1a9099708f542afb80124e633e476733bfa0d61dfca18ee106/start",
+    t.deepEqual(
+        router.parseRoute("/enterprises/xx/actions/runner-groups/yy"),
+        ["b", { "enterprise": "xx", "runner_group_id": "yy" }],
+    );
+
+    t.deepEqual(
+        router.parseRoute("/enterprises/xx/actions/runner-groups/yy/organizations"),
+        ["c", { "enterprise": "xx", "runner_group_id": "yy" }],
     );
 
 });
 
+testTemplates("small");
+testTemplates("docker");
+testTemplates("github");
+
+function testTemplates(name: string) {
+    test(`${name} templates`, async t => {
+        const templates = loadTemplates(name);
+        const allParameterNames = [...parametersFromTemplates(templates)];
+
+        const allParameters = Object.fromEntries(
+            allParameterNames.map((name, index) => [name, `p${index}`]),
+        );
+
+        const templateCount = templates.length;
+
+        const router = new Router();
+        for (const template of templates) {
+            router.insertRoute(template, template);
+        }
+
+        const paths = templates.map(template => {
+            const path = router.stringifyRoute(template, allParameters);
+            assert(path != null);
+            return path;
+        });
+
+        for (let index = 0; index < templateCount; index++) {
+            const path = paths[Number(index)];
+            const template = templates[Number(index)];
+
+            const [routeKey, routeParameters] = router.parseRoute(path);
+            const expectedParameters = Object.fromEntries(
+                Object.keys(routeParameters).
+                    map(name => [name, allParameters[String(name)]]),
+            );
+
+            t.equal(routeKey, template);
+            t.deepEqual(routeParameters, expectedParameters);
+        }
+
+    });
+
+}
