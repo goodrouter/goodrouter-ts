@@ -4,9 +4,11 @@ on:
 
 jobs:
 
-  prepare:
+  test-unit:
     runs-on: ubuntu-latest
     container: node:18
+    needs:
+      - prepare
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -15,26 +17,6 @@ jobs:
           path: |
             ~/.npm/
       - run: npm ci
-      - run: npm run docs
-      - uses: actions/upload-artifact@v3
-        name: prepared
-        with:
-          path: |
-            node_modules/
-            out/
-            docs/
-
-  test-unit:
-    runs-on: ubuntu-latest
-    container: node:18
-    needs:
-      - prepare
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: prepared
       - run: npm test
 
   test-lint:
@@ -44,11 +26,13 @@ jobs:
       - prepare
     steps:
       - uses: actions/checkout@v3
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
+      - uses: actions/cache@v3
         with:
-          name: prepared
-      - run: npm run lint test
+          key: ${{ github.job }}-${{ hashFiles('package-lock.json') }}
+          path: |
+            ~/.npm/
+      - run: npm ci
+      - run: npm run lint
 
   test-audit:
     runs-on: ubuntu-latest
@@ -57,8 +41,10 @@ jobs:
       - prepare
     steps:
       - uses: actions/checkout@v3
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
+      - uses: actions/cache@v3
         with:
-          name: prepared
+          key: ${{ github.job }}-${{ hashFiles('package-lock.json') }}
+          path: |
+            ~/.npm/
+      - run: npm ci
       - run: npm audit
