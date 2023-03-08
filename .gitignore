@@ -1,10 +1,12 @@
 .*
 !.gitignore
 !.editorconfig
-!.gitlab-ci.yml
 !.eslintrc.yml
 !.npmrc
+
 !/.vscode/
+!/.github/
+
 /node_modules/
 /coverage/
 /out/
