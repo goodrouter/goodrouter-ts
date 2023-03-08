@@ -43,7 +43,7 @@ export interface RouterOptions {
      * @param decodedValue value to be encoded
      * @returns encoded value
      */
-    encode?: (decodedValue: string) => string
+    parameterValueEncoder?: (decodedValue: string) => string
     /**
      * @description
      * This function wil be used on each parameter value when constructing a route
@@ -51,7 +51,7 @@ export interface RouterOptions {
      * @param encodedValue value to be decoded
      * @returns decoded value
      */
-    decode?: (encodedValue: string) => string
+    parameterValueDecoder?: (encodedValue: string) => string
 
     /**
      * Regular expression to use when parsing placeholders from a route template. This regular
