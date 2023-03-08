@@ -1,0 +1,64 @@
+on: 
+  - push
+  - pull_request
+
+jobs:
+
+  prepare:
+    runs-on: ubuntu-latest
+    container: node:18
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          key: ${{ github.job }}-${{ hashFiles('package-lock.json') }}
+          path: |
+            ~/.npm/
+      - run: npm ci
+      - run: npm run docs
+      - uses: actions/upload-artifact@v3
+        name: prepared
+        with:
+          path: |
+            node_modules/
+            out/
+            docs/
+
+  test-unit:
+    runs-on: ubuntu-latest
+    container: node:18
+    needs:
+      - prepare
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: prepared
+      - run: npm test
+
+  test-lint:
+    runs-on: ubuntu-latest
+    container: node:18
+    needs:
+      - prepare
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: prepared
+      - run: npm run lint test
+
+  test-audit:
+    runs-on: ubuntu-latest
+    container: node:18
+    needs:
+      - prepare
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: prepared
+      - run: npm audit
