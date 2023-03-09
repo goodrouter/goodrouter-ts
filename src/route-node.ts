@@ -395,7 +395,6 @@ export class RouteNode<K extends string | number> {
         return [0, null] as const;
     }
 
-    // eslint-disable-next-line complexity
     compare(other: RouteNode<K>) {
         if (this.anchor.length < other.anchor.length) return 1;
         if (this.anchor.length > other.anchor.length) return -1;
