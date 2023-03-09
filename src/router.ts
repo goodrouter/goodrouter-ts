@@ -68,16 +68,19 @@ export class Router<K extends string | number> {
      * @description
      * Adds a new route
      *
-     * @param key name of the route
-     * @param template template for the route, als defines parameters
+     * @param routeKey name of the route
+     * @param routeTemplate template for the route, als defines parameters
      */
-    public insertRoute(key: K, template: string) {
+    public insertRoute(
+        routeKey: K,
+        routeTemplate: string,
+    ) {
         const leafNode = this.rootNode.insert(
-            key,
-            template,
+            routeKey,
+            routeTemplate,
             this.options.parameterPlaceholderRE,
         );
-        this.leafNodes.set(key, leafNode);
+        this.leafNodes.set(routeKey, leafNode);
         return this;
     }
 
@@ -91,15 +94,13 @@ export class Router<K extends string | number> {
     public parseRoute(
         path: string,
     ): [K | null, Record<string, string>] {
+        const parameters: Record<string, string> = {};
+
         const [routeKey, parameterNames, parameterValues] = this.rootNode.parse(
             path,
             this.options.maximumParameterValueLength,
         );
-        if (routeKey == null) {
-            return [null, {}];
-        }
 
-        const parameters: Record<string, string> = {};
         for (let index = 0; index < parameterNames.length; index++) {
             const parameterName = parameterNames[Number(index)];
             const parameterValue = parameterValues[Number(index)];
