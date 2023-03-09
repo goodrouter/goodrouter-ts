@@ -80,14 +80,14 @@ export class RouteNode<K extends string | number> {
         const pairs = [...parseTemplatePairs(routeTemplate, parameterPlaceholderRE)];
 
         const routeParameterNames = pairs.
-            map(([, parameter]) => parameter).
-            filter(parameter => parameter) as string[];
+            map(([, parameterName]) => parameterName).
+            filter(parameterName => parameterName) as string[];
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let currentNode: RouteNode<K> = this;
         for (let index = 0; index < pairs.length; index++) {
-            const [anchor, parameter] = pairs[Number(index)];
-            const hasParameter = parameter != null;
+            const [anchor, parameterName] = pairs[Number(index)];
+            const hasParameter = parameterName != null;
 
             const [commonPrefixLength, childNode] =
                 currentNode.findSimilarChild(anchor, hasParameter);
