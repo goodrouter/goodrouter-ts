@@ -46,5 +46,4 @@ export function* parseTemplatePairs(
         }
         index++;
     }
-
 }
