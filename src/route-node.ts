@@ -148,15 +148,15 @@ export class RouteNode<K extends string | number> {
 
         for (const childNode of this.children) {
             // find a route in every child node
-            const [childRoute, childRouteParameterNames, childParameterValues] = childNode.parse(
+            const [childRouteKey, childRouteParameterNames, childParameterValues] = childNode.parse(
                 path,
                 maximumParameterValueLength,
             );
 
             // if a child node is matched, return that node instead of the current! So child nodes are matched first!
-            if (childRoute != null) {
+            if (childRouteKey != null) {
                 return [
-                    childRoute,
+                    childRouteKey,
                     childRouteParameterNames,
                     [
                         ...parameterValues,
@@ -387,7 +387,9 @@ export class RouteNode<K extends string | number> {
             }
 
             const commonPrefixLength = findCommonPrefixLength(anchor, childNode.anchor);
-            if (commonPrefixLength === 0) continue;
+            if (commonPrefixLength === 0) {
+                continue;
+            }
 
             return [commonPrefixLength, childNode] as const;
         }
