@@ -2,7 +2,7 @@ import test from "tape-promise/tape.js";
 import { defaultRouterOptions } from "./router-options.js";
 import { parseTemplatePairs, parseTemplateParts } from "./template.js";
 
-test("split-template", async t => {
+test("parse-template-parts", async t => {
     {
         const parts = [...parseTemplateParts("/a/{b}/{c}", defaultRouterOptions.parameterPlaceholderRE)];
 
@@ -22,7 +22,7 @@ test("split-template", async t => {
     }
 });
 
-test("split-template-pairs", async t => {
+test("parse-template-pairs", async t => {
     {
         const parts = [...parseTemplatePairs("/a/{b}/{c}", defaultRouterOptions.parameterPlaceholderRE)];
 
